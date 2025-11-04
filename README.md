@@ -68,3 +68,4 @@ View your app in AI Studio: https://ai.studio/apps/drive/1RvqAaXsfH7bWrc1RWwAKVr
 - TypeScriptの型チェックが有効になっています
 - TailwindCSSはCDNとローカル設定の両方に対応しています
 - カスタムアニメーションは`index.css`に定義されています
+# hachinishibaseball-hp
