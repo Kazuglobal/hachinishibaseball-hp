@@ -1,0 +1,33 @@
+<section 
+  (visible)="sectionVisible.set(true)"
+  class="py-24">
+  <div class="container mx-auto px-4 sm:px-8">
+    <div 
+      [class.is-visible]="sectionVisible()"
+      class="fade-in-up">
+      <app-section-title mainTitle="ACTIVITIES" subTitle="活動報告"></app-section-title>
+    </div>
+
+    <div class="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      @for(work of works; track work.title) {
+        <div 
+          [class.is-visible]="sectionVisible()"
+          class="fade-in-up group overflow-hidden {{work.delay}}">
+          <div class="relative">
+            <img ngSrc="{{work.image}}" width="800" height="600" [alt]="work.title" class="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110">
+          </div>
+          <div class="mt-4">
+            <span class="text-sm text-gray-500">{{work.category}}</span>
+            <h3 class="font-serif-jp text-lg mt-1">{{work.title}}</h3>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div 
+      [class.is-visible]="sectionVisible()"
+      class="fade-in-up text-center mt-16 delay-500">
+      <a href="#" class="inline-block bg-[#002D62] text-white py-4 px-12 hover:bg-blue-950 transition-colors duration-300">活動報告一覧を見る</a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,36 @@
+<section 
+  (visible)="sectionVisible.set(true)" 
+  class="py-24 bg-white overflow-hidden">
+  <div class="container mx-auto px-4 sm:px-8">
+    <div 
+      class="fade-in-up"
+      [class.is-visible]="sectionVisible()">
+      <app-section-title mainTitle="ALUMNI VOICE" subTitle="OBの声"></app-section-title>
+    </div>
+
+    <div class="mt-16 relative" (mouseenter)="stopAutoSlide()" (mouseleave)="startAutoSlide()">
+      <div class="overflow-hidden">
+        <div class="flex transition-transform duration-700 ease-in-out" [style.transform]="carouselTransform()">
+          @for (voice of voices; track voice.title) {
+            <div class="flex-shrink-0 px-4" [style.width]="cardWidth()">
+              <div class="relative group">
+                <img ngSrc="{{voice.image}}" width="800" height="1000" [alt]="voice.title" class="w-full object-cover shadow-xl aspect-[4/5]">
+                <div class="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent text-white">
+                  <h3 class="font-serif-jp text-xl md:text-2xl">{{voice.title}}</h3>
+                  <p class="text-sm mt-2">{{voice.family}}</p>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+       <!-- Navigation Buttons -->
+      <button (click)="prev()" class="absolute top-1/2 -translate-y-1/2 left-0 md:-left-8 w-12 h-12 bg-white/80 hover:bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-300">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#333]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+      </button>
+      <button (click)="next()" class="absolute top-1/2 -translate-y-1/2 right-0 md:-right-8 w-12 h-12 bg-white/80 hover:bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-300">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#333]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+      </button>
+    </div>
+  </div>
+</section>

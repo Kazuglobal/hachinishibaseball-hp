@@ -1,0 +1,50 @@
+<footer class="bg-[#333] text-gray-300 pt-20 pb-8">
+  <div class="container mx-auto px-4 sm:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <!-- Company Info -->
+      <div class="md:col-span-1">
+        <a routerLink="/" class="inline-block">
+          <h2 class="font-oswald text-2xl text-white">八戸西高等学校野球OB会</h2>
+        </a>
+        <p class="mt-4 text-sm">八戸西高等学校野球OB会 事務局</p>
+        <p class="text-sm mt-2">〒031-0813 青森県八戸市新井田西2丁目1-1</p>
+        <p class="text-sm mt-2">TEL: 0178-25-3941</p>
+        <a href="#" class="inline-block mt-4 bg-gray-100 text-[#333] font-bold py-2 px-4 text-sm hover:bg-white transition-colors">
+          Google Map
+        </a>
+      </div>
+      <!-- Sitemap -->
+      <div class="md:col-span-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+        @for(section of sitemap; track section.title) {
+          <div>
+            <h4 class="font-bold text-white text-sm">
+              @if (section.title === '野球部について') {
+                <a routerLink="/about" class="hover:text-white transition-colors">{{section.title}}</a>
+              } @else if (section.links.length === 0) {
+                 <a href="#" class="hover:text-white transition-colors">{{section.title}}</a>
+              } @else {
+                {{section.title}}
+              }
+            </h4>
+            @if (section.links.length > 0) {
+              <ul class="mt-4 space-y-2">
+                @for(link of section.links; track link) {
+                  <li>
+                    <a href="#" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+    </div>
+    <div class="mt-16 pt-8 border-t border-gray-700 flex flex-col sm:flex-row justify-between items-center text-xs">
+      <div class="flex space-x-4">
+        <a href="#" class="hover:text-white">サイトマップ</a>
+        <a href="#" class="hover:text-white">プライバシーポリシー</a>
+      </div>
+      <p class="mt-4 sm:mt-0">&copy; 2024 Hachinohe Nishi Baseball OB Association. All Rights Reserved.</p>
+    </div>
+  </div>
+</footer>
