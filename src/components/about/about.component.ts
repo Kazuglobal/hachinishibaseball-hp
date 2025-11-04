@@ -53,6 +53,53 @@ export class AboutComponent implements AfterViewInit {
     { school: '倉石', count: 1 }
   ].sort((a, b) => b.count - a.count || a.school.localeCompare(b.school));
 
+  readonly staffMembers = [
+    {
+      name: '小川　貴史',
+      position: '監督',
+      period: '25期',
+      education: ['八戸西高校', '駒澤大学'],
+      career: ['平成２３年にコーチ就任', '平成３０年に監督就任']
+    },
+    {
+      name: '中村　渉',
+      position: '投手コーチ',
+      period: '21期',
+      education: ['八戸西高校', '青森大学'],
+      career: ['三菱製紙八戸クラブ', '北海道日本ハムファイターズ', '平成３０年にコーチ就任']
+    },
+    {
+      name: '根深　周平',
+      position: '野手コーチ',
+      period: '',
+      education: ['東奥義塾高校', '仙台大学'],
+      career: ['弘前アレッズ　主将', '令和２年にコーチ就任']
+    },
+    {
+      name: '齋藤　昌宏',
+      position: '部長',
+      period: '24期',
+      education: ['八戸西高校', '日本体育大学'],
+      career: ['平成２３年に八戸西高校監督就任', '三本木農業高校での監督生活を経て八戸西高校に再任']
+    },
+    {
+      name: '宮重　太一',
+      position: '副部長　捕手',
+      period: '',
+      education: ['八戸高校（平成６年甲子園出場）', '東京学芸大学'],
+      career: []
+    },
+    {
+      name: '宇波　毅',
+      position: '副部長　投手',
+      period: '',
+      education: ['八戸高校', '早稲田大学'],
+      career: []
+    }
+  ];
+
+  staffVisible = signal(false);
+
   get totalCount(): number {
     return this.schoolData.reduce((sum, r) => sum + r.count, 0);
   }
