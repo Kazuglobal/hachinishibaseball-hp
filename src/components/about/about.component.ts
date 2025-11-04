@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, PLATFORM_ID, Inject, signal } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
+import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
 
 declare var d3: any;
@@ -8,7 +9,7 @@ declare var d3: any;
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [CommonModule, SectionTitleComponent, ObserveVisibilityDirective],
+  imports: [CommonModule, SectionTitleComponent, ObserveVisibilityDirective, BackButtonComponent],
   templateUrl: './about.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

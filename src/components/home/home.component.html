@@ -14,7 +14,7 @@
       <img ngSrc="https://picsum.photos/600/900?grayscale&blur=2&random=2" width="600" height="900" alt="Abstract background image 2" class="object-cover">
     </div>
     <div class="relative z-10">
-      <app-section-title mainTitle="MESSAGE" subTitle="会長挨拶"></app-section-title>
+      <app-section-title mainTitle="会長挨拶" subTitle="MESSAGE"></app-section-title>
       
       <div class="max-w-4xl mx-auto mt-12 text-left space-y-6 font-serif-jp leading-loose">
           <p>
@@ -104,6 +104,34 @@
           <img ngSrc="https://picsum.photos/seed/baseball-team/800/1000" width="800" height="1000" alt="Hachinohe Nishi Baseball Team" class="shadow-2xl w-full h-auto object-cover">
         </div>
       </div>
+  </section>
+
+  <!-- Follow Me Section -->
+  <section 
+    (visible)="blogVisible.set(true)"
+    class="py-24 bg-[#002D62] text-white">
+    <div class="container mx-auto px-4 sm:px-8">
+      <div 
+        [class.is-visible]="blogVisible()"
+        class="fade-in-up text-center max-w-3xl mx-auto space-y-6">
+        <p class="font-serif-jp text-3xl md:text-4xl leading-relaxed">
+          野球部の近況を発信しております。
+        </p>
+        <h3 class="font-oswald text-2xl md:text-3xl tracking-[0.3em] uppercase">
+          Follow me！
+        </h3>
+        <p class="text-base md:text-lg leading-relaxed">
+          定期的に日々の活動を投稿しております。是非フォローいただき熱い応援をよろしくお願いいたします！
+        </p>
+        <a 
+          href="https://www.instagram.com/hachinishi_baseball_ob/?igsh=NWNsbng3eDI5cjV2#"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center justify-center gap-2 bg-white text-[#002D62] font-semibold py-3 px-10 rounded-full hover:bg-gray-100 transition-colors duration-300">
+          Instagram
+        </a>
+      </div>
+    </div>
   </section>
 
   <!-- Support Section -->
