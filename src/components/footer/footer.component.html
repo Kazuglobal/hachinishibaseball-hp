@@ -7,8 +7,8 @@
           <h2 class="font-oswald text-2xl text-white">八戸西高等学校野球OB会</h2>
         </a>
         <p class="mt-4 text-sm">八戸西高等学校野球OB会 事務局</p>
-        <p class="text-sm mt-2">〒031-0813 青森県八戸市新井田西2丁目1-1</p>
-        <p class="text-sm mt-2">TEL: 0178-25-3941</p>
+        <p class="text-sm mt-2">〒039-1101 青森県八戸市大字尻内町字中根市14</p>
+        <p class="text-sm mt-2">TEL: 090-8610-2693</p>
         <a href="#" class="inline-block mt-4 bg-gray-100 text-[#333] font-bold py-2 px-4 text-sm hover:bg-white transition-colors">
           Google Map
         </a>
@@ -43,8 +43,95 @@
       <div class="flex space-x-4">
         <a href="#" class="hover:text-white">サイトマップ</a>
         <a href="#" class="hover:text-white">プライバシーポリシー</a>
+        <button type="button" class="hover:text-white" (click)="tokushoho.showModal()">特定商取引法に基づく表記</button>
       </div>
       <p class="mt-4 sm:mt-0">&copy; 2024 Hachinohe Nishi Baseball OB Association. All Rights Reserved.</p>
     </div>
   </div>
+
+  <!-- 特定商取引法に基づく表記 モーダル -->
+  <dialog #tokushoho class="rounded-lg max-w-3xl w-[92vw] bg-white text-gray-800">
+    <form method="dialog" class="text-right p-0">
+      <button class="m-3 px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded">閉じる</button>
+    </form>
+    <div class="p-6 max-h-[70vh] overflow-y-auto">
+      <h2 class="text-xl font-bold mb-4">特定商取引法に基づく表記</h2>
+
+      <div class="space-y-6 text-sm leading-7">
+        <section>
+          <h3 class="font-semibold mb-2">1. 役務の提供者</h3>
+          <p>団体名：八戸西高等学校硬式野球部OB会</p>
+          <p>代表者：榎本　直行</p>
+          <p>所在地：青森県八戸市大字尻内町字中根市14</p>
+        </section>
+
+        <section>
+          <h3 class="font-semibold mb-2">2. 納入方法</h3>
+          <ul class="list-disc list-inside">
+            <li>決済方法：stripeを利用したクレジットカード決済</li>
+            <li>支払方法：一括払い</li>
+            <li>支払期限：2025年12月31日</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="font-semibold mb-2">3. OB会費の内容</h3>
+          <ul class="list-disc list-inside">
+            <li>名称：八戸西高等学校硬式野球部OB会費</li>
+            <li>金額：年間 5,000円</li>
+            <li>目的：野球部の活動支援、後輩たちの支援、部の運営費用</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="font-semibold mb-2">4. キャンセル・返金ポリシー</h3>
+          <ul class="list-disc list-inside">
+            <li>OB会費は原則として返金いたしません。</li>
+            <li>特別な事情による返金は、OB会の総会にて個別に審議し、決定します。</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="font-semibold mb-2">5. プライバシーポリシー</h3>
+          <ul class="list-disc list-inside">
+            <li>個人情報の取り扱いは、個人情報保護法に基づき、適切に管理いたします。</li>
+            <li>stripeを通じて収集される個人情報は、OB会費の徴収および連絡目的のみに使用されます。</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="font-semibold mb-2">6. 連絡先情報</h3>
+          <ul class="list-disc list-inside">
+            <li>問い合わせ先メールアドレス：<a href="mailto:hachinishibaseball@gmail.com" class="text-blue-600 underline">hachinishibaseball@gmail.com</a></li>
+            <li>問い合わせ先電話番号：090-8610-2693</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="font-semibold mb-2">7. 決済代行サービス</h3>
+          <p>決済代行：stripe</p>
+        </section>
+
+        <section>
+          <h3 class="font-semibold mb-2">8. 注意事項</h3>
+          <p>支払いに関する詳細は、事前に確認の上、ご利用ください。</p>
+        </section>
+
+        <section>
+          <h3 class="font-semibold mb-2">9. 改訂</h3>
+          <ul class="list-disc list-inside">
+            <li>この特定商取引法に基づく表記は、予告なく変更する場合があります。</li>
+            <li>最新の情報は、常に当OB会のHPでご確認ください。</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="font-semibold mb-2">附則</h3>
+          <p>作成日：【2024年12月8日】</p>
+          <p>最終更新日：【2025年11月21日】</p>
+          <p class="text-xs text-gray-500 mt-2">※ この表記は、特定商取引法第11条に基づき、適切に情報を開示しています。</p>
+        </section>
+      </div>
+    </div>
+  </dialog>
 </footer>
