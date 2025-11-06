@@ -2,11 +2,12 @@ import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/c
 import { ScrollService } from '../../services/scroll.service';
 import { CommonModule } from '@angular/common';
 import { MenuService } from '../../services/menu.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-side-ui',
   templateUrl: './side-ui.component.html',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SideUiComponent {

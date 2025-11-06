@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, PLATFORM_ID, Inject, signal } from '@angular/core';
-import { isPlatformBrowser, CommonModule } from '@angular/common';
+import { isPlatformBrowser, CommonModule, NgOptimizedImage } from '@angular/common';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
@@ -9,7 +9,7 @@ declare var d3: any;
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [CommonModule, SectionTitleComponent, ObserveVisibilityDirective, BackButtonComponent],
+  imports: [CommonModule, SectionTitleComponent, ObserveVisibilityDirective, BackButtonComponent, NgOptimizedImage],
   templateUrl: './about.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -99,6 +99,7 @@ export class AboutComponent implements AfterViewInit {
   ];
 
   staffVisible = signal(false);
+  baseballBallImage = 'assets/images/baseball-ball.png';
 
   get totalCount(): number {
     return this.schoolData.reduce((sum, r) => sum + r.count, 0);

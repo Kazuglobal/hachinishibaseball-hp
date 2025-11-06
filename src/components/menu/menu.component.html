@@ -21,6 +21,14 @@
                 <a routerLink="/about" (click)="menuService.close()" class="text-2xl font-serif-jp pb-2 border-b-2 border-transparent hover:border-white transition-colors duration-300 block">
                   {{ item }}
                 </a>
+              } @else if (item === 'ご支援のお願い') {
+                <a routerLink="/support" fragment="credit" (click)="menuService.close()" class="text-2xl font-serif-jp pb-2 border-b-2 border-transparent hover:border-white transition-colors duration-300 block">
+                  {{ item }}
+                </a>
+              } @else if (item === '現役チームへ支援') {
+                <a routerLink="/support" fragment="credit" (click)="menuService.close()" class="text-2xl font-serif-jp pb-2 border-b-2 border-transparent hover:border-white transition-colors duration-300 block">
+                  {{ item }}
+                </a>
               } @else {
                 <a href="#" (click)="menuService.close()" class="text-2xl font-serif-jp pb-2 border-b-2 border-transparent hover:border-white transition-colors duration-300 block">
                   {{ item }}

@@ -1,0 +1,54 @@
+<section class="py-20 container mx-auto px-4 sm:px-8">
+  <app-section-title mainTitle="会費納入のお願い" subTitle="ご支援のお願い"></app-section-title>
+
+  <div class="mt-10 max-w-3xl mx-auto text-[15px] leading-8 text-gray-800 bg-white/80 backdrop-blur p-6 md:p-8 rounded-lg shadow-sm">
+    <p>野球部の活動を支えてくださる皆様へ、心より感謝申し上げます。</p>
+
+    <p class="mt-4">部員たちは日々練習に励み、技術向上、そして甲子園出場を目指して全力で取り組んでいます。しかしながら、野球部の運営には、皆様からの温かいご支援が不可欠です。</p>
+
+    <p class="mt-4">そこで、大変恐縮ではございますが、部員たちがより良い環境で練習に励み、夢に向かって挑戦できるよう、会費納入へのご協力をお願い申し上げます。</p>
+
+    <p class="mt-6 font-semibold">皆様から頂戴する会費は、以下の活動に活用させていただきます。</p>
+    <ul class="list-disc pl-6 mt-2 space-y-2">
+      <li><span class="font-semibold">1. 最新練習用具の購入・メンテナンス</span> — 選手の技術向上のため、最新の練習用具の購入や既存の用具のメンテナンス費用に充当させていただきます。</li>
+      <li><span class="font-semibold">2. 遠征費の補助</span> — 他校との練習試合や公式戦への遠征費用を補助することで、部員たちが貴重な経験を積む機会を増やします。</li>
+      <li><span class="font-semibold">3. ユニフォーム・用具の購入・新調</span> — 部員たちが誇りを持ってプレーできるよう、ユニフォームや各種用具の購入・新調費用に充当させていただきます。</li>
+      <li><span class="font-semibold">4. グラウンド整備費用</span> — 安全で快適な練習環境を維持するため、グラウンド整備費用に充当させていただきます。</li>
+      <li><span class="font-semibold">5. その他、部活動運営費用</span> — 上記以外にも、部活動運営に必要な費用に幅広く活用させていただきます。</li>
+    </ul>
+
+    <div class="mt-8 bg-gray-50 border border-gray-200 rounded p-4">
+      <p><span class="font-bold">納入金額：</span>年間 5,000円</p>
+      <p class="mt-2"><span class="font-bold">振込先：</span>青い森信用金庫 湊支店</p>
+      <p><span class="font-bold">普通預金：</span>0486104</p>
+      <p><span class="font-bold">口座名義：</span>ハチノヘニシコウトウガッコウ コウシキヤキュウブ オービーカイ</p>
+      <p class="text-sm text-gray-600">（八戸西高等学校硬式野球部OB会 会長 榎本直行）</p>
+    </div>
+
+    <div class="mt-10" id="credit">
+      <h3 class="font-oswald text-xl text-[#333]">クレジット決済</h3>
+      <p class="text-sm text-gray-600 mt-1">下記ボタンから決済ページへ遷移します。</p>
+
+      <div class="mt-4">
+        <stripe-buy-button
+          buy-button-id="buy_btn_1QUVLMHpcbKROdRBduXnDbz3"
+          publishable-key="pk_live_51QTaAoHpcbKROdRBG7egbxl9Q3UCN1lAdDjmLiR992s8cKnw9PDhvdXzDHet8xz18iJ7O3AM4MRNOVezQZVmzgBH00Frh0AElW">
+        </stripe-buy-button>
+      </div>
+
+      <div class="mt-4">
+        <a href="https://buy.stripe.com/dR6040f1YehM7LyaEE" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 bg-[#635bff] text-white rounded hover:bg-[#5146ff] transition-colors">
+          画像が表示されない場合はこちらから決済
+        </a>
+      </div>
+
+      <p class="mt-4 text-sm text-gray-600">現在申請直後ですのでリンクよりお支払いができなかった場合は、ご不便をおかけいたしますが数日後に再度アクセスをお願いいたします。</p>
+    </div>
+
+    <div class="mt-10">
+      <app-back-button></app-back-button>
+    </div>
+  </div>
+</section>
+
+
