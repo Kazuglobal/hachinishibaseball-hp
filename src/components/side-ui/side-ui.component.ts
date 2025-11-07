@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
 import { ScrollService } from '../../services/scroll.service';
 import { CommonModule } from '@angular/common';
-import { MenuService } from '../../services/menu.service';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -12,7 +11,6 @@ import { RouterLink } from '@angular/router';
 })
 export class SideUiComponent {
   scrollService = inject(ScrollService);
-  menuService = inject(MenuService);
 
   scrollProgress = computed(() => {
     const scrollY = this.scrollService.scrollY();

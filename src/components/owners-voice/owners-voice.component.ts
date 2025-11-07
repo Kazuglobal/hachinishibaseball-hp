@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, OnInit, OnDestroy, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
 import { NgOptimizedImage } from '@angular/common';
@@ -11,6 +12,7 @@ import { NgOptimizedImage } from '@angular/common';
 })
 export class OwnersVoiceComponent implements OnInit, OnDestroy {
   sectionVisible = signal(false);
+  private isBrowser: boolean;
 
   voices = [
     {
@@ -36,31 +38,117 @@ export class OwnersVoiceComponent implements OnInit, OnDestroy {
   ];
   
   currentIndex = signal(0);
+  windowWidth = signal(1024);
   
-  carouselTransform = computed(() => `translateX(-${this.currentIndex() * 100 / this.voices.length}%)`);
-  cardWidth = computed(() => `${100 / this.voices.length}%`);
+  // 画面サイズに応じた表示カード数
+  cardsPerView = computed(() => {
+    const width = this.windowWidth();
+    if (width < 768) return 1; // モバイル: 1カード
+    if (width < 1024) return 2; // タブレット: 2カード
+    return 4; // デスクトップ: 4カード
+  });
+  
+  cardWidth = computed(() => `${100 / this.cardsPerView()}%`);
+  carouselTransform = computed(() => {
+    const cardsPerView = this.cardsPerView();
+    const maxIndex = Math.max(0, this.voices.length - cardsPerView);
+    const clampedIndex = Math.min(this.currentIndex(), maxIndex);
+    return `translateX(-${clampedIndex * (100 / cardsPerView)}%)`;
+  });
 
   private intervalId: any;
+  private resizeListener?: () => void;
+
+  constructor(@Inject(PLATFORM_ID) platformId: object) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   ngOnInit(): void {
+    if (this.isBrowser) {
+      this.updateWindowWidth();
+      this.resizeListener = () => this.updateWindowWidth();
+      window.addEventListener('resize', this.resizeListener, { passive: true });
+      // 次の画像を事前にプリロード
+      this.preloadNextImages();
+    }
     this.startAutoSlide();
+  }
+
+  private preloadNextImages(): void {
+    // 表示される可能性のある画像を事前に読み込む
+    const cardsPerView = this.cardsPerView();
+    const preloadCount = Math.min(cardsPerView + 1, this.voices.length);
+    
+    for (let i = 0; i < preloadCount; i++) {
+      const img = new Image();
+      img.src = this.voices[i].image;
+    }
   }
 
   ngOnDestroy(): void {
     this.stopAutoSlide();
+    if (this.isBrowser && this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
+    }
+  }
+
+  private updateWindowWidth(): void {
+    if (this.isBrowser) {
+      this.windowWidth.set(window.innerWidth);
+    }
   }
 
   advanceSlide(): void {
-    this.currentIndex.update(i => (i + 1) % this.voices.length);
+    const cardsPerView = this.cardsPerView();
+    const maxIndex = Math.max(0, this.voices.length - cardsPerView);
+    this.currentIndex.update(i => {
+      const nextIndex = i + 1;
+      const newIndex = nextIndex > maxIndex ? 0 : nextIndex;
+      // 次の画像を事前にプリロード
+      if (this.isBrowser) {
+        this.preloadImageForIndex(newIndex + cardsPerView);
+      }
+      return newIndex;
+    });
+  }
+
+  private preloadImageForIndex(index: number): void {
+    // インデックスを範囲内に正規化
+    const normalizedIndex = index >= 0 ? index % this.voices.length : (index % this.voices.length + this.voices.length) % this.voices.length;
+    if (normalizedIndex >= 0 && normalizedIndex < this.voices.length) {
+      const img = new Image();
+      img.src = this.voices[normalizedIndex].image;
+    }
   }
 
   next(): void {
-    this.advanceSlide();
+    const cardsPerView = this.cardsPerView();
+    const maxIndex = Math.max(0, this.voices.length - cardsPerView);
+    this.currentIndex.update(i => {
+      const nextIndex = i + 1;
+      const newIndex = nextIndex > maxIndex ? 0 : nextIndex;
+      // 次の画像を事前にプリロード
+      if (this.isBrowser) {
+        this.preloadImageForIndex(newIndex + cardsPerView);
+      }
+      return newIndex;
+    });
     this.resetAutoSlide();
   }
 
   prev(): void {
-    this.currentIndex.update(i => (i - 1 + this.voices.length) % this.voices.length);
+    const cardsPerView = this.cardsPerView();
+    const maxIndex = Math.max(0, this.voices.length - cardsPerView);
+    this.currentIndex.update(i => {
+      const prevIndex = i - 1;
+      const newIndex = prevIndex < 0 ? maxIndex : prevIndex;
+      // 前の画像を事前にプリロード（ループを考慮）
+      if (this.isBrowser) {
+        const preloadIndex = newIndex - 1;
+        this.preloadImageForIndex(preloadIndex);
+      }
+      return newIndex;
+    });
     this.resetAutoSlide();
   }
 
