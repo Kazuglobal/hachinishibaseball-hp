@@ -51,7 +51,7 @@
             [src]="getSafeUrl(fukushimaInfo.mainVideo + '?rel=0&enablejsapi=1&playsinline=1&modestbranding=1&controls=1')"
             class="absolute top-0 left-0 w-full h-full border-0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-            allowfullscreen
+            [allowFullscreen]="true"
             loading="lazy"
             style="pointer-events: auto;">
           </iframe>
@@ -68,7 +68,7 @@
                 [src]="getSafeUrl(video + '?rel=0&enablejsapi=1&playsinline=1&modestbranding=1&controls=1')"
                 class="absolute top-0 left-0 w-full h-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                [allowFullscreen]="true"
+                allowFullscreen
                 loading="lazy"
                 style="pointer-events: auto;">
               </iframe>
