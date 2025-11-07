@@ -11,8 +11,12 @@
           <li>
             @if (item === '野球部について') {
               <a routerLink="/about" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
+            } @else if (item === '活動報告') {
+              <a routerLink="/alumni-activities" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
             } @else if (item === '試合結果') {
               <a routerLink="/match-results" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
+            } @else if (item === 'OB活躍情報') {
+              <a routerLink="/alumni-activities" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
             } @else if (item === 'ご支援のお願い') {
               <a [routerLink]="['/support']" [fragment]="'credit'" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
             } @else if (item === 'お問い合わせ') {

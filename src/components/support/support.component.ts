@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { filter } from 'rxjs';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
+import { environment } from '../../environments/environment';
 
 interface Donor {
   period: string;
@@ -65,6 +66,10 @@ export class SupportComponent implements OnInit, AfterViewInit {
   isSubmitted = signal(false);
   submitError = signal<string | null>(null);
 
+  // Stripe設定（環境設定から取得）
+  readonly stripeBuyButtonId = environment.stripe.buyButtonId;
+  readonly stripePublishableKey = environment.stripe.publishableKey;
+
   // GAS Web App URL（実際のURLに置き換えてください）
   private readonly GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrFlZnWu0rwYNQ2z-CC7TUQYo2Dod-vh3CcNHbGRqqN2Glgc_xE6eTiXxBu5OVpFB0/exec';
 
@@ -93,24 +98,14 @@ export class SupportComponent implements OnInit, AfterViewInit {
 
   private scrollToFragment() {
     const fragment = this.route.snapshot.fragment;
-    // まずページの一番上にスクロール
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-    
     if (fragment) {
-      // ページの一番上にスクロールした後、セクションを表示
-      setTimeout(() => {
-        const element = document.getElementById(fragment);
-        if (element) {
-          // ページの一番上から表示（オフセットなし）
-          element.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      }, 300);
+      const element = document.getElementById(fragment);
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
     }
   }
 

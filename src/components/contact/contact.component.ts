@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-contact',
@@ -13,7 +14,6 @@ import { BackButtonComponent } from '../shared/back-button/back-button.component
 })
 export class ContactComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
-  isVisible = signal(true);
 
   // お問い合わせフォーム
   contactForm = {
@@ -28,8 +28,11 @@ export class ContactComponent implements OnInit {
   isSubmitted = signal(false);
   submitError = signal<string | null>(null);
 
-  // GAS Web App URL（実際のURLに置き換えてください）
-  private readonly GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzyCDimerLrk72zhc2_FYoSgHqypF0iNVdeucuuHkpr8oDePq-7_o_TTXhUpRkpg_Rr/exec';
+  // GAS Web App URL（環境設定から取得）
+  private readonly GAS_WEB_APP_URL = environment.gasWebAppUrl;
+
+  // メールアドレスの正規表現パターン
+  private readonly EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   ngOnInit() {
     // ページの一番上にスクロール
@@ -45,8 +48,19 @@ export class ContactComponent implements OnInit {
       return;
     }
 
+    // メールアドレスの形式を検証
+    const trimmedEmail = this.contactForm.email.trim();
+    if (!this.EMAIL_REGEX.test(trimmedEmail)) {
+      this.submitError.set('有効なメールアドレスを入力してください。');
+      return;
+    }
+
     this.isSubmitting.set(true);
     this.submitError.set(null);
+
+    // タイムアウト制御用のAbortControllerとタイマーID
+    const controller = new AbortController();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     try {
       const payload = {
@@ -58,9 +72,6 @@ export class ContactComponent implements OnInit {
         timestamp: new Date().toISOString()
       };
 
-      console.log('Sending contact data to GAS:', payload);
-      console.log('GAS URL:', this.GAS_WEB_APP_URL);
-
       // GAS Web Appに送信（application/x-www-form-urlencoded形式で送信）
       const formData = new URLSearchParams();
       formData.append('name', payload.name);
@@ -70,18 +81,37 @@ export class ContactComponent implements OnInit {
       formData.append('message', payload.message);
       formData.append('timestamp', payload.timestamp);
 
+      // タイムアウトタイマーを開始
+      timeoutId = setTimeout(() => {
+        controller.abort();
+      }, 10000); // 10秒でタイムアウト
+
       const response = await fetch(this.GAS_WEB_APP_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: formData.toString()
+        body: formData.toString(),
+        signal: controller.signal
       });
+
+      // タイマーをクリア
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
 
       // レスポンスを確認
       if (response.ok) {
-        const result = await response.json();
-        console.log('GAS response:', result);
+        let result;
+        try {
+          result = await response.json();
+        } catch (parseError) {
+          // JSONパースに失敗した場合、生のレスポンスボディを取得
+          const rawBody = await response.text();
+          const errorMessage = parseError instanceof Error ? parseError.message : 'Unknown parse error';
+          throw new Error(`レスポンスの解析に失敗しました: ${errorMessage}. レスポンスボディ: ${rawBody}`);
+        }
         if (!result.success) {
           throw new Error(result.error || '送信に失敗しました');
         }
@@ -101,10 +131,23 @@ export class ContactComponent implements OnInit {
         message: ''
       };
     } catch (error) {
-      console.error('送信エラー:', error);
-      this.submitError.set('送信に失敗しました。しばらくしてから再度お試しください。');
+      // 開発環境でのみエラーログを出力（機密データは含めない）
+      if (!environment.production) {
+        console.error('送信エラー:', error instanceof Error ? error.message : 'Unknown error');
+      }
+      
+      // タイムアウトエラーの場合はタイマーをクリア
+      if (error instanceof Error && error.name === 'AbortError') {
+        this.submitError.set('リクエストがタイムアウトしました。再度お試しください。');
+      } else {
+        this.submitError.set('送信に失敗しました。しばらくしてから再度お試しください。');
+      }
       this.cdr.markForCheck();
     } finally {
+      // タイマーを確実にクリア
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       this.isSubmitting.set(false);
       this.cdr.markForCheck();
     }

@@ -3,8 +3,8 @@
   <div class="mt-12 md:mt-16" id="credit">
     <app-section-title mainTitle="ご支援のお願い" subTitle="会費納入のお願い"></app-section-title>
 
-    <div class="mt-10 max-w-4xl mx-auto text-[15px] leading-8 text-gray-800 bg-white/80 backdrop-blur p-6 md:p-8 rounded-lg shadow-sm">
-      <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-xl p-6 md:p-8 border border-[#002D62]/10 shadow-sm mb-8">
+    <div class="mt-10 max-w-4xl mx-auto text-[15px] leading-8 text-gray-800 bg-white/80 backdrop-blur p-4 sm:p-6 md:p-8 rounded-lg shadow-sm">
+      <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-xl p-4 sm:p-6 md:p-8 border border-[#002D62]/10 shadow-sm mb-8">
         <div class="text-center mb-8">
           <p class="text-lg md:text-xl font-bold text-[#002D62] mb-4">
             野球部の活動を支えてくださる皆様へ、心より感謝申し上げます
@@ -50,16 +50,17 @@
         </div>
 
         <!-- クレジットカード決済 -->
-        <div class="mt-10 bg-white rounded-lg p-6 md:p-8 border border-gray-200">
-          <h3 class="text-xl md:text-2xl font-bold text-[#002D62] mb-6 text-center">クレジットカードでのお支払い</h3>
-          <p class="text-sm md:text-base text-gray-700 mb-6 text-center">
+        <div class="mt-10 bg-white rounded-lg p-3 sm:p-6 md:p-8 border border-gray-200 overflow-hidden">
+          <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-[#002D62] mb-3 sm:mb-6 text-center break-words">クレジットカードでのお支払い</h3>
+          <p class="text-xs sm:text-sm md:text-base text-gray-700 mb-4 sm:mb-6 text-center break-words px-1 sm:px-0">
             以下のボタンより、Stripeを利用したクレジットカード決済で会費をお納めいただけます。
           </p>
-          <div class="text-center">
+          <div class="text-center overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
             <script async src="https://js.stripe.com/v3/buy-button.js"></script>
             <stripe-buy-button
-              buy-button-id="buy_btn_1QUVLMHpcbKROdRBduXnDbz3"
-              publishable-key="pk_live_51QTaAoHpcbKROdRBG7egbxl9Q3UCN1lAdDjmLiR992s8cKnw9PDhvdXzDHet8xz18iJ7O3AM4MRNOVezQZVmzgBH00Frh0AElW">
+              [attr.buy-button-id]="stripeBuyButtonId"
+              [attr.publishable-key]="stripePublishableKey"
+              class="inline-block max-w-full">
             </stripe-buy-button>
           </div>
         </div>

@@ -2,11 +2,68 @@
  * Google Apps Script for お問い合わせフォーム
  */
 
+/**
+ * ユーザー入力をサニタイズするヘルパー関数
+ * @param {*} input - サニタイズする入力値
+ * @param {number} maxLength - 最大文字数（デフォルト: 1000）
+ * @return {string} サニタイズされた文字列
+ */
+function sanitizeInput(input, maxLength) {
+  maxLength = maxLength || 1000;
+  
+  // 文字列に変換
+  let sanitized = String(input || '');
+  
+  // 制御文字を削除（\x00-\x1F と \x7F）
+  sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
+  
+  // 前後の空白を削除
+  sanitized = sanitized.trim();
+  
+  // 最大長に制限
+  if (sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength);
+  }
+  
+  return sanitized;
+}
+
+/**
+ * メールアドレスの形式を検証するヘルパー関数
+ * @param {string} email - 検証するメールアドレス
+ * @return {boolean} 有効なメールアドレスの場合true
+ */
+function validateEmail(email) {
+  if (!email || typeof email !== 'string') {
+    return false;
+  }
+  
+  // トリムして空白を削除
+  const trimmedEmail = email.trim();
+  
+  // 基本的なメールアドレス形式の検証（RFC風のシンプルな正規表現）
+  // ローカル部@ドメイン部.トップレベルドメイン の形式をチェック
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+  return emailRegex.test(trimmedEmail);
+}
+
 function doPost(e) {
   try {
     Logger.log('doPost called');
     Logger.log('e: ' + (e ? 'exists' : 'undefined'));
     Logger.log('e type: ' + typeof e);
+    
+    // Script Propertiesから通知メールアドレスを取得
+    const notificationEmail = PropertiesService.getScriptProperties().getProperty('NOTIFICATION_EMAIL');
+    if (!notificationEmail) {
+      const errorMsg = 'NOTIFICATION_EMAILプロパティが設定されていません。PropertiesService.getScriptProperties().setProperty(\'NOTIFICATION_EMAIL\', \'<email>\')で設定してください。';
+      Logger.log('ERROR: ' + errorMsg);
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: errorMsg
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
     
     // eがundefinedまたはnullの場合の処理
     if (!e) {
@@ -47,11 +104,10 @@ function doPost(e) {
       Logger.log('Found e.parameter - extracting data');
       data = {
         name: e.parameter.name || '',
-        email: e.parameter.email || '',
+        email: (e.parameter.email || '').trim(),
         phone: e.parameter.phone || '',
         subject: e.parameter.subject || '',
-        message: e.parameter.message || '',
-        timestamp: e.parameter.timestamp || ''
+        message: e.parameter.message || ''
       };
       Logger.log('Data extracted from parameter: ' + JSON.stringify(data));
     }
@@ -60,6 +116,14 @@ function doPost(e) {
       Logger.log('Found e.postData - parsing JSON');
       try {
         data = JSON.parse(e.postData.contents);
+        // メールアドレスをトリム
+        if (data.email) {
+          data.email = data.email.trim();
+        }
+        // クライアントから送られてくるtimestampは使用しない（サーバー側で生成するため削除）
+        if (data.timestamp !== undefined) {
+          delete data.timestamp;
+        }
         Logger.log('JSON parsed successfully: ' + JSON.stringify(data));
       } catch (parseError) {
         Logger.log('JSON parse error: ' + parseError.toString());
@@ -90,21 +154,47 @@ function doPost(e) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
     
+    // メールアドレスの形式検証
+    if (!validateEmail(data.email)) {
+      Logger.log('Email validation failed for: ' + data.email);
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: 'メールアドレスの形式が正しくありません'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
     Logger.log('Data received: ' + JSON.stringify(data));
     
     // スプレッドシートの処理
     let sheet;
-    try {
-      const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-      if (spreadsheet) {
+    const scriptProperties = PropertiesService.getScriptProperties();
+    let spreadsheetId = scriptProperties.getProperty('SPREADSHEET_ID');
+    
+    if (spreadsheetId) {
+      // 保存されたIDでスプレッドシートを開く
+      try {
+        Logger.log('Opening spreadsheet with ID: ' + spreadsheetId);
+        const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
         sheet = spreadsheet.getActiveSheet();
-      } else {
+        Logger.log('Successfully opened existing spreadsheet');
+      } catch (openError) {
+        // IDが無効な場合（削除されたなど）、新規作成
+        Logger.log('Failed to open spreadsheet with ID ' + spreadsheetId + ': ' + openError.toString());
+        Logger.log('Creating new spreadsheet');
         const newSpreadsheet = SpreadsheetApp.create('お問い合わせフォーム回答');
+        spreadsheetId = newSpreadsheet.getId();
+        scriptProperties.setProperty('SPREADSHEET_ID', spreadsheetId);
         sheet = newSpreadsheet.getActiveSheet();
+        Logger.log('Created new spreadsheet with ID: ' + spreadsheetId);
       }
-    } catch (err) {
+    } else {
+      // IDが保存されていない場合、新規作成してIDを保存
+      Logger.log('No spreadsheet ID found, creating new spreadsheet');
       const newSpreadsheet = SpreadsheetApp.create('お問い合わせフォーム回答');
+      spreadsheetId = newSpreadsheet.getId();
+      scriptProperties.setProperty('SPREADSHEET_ID', spreadsheetId);
       sheet = newSpreadsheet.getActiveSheet();
+      Logger.log('Created new spreadsheet with ID: ' + spreadsheetId);
     }
     
     // ヘッダー行を確認・追加
@@ -123,25 +213,31 @@ function doPost(e) {
       new Date().toLocaleString('ja-JP')
     ]);
     
-    // メール送信
-    const subject = '【お問い合わせフォーム】' + data.name + '様よりお問い合わせがありました';
+    // メール送信（ユーザー入力をサニタイズ）
+    const sanitizedName = sanitizeInput(data.name);
+    const sanitizedEmail = sanitizeInput(data.email);
+    const sanitizedPhone = sanitizeInput(data.phone);
+    const sanitizedSubject = sanitizeInput(data.subject);
+    const sanitizedMessage = sanitizeInput(data.message);
+    
+    const subject = '【お問い合わせフォーム】' + sanitizedName + '様よりお問い合わせがありました';
     const body = 'お問い合わせフォームより以下の内容でお問い合わせがありました。\n\n' +
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
-      '【お名前】\n' + data.name + '\n\n' +
-      '【メールアドレス】\n' + data.email + '\n\n' +
-      '【電話番号】\n' + (data.phone || '未入力') + '\n\n' +
-      '【件名】\n' + (data.subject || '未入力') + '\n\n' +
-      '【お問い合わせ内容】\n' + data.message + '\n\n' +
+      '【お名前】\n' + sanitizedName + '\n\n' +
+      '【メールアドレス】\n' + sanitizedEmail + '\n\n' +
+      '【電話番号】\n' + (sanitizedPhone || '未入力') + '\n\n' +
+      '【件名】\n' + (sanitizedSubject || '未入力') + '\n\n' +
+      '【お問い合わせ内容】\n' + sanitizedMessage + '\n\n' +
       '【送信日時】\n' + new Date().toLocaleString('ja-JP') + '\n' +
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
     
     try {
       MailApp.sendEmail({
-        to: 'hachinishibaseball@gmail.com',
+        to: notificationEmail,
         subject: subject,
         body: body
       });
-      Logger.log('Email sent successfully');
+      Logger.log('Email sent successfully to: ' + notificationEmail);
     } catch (mailError) {
       Logger.log('メール送信エラー: ' + mailError.toString());
     }
