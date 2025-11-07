@@ -6,6 +6,7 @@ import { MatchResultsComponent } from './components/match-results/match-results.
 import { ActivityDetailComponent } from './components/activity-detail/activity-detail.component';
 import { AlumniActivitiesComponent } from './components/alumni-activities/alumni-activities.component';
 import { ContactComponent } from './components/contact/contact.component';
+import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-policy.component';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -15,5 +16,6 @@ export const routes: Routes = [
     { path: 'contact', component: ContactComponent },
     { path: 'activity/:id', component: ActivityDetailComponent },
     { path: 'alumni-activities', component: AlumniActivitiesComponent },
+    { path: 'privacy-policy', component: PrivacyPolicyComponent },
     { path: '**', redirectTo: '' }
 ];
