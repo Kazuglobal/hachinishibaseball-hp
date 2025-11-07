@@ -20,8 +20,8 @@
                   height="1000" 
                   [alt]="voice.title" 
                   [priority]="i === 0"
-                  [loading]="i === 0 ? 'eager' : 'lazy'"
-                  sizes="(max-width: 768px) 280px, (max-width: 1024px) 384px, 400px"
+                  [loading]="i === 0 ? null : 'lazy'"
+                  [disableOptimizedSrcset]="true"
                   class="w-full object-cover shadow-xl aspect-[3/4] sm:aspect-[4/5] max-h-[380px] sm:max-h-[450px] md:max-h-none transition-opacity duration-300"
                   style="background-color: #e5e7eb;">
                 <div class="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-6 lg:p-8 bg-gradient-to-t from-black/85 via-black/70 to-transparent text-white">

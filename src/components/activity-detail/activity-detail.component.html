@@ -1,0 +1,69 @@
+<section 
+  [class.is-visible]="isVisible()"
+  class="fade-in-up pt-32 pb-12 md:pt-40 md:pb-20 container mx-auto px-4 sm:px-8">
+  @if (activity()) {
+    <!-- カスタムタイトル（最適化・デザイン改善） -->
+    <div class="max-w-4xl mx-auto mb-8 md:mb-12">
+      <!-- カテゴリー -->
+      <div class="flex items-center justify-center mb-3 md:mb-4">
+        <span class="inline-block px-3 py-1.5 bg-[#002D62]/10 text-[#002D62] text-xs md:text-sm font-semibold rounded-full border border-[#002D62]/20">
+          {{activity()!.category}}
+        </span>
+      </div>
+      
+      <!-- 日付（2行目） -->
+      <div class="flex items-center justify-center mb-4 md:mb-6">
+        <span class="text-xs md:text-sm text-gray-500 font-medium">{{activity()!.date}}</span>
+      </div>
+
+      <!-- メインタイトル -->
+      <h1 class="font-serif-jp text-xl md:text-2xl lg:text-3xl font-bold text-[#002D62] leading-tight text-center mb-4 md:mb-6 px-4">
+        {{activity()!.title}}
+      </h1>
+
+      <!-- デコレーションライン -->
+      <div class="flex items-center justify-center gap-2">
+        <div class="h-px bg-gradient-to-r from-transparent via-[#B31B1B] to-transparent w-12 md:w-20"></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-[#B31B1B]"></div>
+        <div class="h-px bg-gradient-to-r from-transparent via-[#B31B1B] to-transparent w-12 md:w-20"></div>
+      </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto">
+
+      <!-- 記事本文 -->
+      <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed mb-8">
+        <div class="text-[15px] leading-8 whitespace-pre-line bg-white/80 backdrop-blur p-6 md:p-8 rounded-lg shadow-sm">
+          {{activity()!.content}}
+        </div>
+      </div>
+
+      <!-- OB会とAIワークショップのみ追加画像を表示 -->
+      @if ((activity()!.id === 'newyear-ob-2025' || activity()!.id === 'ai-workshop-2024') && activity()!.additionalImages && activity()!.additionalImages.length > 0) {
+        <div class="mb-8">
+          <h3 class="text-xl font-bold font-serif-jp text-gray-800 mb-4">関連画像</h3>
+          <div class="grid grid-cols-1 gap-4">
+            @for (additionalImage of activity()!.additionalImages; track additionalImage) {
+              <div>
+                <img 
+                  ngSrc="{{additionalImage}}" 
+                  width="1200" 
+                  height="800" 
+                  [alt]="activity()!.title + ' 追加画像'" 
+                  loading="lazy"
+                  [disableOptimizedSrcset]="true"
+                  class="w-full rounded-lg shadow-lg object-cover">
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- 戻るボタン -->
+      <div class="mt-12">
+        <app-back-button></app-back-button>
+      </div>
+    </div>
+  }
+</section>
+

@@ -1,33 +1,142 @@
 <section 
   (visible)="sectionVisible.set(true)"
-  class="py-24">
+  class="py-12 md:py-24"
+  (mouseenter)="stopAutoSlide()" 
+  (mouseleave)="startAutoSlide()">
   <div class="container mx-auto px-4 sm:px-8">
+    <!-- タイトル（モバイル最適化・デザイン改善） -->
     <div 
       [class.is-visible]="sectionVisible()"
-      class="fade-in-up">
-      <app-section-title mainTitle="ACTIVITIES" subTitle="活動報告"></app-section-title>
-    </div>
-
-    <div class="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      @for(work of works; track work.title) {
-        <div 
-          [class.is-visible]="sectionVisible()"
-          class="fade-in-up group overflow-hidden {{work.delay}}">
-          <div class="relative">
-            <img ngSrc="{{work.image}}" width="800" height="600" [alt]="work.title" class="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110">
-          </div>
-          <div class="mt-4">
-            <span class="text-sm text-gray-500">{{work.category}}</span>
-            <h3 class="font-serif-jp text-lg mt-1">{{work.title}}</h3>
-          </div>
+      class="fade-in-up mb-6 md:mb-12">
+      <div class="text-center">
+        <p class="font-serif-jp text-xs md:text-sm text-gray-500 tracking-wide mb-2">活動報告</p>
+        <h2 class="font-oswald text-2xl md:text-3xl lg:text-4xl font-bold text-[#002D62] tracking-tight">
+          ACTIVITIES
+        </h2>
+        <div class="mt-3 md:mt-4 flex items-center justify-center gap-2">
+          <div class="h-px bg-gradient-to-r from-transparent via-[#B31B1B] to-transparent w-12 md:w-16"></div>
+          <div class="w-1.5 h-1.5 rounded-full bg-[#B31B1B]"></div>
+          <div class="h-px bg-gradient-to-r from-transparent via-[#B31B1B] to-transparent w-12 md:w-16"></div>
         </div>
-      }
+      </div>
     </div>
 
+    <!-- モバイル: 横スライドカルーセル / デスクトップ: グリッド -->
+    <div class="mt-8 md:mt-16 relative">
+      <!-- モバイル用カルーセル -->
+      <div 
+        class="md:hidden overflow-hidden"
+        (touchstart)="onTouchStart($event)"
+        (touchmove)="onTouchMove($event)"
+        (touchend)="onTouchEnd($event)">
+        <div class="flex transition-transform duration-700 ease-in-out" [style.transform]="carouselTransform()">
+          @for(work of works; track work.title; let i = $index) {
+            <div class="flex-shrink-0 px-3" [style.width]="cardWidth()">
+              <a 
+                [routerLink]="['/activity', work.id]"
+                class="group overflow-hidden rounded-xl shadow-lg bg-white cursor-pointer block h-full flex flex-col">
+                <div class="relative overflow-hidden flex-shrink-0">
+                  <img 
+                    ngSrc="{{work.image}}" 
+                    width="800" 
+                    height="600" 
+                    [alt]="work.title" 
+                    [priority]="i === 0"
+                    [loading]="i === 0 ? null : 'lazy'"
+                    [disableOptimizedSrcset]="true"
+                    class="w-full aspect-[4/3] object-cover transition-transform duration-500 group-active:scale-105">
+                  <div class="absolute top-2.5 left-2.5 bg-[#002D62]/95 text-white px-2.5 py-1 rounded-md text-[10px] font-semibold backdrop-blur-sm">
+                    {{work.category}}
+                  </div>
+                </div>
+                <div class="p-4 flex-1 flex flex-col">
+                  <span class="text-[10px] text-gray-500 mb-1.5">{{work.date}}</span>
+                  <h3 class="font-serif-jp text-sm font-semibold mt-0 mb-2 text-gray-800 line-clamp-2 leading-snug flex-shrink-0">{{work.title}}</h3>
+                  <p class="text-xs text-gray-600 leading-relaxed line-clamp-2 flex-1 mb-3">{{work.content}}</p>
+                  <div class="text-xs text-[#002D62] font-semibold mt-auto">
+                    続きを読む →
+                  </div>
+                </div>
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- モバイル用ページインジケーター -->
+      <div class="md:hidden flex justify-center items-center gap-2 mt-4">
+        @for(page of pages; track page) {
+          <button
+            (click)="goToPage(page)"
+            class="transition-all duration-300 rounded-full"
+            [class.w-2]="currentIndex() !== page"
+            [class.h-2]="currentIndex() !== page"
+            [class.w-6]="currentIndex() === page"
+            [class.h-2]="currentIndex() === page"
+            [class.bg-[#002D62]/30]="currentIndex() !== page"
+            [class.bg-[#002D62]]="currentIndex() === page"
+            [attr.aria-label]="'ページ ' + (page + 1)">
+          </button>
+        }
+      </div>
+
+      <!-- デスクトップ用グリッド -->
+      <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        @for(work of works; track work.title; let i = $index) {
+          <a 
+            [routerLink]="['/activity', work.id]"
+            [class.is-visible]="sectionVisible()"
+            class="fade-in-up group overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 bg-white cursor-pointer block {{work.delay}}">
+            <div class="relative overflow-hidden">
+              <img 
+                ngSrc="{{work.image}}" 
+                width="800" 
+                height="600" 
+                [alt]="work.title" 
+                [priority]="i < 3"
+                [loading]="i < 3 ? null : 'lazy'"
+                [disableOptimizedSrcset]="true"
+                class="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110">
+              <div class="absolute top-4 left-4 bg-[#002D62]/90 text-white px-3 py-1 rounded text-xs font-semibold">
+                {{work.category}}
+              </div>
+            </div>
+            <div class="p-6">
+              <span class="text-xs text-gray-500">{{work.date}}</span>
+              <h3 class="font-serif-jp text-lg mt-2 mb-3 text-gray-800 line-clamp-2">{{work.title}}</h3>
+              <p class="text-sm text-gray-600 leading-relaxed line-clamp-3">{{work.content}}</p>
+              <div class="mt-4 text-sm text-[#002D62] font-semibold group-hover:underline">
+                続きを読む →
+              </div>
+            </div>
+          </a>
+        }
+      </div>
+
+      <!-- モバイル用ナビゲーションボタン -->
+      <button 
+        (click)="handlePrev()" 
+        class="md:hidden absolute top-1/2 -translate-y-1/2 left-1 w-11 h-11 bg-white/95 active:bg-white rounded-full shadow-xl flex items-center justify-center transition-all duration-300 z-10 active:scale-95"
+        aria-label="前のカード">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#002D62]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <button 
+        (click)="handleNext()" 
+        class="md:hidden absolute top-1/2 -translate-y-1/2 right-1 w-11 h-11 bg-white/95 active:bg-white rounded-full shadow-xl flex items-center justify-center transition-all duration-300 z-10 active:scale-95"
+        aria-label="次のカード">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#002D62]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- フッターボタン（モバイル最適化） -->
     <div 
       [class.is-visible]="sectionVisible()"
-      class="fade-in-up text-center mt-16 delay-500">
-      <a href="#" class="inline-block bg-[#002D62] text-white py-4 px-12 hover:bg-blue-950 transition-colors duration-300">活動報告一覧を見る</a>
+      class="fade-in-up text-center mt-8 md:mt-16 delay-500">
+      <a href="#" class="inline-block bg-[#002D62] text-white py-3 px-8 md:py-4 md:px-12 text-sm md:text-base hover:bg-blue-950 transition-colors duration-300">活動報告一覧を見る</a>
     </div>
   </div>
 </section>
