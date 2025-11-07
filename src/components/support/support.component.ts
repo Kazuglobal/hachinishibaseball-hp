@@ -93,21 +93,24 @@ export class SupportComponent implements OnInit, AfterViewInit {
 
   private scrollToFragment() {
     const fragment = this.route.snapshot.fragment;
+    // まずページの一番上にスクロール
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+    
     if (fragment) {
+      // ページの一番上にスクロールした後、セクションを表示
       setTimeout(() => {
         const element = document.getElementById(fragment);
         if (element) {
-          // ヘッダーの高さを考慮してスクロール
-          const headerOffset = 100;
-          const elementPosition = element.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
+          // ページの一番上から表示（オフセットなし）
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
           });
         }
-      }, 200);
+      }, 300);
     }
   }
 

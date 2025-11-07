@@ -15,8 +15,8 @@
               <a routerLink="/match-results" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
             } @else if (item === 'ご支援のお願い') {
               <a [routerLink]="['/support']" [fragment]="'credit'" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
-            } @else if (item === '現役チームへ支援') {
-              <a [routerLink]="['/support']" [fragment]="'credit'" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
+            } @else if (item === 'お問い合わせ') {
+              <a routerLink="/contact" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
             } @else {
               <a href="#" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
             }

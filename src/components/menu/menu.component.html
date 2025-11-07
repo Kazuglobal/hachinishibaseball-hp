@@ -35,8 +35,8 @@
                 <a [routerLink]="['/support']" [fragment]="'credit'" (click)="menuService.close()" class="text-xl md:text-2xl font-serif-jp pb-2 border-b-2 border-transparent hover:border-white transition-colors duration-300 block w-full">
                   {{ item }}
                 </a>
-              } @else if (item === '現役チームへ支援') {
-                <a [routerLink]="['/support']" [fragment]="'credit'" (click)="menuService.close()" class="text-xl md:text-2xl font-serif-jp pb-2 border-b-2 border-transparent hover:border-white transition-colors duration-300 block w-full">
+              } @else if (item === 'お問い合わせ') {
+                <a routerLink="/contact" (click)="menuService.close()" class="text-xl md:text-2xl font-serif-jp pb-2 border-b-2 border-transparent hover:border-white transition-colors duration-300 block w-full">
                   {{ item }}
                 </a>
               } @else {

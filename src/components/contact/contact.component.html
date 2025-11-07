@@ -1,0 +1,145 @@
+<section class="py-20 container mx-auto px-4 sm:px-8">
+  <div class="mt-12 md:mt-16">
+    <app-section-title mainTitle="お問い合わせ" subTitle="CONTACT"></app-section-title>
+
+    <div class="mt-10 max-w-3xl mx-auto text-[15px] leading-8 text-gray-800 bg-white/80 backdrop-blur p-6 md:p-8 rounded-lg shadow-sm">
+      <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-xl p-6 md:p-8 border border-[#002D62]/10 shadow-sm mb-8">
+        <div class="text-center mb-6">
+          <p class="text-lg md:text-xl font-bold text-[#002D62] mb-4">
+            お問い合わせ・ご意見・ご要望をお待ちしております
+          </p>
+          <p class="text-sm md:text-base text-gray-700">
+            八戸西高校野球部OB会に関するお問い合わせ、ご意見、ご要望がございましたら、<br>
+            以下のフォームよりお気軽にお問い合わせください。
+          </p>
+        </div>
+
+        <!-- 送信完了メッセージ -->
+        @if (isSubmitted()) {
+          <div class="bg-green-50 border-2 border-green-500 rounded-lg p-6 md:p-8 text-center mb-6">
+            <div class="mb-4">
+              <svg class="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h4 class="text-xl md:text-2xl font-bold text-green-700 mb-2">お問い合わせありがとうございました！</h4>
+            <p class="text-gray-700 mb-4">お問い合わせ内容を承りました。担当者より折り返しご連絡いたします。</p>
+            <button 
+              (click)="resetForm()"
+              class="inline-block bg-[#002D62] text-white py-2 px-6 rounded-lg hover:bg-blue-950 transition-colors duration-300">
+              別のお問い合わせを送信する
+            </button>
+          </div>
+        }
+
+        <!-- お問い合わせフォーム -->
+        @if (!isSubmitted()) {
+          <form (ngSubmit)="onSubmitContact()" class="space-y-4 md:space-y-6">
+            <!-- エラーメッセージ -->
+            @if (submitError()) {
+              <div class="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
+                {{submitError()}}
+              </div>
+            }
+
+            <!-- お名前 -->
+            <div>
+              <label for="name" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
+                お名前 <span class="text-red-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="name" 
+                name="name"
+                [(ngModel)]="contactForm.name"
+                required
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors">
+            </div>
+
+            <!-- メールアドレス -->
+            <div>
+              <label for="email" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
+                メールアドレス <span class="text-red-500">*</span>
+              </label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email"
+                [(ngModel)]="contactForm.email"
+                required
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors">
+            </div>
+
+            <!-- 電話番号 -->
+            <div>
+              <label for="phone" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
+                電話番号
+              </label>
+              <input 
+                type="tel" 
+                id="phone" 
+                name="phone"
+                [(ngModel)]="contactForm.phone"
+                placeholder="例：090-1234-5678"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors">
+            </div>
+
+            <!-- 件名 -->
+            <div>
+              <label for="subject" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
+                件名
+              </label>
+              <input 
+                type="text" 
+                id="subject" 
+                name="subject"
+                [(ngModel)]="contactForm.subject"
+                placeholder="例：OB会について"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors">
+            </div>
+
+            <!-- お問い合わせ内容 -->
+            <div>
+              <label for="message" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
+                お問い合わせ内容 <span class="text-red-500">*</span>
+              </label>
+              <textarea 
+                id="message" 
+                name="message"
+                [(ngModel)]="contactForm.message"
+                rows="6"
+                required
+                placeholder="お問い合わせ内容をご記入ください"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors resize-none"></textarea>
+            </div>
+
+            <!-- 送信ボタン -->
+            <div class="pt-4">
+              <button 
+                type="submit"
+                [disabled]="isSubmitting()"
+                class="w-full md:w-auto bg-[#002D62] text-white py-3 px-8 md:px-12 rounded-lg hover:bg-blue-950 transition-colors duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-base md:text-lg">
+                @if (isSubmitting()) {
+                  <span class="flex items-center justify-center gap-2">
+                    <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    送信中...
+                  </span>
+                } @else {
+                  送信する
+                }
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+
+      <div class="mt-10">
+        <app-back-button></app-back-button>
+      </div>
+    </div>
+  </div>
+</section>
+
