@@ -6,22 +6,35 @@
     </div>
   </div>
 
-  <div class="relative flex-grow"> <!-- This container will hold the video and hero text -->
-    <!-- Video Background -->
+  <div class="relative flex-grow"> <!-- This container will hold the hero video and text -->
+    <!-- Hero GIF/Image Background -->
     <div class="absolute inset-0 z-0">
-      <video
-        class="w-full h-full object-cover"
-        src="https://assets.mixkit.co/videos/preview/mixkit-baseball-player-hitting-a-ball-at-a-stadium-47209-large.mp4"
-        autoplay
-        loop
-        muted
-        playsinline>
-      </video>
+      <!-- ベース画像（常に表示、GIFアニメーション終了後またはエラー時に前面に） -->
+      <img 
+        ngSrc="/assets/images/hero-first-view.jpg" 
+        width="1920" 
+        height="1080" 
+        alt="野球場のホームプレート" 
+        priority 
+        [disableOptimizedSrcset]="true" 
+        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 z-10"
+        [class.opacity-0]="showGif() && !gifError()"
+        [class.opacity-100]="!showGif() || gifError()">
+      <!-- GIFアニメーション（ロード時に表示、一定時間後に非表示） -->
+      <img
+        #heroGif
+        [src]="gifSrc()"
+        alt="ロードアニメーション"
+        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 z-20"
+        [class.opacity-0]="!showGif() || gifError()"
+        [class.opacity-100]="showGif() && !gifError()"
+        (error)="onGifError($event)"
+        (load)="onGifLoaded()">
       <div class="absolute inset-0 bg-black/50"></div>
     </div>
 
     <!-- Hero Text Content -->
-    <div class="relative z-10 flex flex-col h-full items-center justify-center text-white text-center px-4">
+    <div class="relative z-10 flex flex-col h-full items-center justify-end text-white text-center px-4 pb-24 md:pb-32">
         <div class="fade-in-up is-visible">
             <h2 class="font-serif-jp text-3xl md:text-5xl leading-tight">
                 白球に捧げた青春、その絆は永遠に。
