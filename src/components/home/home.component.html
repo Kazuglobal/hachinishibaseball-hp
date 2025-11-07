@@ -79,29 +79,35 @@
     </div>
   </section>
 
-  <!-- Current Team Section -->
+  <!-- OB活躍情報 Section -->
   <section 
     (visible)="buildingHouseVisible.set(true)"
-    class="py-24 px-4 sm:px-8 md:px-16 relative overflow-hidden">
+    class="py-24 px-4 sm:px-8 md:px-16 relative overflow-hidden bg-gradient-to-br from-gray-50 to-white">
       <div class="absolute inset-0 z-0 flex items-center justify-center">
-          <h2 class="font-oswald text-[20vw] font-bold text-gray-200/50 select-none whitespace-nowrap" [style.transform]="bgTextTransform()">
-            HACHINISHI
+          <h2 class="font-oswald text-[20vw] font-bold text-gray-200/30 select-none whitespace-nowrap" [style.transform]="bgTextTransform()">
+            ALUMNI
           </h2>
       </div>
       <div class="container mx-auto grid md:grid-cols-2 gap-16 items-center relative z-10">
         <div 
           [class.is-visible]="buildingHouseVisible()"
           class="fade-in-up">
-          <app-section-title mainTitle="THE TEAM" subTitle="現役チーム紹介"></app-section-title>
-          <p class="mt-8 leading-loose">
-              「甲子園出場」という大きな目標に向かい、日々厳しい練習に励む現役選手たち。彼らのひたむきな姿は、私たちOBにとっても誇りであり、希望です。OB会は、技術指導、用具支援、そして物心両面にわたるサポートを通じて、選手たちが最高の環境で野球に打ち込めるよう全力で支えていきます。
+          <app-section-title mainTitle="ALUMNI ACTIVITIES" subTitle="OB活躍情報"></app-section-title>
+          <p class="mt-8 leading-loose text-gray-700">
+              八戸西高校野球部を巣立ったOBたちは、プロ野球、社会人野球、大学野球など、様々な舞台で活躍しています。日本ハムファイターズで活躍する福島投手をはじめ、多くのOBが野球の道を歩み続けています。また、野球以外の分野でも、声優として活躍する斎藤寛仁さん（25期）など、多様な分野でOBたちが輝いています。
           </p>
-          <a href="#" class="inline-block mt-12 bg-[#002D62] text-white py-4 px-12 hover:bg-blue-950 transition-colors duration-300">選手一覧を見る</a>
+          <p class="mt-6 leading-loose text-gray-700">
+              私たちOB会は、現役選手たちへの支援と同時に、OB同士の絆を深め、互いの活躍を応援し合う場として機能しています。OBの活躍は、現役選手たちにとって大きな励みとなり、八戸西高校野球部の伝統を次の世代へと繋いでいます。
+          </p>
+          <a routerLink="/alumni-activities" class="inline-block mt-12 bg-[#002D62] text-white py-4 px-12 hover:bg-blue-950 transition-colors duration-300 rounded-lg shadow-lg hover:shadow-xl">OB活躍情報一覧を見る</a>
         </div>
         <div 
           [class.is-visible]="buildingHouseVisible()"
           class="fade-in-up delay-200">
-          <img ngSrc="https://picsum.photos/seed/baseball-team/800/1000" width="800" height="1000" alt="Hachinohe Nishi Baseball Team" class="shadow-2xl w-full h-auto object-cover">
+          <div class="relative">
+            <img ngSrc="https://picsum.photos/seed/alumni-activities/800/1000" width="800" height="1000" alt="OB活躍情報" class="shadow-2xl w-full h-auto object-cover rounded-lg">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#002D62]/20 to-transparent rounded-lg"></div>
+          </div>
         </div>
       </div>
   </section>
