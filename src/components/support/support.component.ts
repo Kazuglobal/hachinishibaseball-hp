@@ -1,6 +1,8 @@
-import { Component, ChangeDetectionStrategy, CUSTOM_ELEMENTS_SCHEMA, OnInit, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, CUSTOM_ELEMENTS_SCHEMA, OnInit, AfterViewInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { filter } from 'rxjs';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 
@@ -12,13 +14,15 @@ interface Donor {
 @Component({
   selector: 'app-support',
   standalone: true,
-  imports: [CommonModule, SectionTitleComponent, BackButtonComponent],
+  imports: [CommonModule, FormsModule, SectionTitleComponent, BackButtonComponent],
   templateUrl: './support.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class SupportComponent implements OnInit {
+export class SupportComponent implements OnInit, AfterViewInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
   isVisible = signal(true);
 
   // 昨年の入金者一覧
@@ -47,18 +51,146 @@ export class SupportComponent implements OnInit {
     { period: '46期', names: ['三浦 滉斗 様', '菊地 凜 様'] }
   ];
 
+  // OB会参加フォーム
+  participationForm = {
+    name: '',
+    period: '',
+    email: '',
+    phone: '',
+    attendance: '出席',
+    remarks: ''
+  };
+
+  isSubmitting = signal(false);
+  isSubmitted = signal(false);
+  submitError = signal<string | null>(null);
+
+  // GAS Web App URL（実際のURLに置き換えてください）
+  private readonly GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrFlZnWu0rwYNQ2z-CC7TUQYo2Dod-vh3CcNHbGRqqN2Glgc_xE6eTiXxBu5OVpFB0/exec';
+
   ngOnInit() {
-    // フラグメントがcreditの場合、スクロールして表示
-    this.route.fragment.subscribe(fragment => {
-      if (fragment === 'credit') {
+    // ルーティング変更時にフラグメントを処理
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
         setTimeout(() => {
-          const element = document.getElementById('credit');
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
+          this.scrollToFragment();
         }, 100);
+      });
+
+    // 初回ロード時のフラグメント処理
+    setTimeout(() => {
+      this.scrollToFragment();
+    }, 100);
+  }
+
+  ngAfterViewInit() {
+    // ビュー初期化後にフラグメントを処理（確実に要素が存在する）
+    setTimeout(() => {
+      this.scrollToFragment();
+    }, 300);
+  }
+
+  private scrollToFragment() {
+    const fragment = this.route.snapshot.fragment;
+    if (fragment) {
+      setTimeout(() => {
+        const element = document.getElementById(fragment);
+        if (element) {
+          // ヘッダーの高さを考慮してスクロール
+          const headerOffset = 100;
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }, 200);
+    }
+  }
+
+  async onSubmitParticipation() {
+    if (!this.participationForm.name || !this.participationForm.period || !this.participationForm.email) {
+      this.submitError.set('必須項目を入力してください。');
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    this.submitError.set(null);
+
+    try {
+      // JSON形式で送信（GASスクリプトでJSON.parseを使用）
+      const payload = {
+        name: this.participationForm.name,
+        period: this.participationForm.period,
+        email: this.participationForm.email,
+        phone: this.participationForm.phone || '',
+        attendance: this.participationForm.attendance,
+        remarks: this.participationForm.remarks || '',
+        timestamp: new Date().toISOString()
+      };
+
+      console.log('Sending data to GAS:', payload);
+      console.log('GAS URL:', this.GAS_WEB_APP_URL);
+
+      // GAS Web Appに送信（application/x-www-form-urlencoded形式で送信）
+      // この形式はGASで最も確実に動作します
+      const formData = new URLSearchParams();
+      formData.append('name', payload.name);
+      formData.append('period', payload.period);
+      formData.append('email', payload.email);
+      formData.append('phone', payload.phone);
+      formData.append('attendance', payload.attendance);
+      formData.append('remarks', payload.remarks);
+      formData.append('timestamp', payload.timestamp);
+
+      const response = await fetch(this.GAS_WEB_APP_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: formData.toString()
+      });
+
+      // レスポンスを確認
+      if (response.ok) {
+        const result = await response.json();
+        console.log('GAS response:', result);
+        if (!result.success) {
+          throw new Error(result.error || '送信に失敗しました');
+        }
+      } else {
+        throw new Error('HTTPエラー: ' + response.status);
       }
-    });
+
+
+      this.isSubmitted.set(true);
+      this.cdr.markForCheck();
+      
+      // フォームをリセット
+      this.participationForm = {
+        name: '',
+        period: '',
+        email: '',
+        phone: '',
+        attendance: '出席',
+        remarks: ''
+      };
+    } catch (error) {
+      console.error('送信エラー:', error);
+      this.submitError.set('送信に失敗しました。しばらくしてから再度お試しください。');
+      this.cdr.markForCheck();
+    } finally {
+      this.isSubmitting.set(false);
+      this.cdr.markForCheck();
+    }
+  }
+
+  resetForm() {
+    this.isSubmitted.set(false);
+    this.submitError.set(null);
   }
 }
 

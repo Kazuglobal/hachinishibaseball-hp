@@ -1,83 +1,179 @@
 <section class="py-20 container mx-auto px-4 sm:px-8">
-  <app-section-title mainTitle="会費納入のお願い" subTitle="ご支援のお願い"></app-section-title>
+  <!-- OB会への参加セクション（独立） -->
+  <div class="mt-12 md:mt-16" id="participation">
+    <app-section-title mainTitle="OB会へのご参加" subTitle="野球部OB会総会について"></app-section-title>
 
-  <div class="mt-10 max-w-3xl mx-auto text-[15px] leading-8 text-gray-800 bg-white/80 backdrop-blur p-6 md:p-8 rounded-lg shadow-sm">
-    <p>野球部の活動を支えてくださる皆様へ、心より感謝申し上げます。</p>
-
-    <p class="mt-4">部員たちは日々練習に励み、技術向上、そして甲子園出場を目指して全力で取り組んでいます。しかしながら、野球部の運営には、皆様からの温かいご支援が不可欠です。</p>
-
-    <p class="mt-4">そこで、大変恐縮ではございますが、部員たちがより良い環境で練習に励み、夢に向かって挑戦できるよう、会費納入へのご協力をお願い申し上げます。</p>
-
-    <p class="mt-6 font-semibold">皆様から頂戴する会費は、以下の活動に活用させていただきます。</p>
-    <ul class="list-disc pl-6 mt-2 space-y-2">
-      <li><span class="font-semibold">1. 最新練習用具の購入・メンテナンス</span> — 選手の技術向上のため、最新の練習用具の購入や既存の用具のメンテナンス費用に充当させていただきます。</li>
-      <li><span class="font-semibold">2. 遠征費の補助</span> — 他校との練習試合や公式戦への遠征費用を補助することで、部員たちが貴重な経験を積む機会を増やします。</li>
-      <li><span class="font-semibold">3. ユニフォーム・用具の購入・新調</span> — 部員たちが誇りを持ってプレーできるよう、ユニフォームや各種用具の購入・新調費用に充当させていただきます。</li>
-      <li><span class="font-semibold">4. グラウンド整備費用</span> — 安全で快適な練習環境を維持するため、グラウンド整備費用に充当させていただきます。</li>
-      <li><span class="font-semibold">5. その他、部活動運営費用</span> — 上記以外にも、部活動運営に必要な費用に幅広く活用させていただきます。</li>
-    </ul>
-
-    <div class="mt-8 bg-gray-50 border border-gray-200 rounded p-4">
-      <p><span class="font-bold">納入金額：</span>年間 5,000円</p>
-      <p class="mt-2"><span class="font-bold">振込先：</span>青い森信用金庫 湊支店</p>
-      <p><span class="font-bold">普通預金：</span>0486104</p>
-      <p><span class="font-bold">口座名義：</span>ハチノヘニシコウトウガッコウ コウシキヤキュウブ オービーカイ</p>
-      <p class="text-sm text-gray-600">（八戸西高等学校硬式野球部OB会 会長 榎本直行）</p>
-    </div>
-
-    <!-- 昨年の入金者一覧 -->
-    <div class="mt-12 md:mt-16">
-      <h3 class="font-serif-jp text-xl md:text-2xl font-bold text-[#002D62] mb-6 text-center">
-        ご支援ありがとうございました！！
-      </h3>
-      <p class="text-sm md:text-base text-gray-600 text-center mb-8">
-        昨年度、会費納入にご協力いただいた皆様のご芳名を掲載させていただきます。
-      </p>
-
-      <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 md:p-8 border border-gray-200 shadow-sm">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          @for(donor of donors; track donor.period) {
-            <div class="bg-white rounded-lg p-4 md:p-5 shadow-md border border-gray-100">
-              <h4 class="font-oswald text-lg md:text-xl font-bold text-[#002D62] mb-3 pb-2 border-b-2 border-[#002D62]/20">
-                {{donor.period}}
-              </h4>
-              <ul class="space-y-2">
-                @for(name of donor.names; track name) {
-                  <li class="text-sm md:text-base text-gray-700 font-serif-jp">
-                    {{name}}
-                  </li>
-                }
-              </ul>
-            </div>
-          }
+    <div class="mt-10 max-w-3xl mx-auto text-[15px] leading-8 text-gray-800 bg-white/80 backdrop-blur p-6 md:p-8 rounded-lg shadow-sm">
+      <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-xl p-6 md:p-8 border border-[#002D62]/10 shadow-sm mb-8">
+        <div class="text-center mb-6">
+          <p class="text-lg md:text-xl font-bold text-[#002D62] mb-4">
+            2026年1月2日（金）に野球部OB会総会が開催されます
+          </p>
+          <p class="text-sm md:text-base text-gray-700">
+            出欠希望の方は以下のフォームよりご回答をお願いいたします。
+          </p>
         </div>
+
+        <div class="bg-white rounded-lg p-4 md:p-6 mb-6 border border-gray-200">
+          <div class="space-y-3 text-sm md:text-base">
+            <p><span class="font-semibold text-[#002D62]">日時：</span>2026年1月2日（金）15：00～　終わり次第、懇親会</p>
+            <p><span class="font-semibold text-[#002D62]">場所：</span>パークホテル</p>
+            <p><span class="font-semibold text-[#002D62]">会費：</span>7,000円（当日現金でお支払いください）</p>
+            <p><span class="font-semibold text-[#002D62]">申込締切：</span>令和7年12月25日(木)</p>
+          </div>
+        </div>
+
+        <!-- 送信完了メッセージ -->
+        @if (isSubmitted()) {
+          <div class="bg-green-50 border-2 border-green-500 rounded-lg p-6 md:p-8 text-center mb-6">
+            <div class="mb-4">
+              <svg class="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h4 class="text-xl md:text-2xl font-bold text-green-700 mb-2">ありがとうございました！</h4>
+            <p class="text-gray-700 mb-4">出欠のご回答を承りました。ご参加をお待ちしております。</p>
+            <button 
+              (click)="resetForm()"
+              class="inline-block bg-[#002D62] text-white py-2 px-6 rounded-lg hover:bg-blue-950 transition-colors duration-300">
+              別の回答を送信する
+            </button>
+          </div>
+        }
+
+        <!-- 出欠フォーム -->
+        @if (!isSubmitted()) {
+          <form (ngSubmit)="onSubmitParticipation()" class="space-y-4 md:space-y-6">
+            <!-- エラーメッセージ -->
+            @if (submitError()) {
+              <div class="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
+                {{submitError()}}
+              </div>
+            }
+
+            <!-- 氏名 -->
+            <div>
+              <label for="name" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
+                氏名 <span class="text-red-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="name" 
+                name="name"
+                [(ngModel)]="participationForm.name"
+                required
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors">
+            </div>
+
+            <!-- 卒期 -->
+            <div>
+              <label for="period" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
+                卒期 <span class="text-red-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="period" 
+                name="period"
+                [(ngModel)]="participationForm.period"
+                placeholder="例：10期"
+                required
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors">
+            </div>
+
+            <!-- メールアドレス -->
+            <div>
+              <label for="email" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
+                メールアドレス <span class="text-red-500">*</span>
+              </label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email"
+                [(ngModel)]="participationForm.email"
+                required
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors">
+            </div>
+
+            <!-- 電話番号 -->
+            <div>
+              <label for="phone" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
+                電話番号
+              </label>
+              <input 
+                type="tel" 
+                id="phone" 
+                name="phone"
+                [(ngModel)]="participationForm.phone"
+                placeholder="例：090-1234-5678"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors">
+            </div>
+
+            <!-- 出欠 -->
+            <div>
+              <label class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
+                出欠 <span class="text-red-500">*</span>
+              </label>
+              <div class="flex gap-4">
+                <label class="flex items-center">
+                  <input 
+                    type="radio" 
+                    name="attendance" 
+                    value="出席"
+                    [(ngModel)]="participationForm.attendance"
+                    class="mr-2 text-[#002D62] focus:ring-[#002D62]">
+                  <span class="text-sm md:text-base">出席</span>
+                </label>
+                <label class="flex items-center">
+                  <input 
+                    type="radio" 
+                    name="attendance" 
+                    value="欠席"
+                    [(ngModel)]="participationForm.attendance"
+                    class="mr-2 text-[#002D62] focus:ring-[#002D62]">
+                  <span class="text-sm md:text-base">欠席</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- 備考 -->
+            <div>
+              <label for="remarks" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
+                備考・ご連絡事項
+              </label>
+              <textarea 
+                id="remarks" 
+                name="remarks"
+                [(ngModel)]="participationForm.remarks"
+                rows="4"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors resize-none"></textarea>
+            </div>
+
+            <!-- 送信ボタン -->
+            <div class="pt-4">
+              <button 
+                type="submit"
+                [disabled]="isSubmitting()"
+                class="w-full md:w-auto bg-[#002D62] text-white py-3 px-8 md:px-12 rounded-lg hover:bg-blue-950 transition-colors duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-base md:text-lg">
+                @if (isSubmitting()) {
+                  <span class="flex items-center justify-center gap-2">
+                    <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    送信中...
+                  </span>
+                } @else {
+                  出欠を送信する
+                }
+              </button>
+            </div>
+          </form>
+        }
       </div>
-    </div>
 
-    <div class="mt-10" id="credit">
-      <h3 class="font-oswald text-xl text-[#333]">クレジット決済</h3>
-      <p class="text-sm text-gray-600 mt-1">下記ボタンから決済ページへ遷移します。</p>
-
-      <div class="mt-4">
-        <stripe-buy-button
-          buy-button-id="buy_btn_1QUVLMHpcbKROdRBduXnDbz3"
-          publishable-key="pk_live_51QTaAoHpcbKROdRBG7egbxl9Q3UCN1lAdDjmLiR992s8cKnw9PDhvdXzDHet8xz18iJ7O3AM4MRNOVezQZVmzgBH00Frh0AElW">
-        </stripe-buy-button>
+      <div class="mt-10">
+        <app-back-button></app-back-button>
       </div>
-
-      <div class="mt-4">
-        <a href="https://buy.stripe.com/dR6040f1YehM7LyaEE" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 bg-[#635bff] text-white rounded hover:bg-[#5146ff] transition-colors">
-          画像が表示されない場合はこちらから決済
-        </a>
-      </div>
-
-      <p class="mt-4 text-sm text-gray-600">現在申請直後ですのでリンクよりお支払いができなかった場合は、ご不便をおかけいたしますが数日後に再度アクセスをお願いいたします。</p>
-    </div>
-
-    <div class="mt-10">
-      <app-back-button></app-back-button>
     </div>
   </div>
 </section>
-
-
