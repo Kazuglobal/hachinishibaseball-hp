@@ -20,6 +20,8 @@
             <h4 class="font-bold text-white text-sm">
               @if (section.title === '野球部について') {
                 <a routerLink="/about" class="hover:text-white transition-colors">{{section.title}}</a>
+              } @else if (section.title === '試合結果') {
+                <a routerLink="/match-results" class="hover:text-white transition-colors">{{section.title}}</a>
               } @else if (section.links.length === 0) {
                  <a href="#" class="hover:text-white transition-colors">{{section.title}}</a>
               } @else {
@@ -30,7 +32,13 @@
               <ul class="mt-4 space-y-2">
                 @for(link of section.links; track link) {
                   <li>
-                    <a href="#" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
+                    @if (section.title === '試合結果' && link === '公式戦') {
+                      <a routerLink="/match-results" [queryParams]="{tab: 'official'}" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
+                    } @else if (section.title === '試合結果' && link === '練習試合') {
+                      <a routerLink="/match-results" [queryParams]="{tab: 'practice'}" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
+                    } @else {
+                      <a href="#" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
+                    }
                   </li>
                 }
               </ul>

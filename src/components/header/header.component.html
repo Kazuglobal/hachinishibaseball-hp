@@ -1,18 +1,22 @@
 <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-[#002D62]/80 backdrop-blur-sm">
   <div class="container mx-auto px-4 sm:px-8 flex items-center justify-between h-20">
     <a routerLink="/" class="text-white">
-      <h1 class="font-oswald text-2xl tracking-wider">八戸西野球部OB会</h1>
+      <h1 class="font-oswald text-xl sm:text-2xl tracking-wider">八戸西野球部OB会</h1>
     </a>
+    
+    <!-- デスクトップナビゲーション -->
     <nav class="hidden lg:block">
       <ul class="flex items-center space-x-8 text-white text-sm">
         @for(item of navItems(); track item){
           <li>
             @if (item === '野球部について') {
               <a routerLink="/about" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
+            } @else if (item === '試合結果') {
+              <a routerLink="/match-results" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
             } @else if (item === 'ご支援のお願い') {
-              <a routerLink="/support" fragment="credit" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
+              <a [routerLink]="['/support']" [fragment]="'credit'" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
             } @else if (item === '現役チームへ支援') {
-              <a routerLink="/support" fragment="credit" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
+              <a [routerLink]="['/support']" [fragment]="'credit'" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
             } @else {
               <a href="#" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
             }
@@ -20,5 +24,31 @@
         }
       </ul>
     </nav>
+
+    <!-- モバイル・タブレット用ハンバーガーメニューボタン -->
+    <button
+      (click)="menuService.toggle()"
+      class="lg:hidden text-white hover:text-gray-200 transition-colors duration-300 p-2"
+      aria-label="メニューを開く"
+      type="button">
+      <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        class="h-8 w-8" 
+        fill="none" 
+        viewBox="0 0 24 24" 
+        stroke="currentColor"
+        [class.hidden]="menuService.isMenuOpen()">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+      <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        class="h-8 w-8" 
+        fill="none" 
+        viewBox="0 0 24 24" 
+        stroke="currentColor"
+        [class.hidden]="!menuService.isMenuOpen()">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
   </div>
 </header>

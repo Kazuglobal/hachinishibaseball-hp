@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, PLATFORM_ID, Inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnInit, PLATFORM_ID, Inject, signal } from '@angular/core';
 import { isPlatformBrowser, CommonModule, NgOptimizedImage } from '@angular/common';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
@@ -13,7 +13,7 @@ declare var d3: any;
   templateUrl: './about.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AboutComponent implements AfterViewInit {
+export class AboutComponent implements OnInit, AfterViewInit {
   @ViewChild('barChartContainer', { static: true }) barChartContainer!: ElementRef;
   
   isVisible = signal(false);
@@ -114,6 +114,12 @@ export class AboutComponent implements AfterViewInit {
 
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
+  }
+
+  ngOnInit(): void {
+    // 初期表示を有効にする
+    this.isVisible.set(true);
+    this.staffVisible.set(true);
   }
 
   ngAfterViewInit(): void {

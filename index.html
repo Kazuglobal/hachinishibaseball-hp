@@ -6,6 +6,18 @@
   <base href="/" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <script>
+    // Tailwind CDN警告を抑制（開発環境のみ）
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      const originalWarn = console.warn;
+      console.warn = function(...args) {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) {
+          return; // Tailwind CDN警告を無視
+        }
+        originalWarn.apply(console, args);
+      };
+    }
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script async src="https://js.stripe.com/v3/buy-button.js"></script>
@@ -67,7 +79,7 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+<link rel="stylesheet" href="assets/index.css">
 </head>
 <body>
   <app-root></app-root>

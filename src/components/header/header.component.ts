@@ -1,6 +1,7 @@
-import { Component, ChangeDetectionStrategy, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { MenuService } from '../../services/menu.service';
 
 @Component({
   selector: 'app-header',
@@ -10,4 +11,5 @@ import { CommonModule } from '@angular/common';
 })
 export class HeaderComponent {
   navItems = input.required<string[]>();
+  menuService = inject(MenuService);
 }
