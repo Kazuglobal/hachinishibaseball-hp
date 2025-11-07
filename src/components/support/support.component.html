@@ -25,6 +25,35 @@
       <p class="text-sm text-gray-600">（八戸西高等学校硬式野球部OB会 会長 榎本直行）</p>
     </div>
 
+    <!-- 昨年の入金者一覧 -->
+    <div class="mt-12 md:mt-16">
+      <h3 class="font-serif-jp text-xl md:text-2xl font-bold text-[#002D62] mb-6 text-center">
+        ご支援ありがとうございました！！
+      </h3>
+      <p class="text-sm md:text-base text-gray-600 text-center mb-8">
+        昨年度、会費納入にご協力いただいた皆様のご芳名を掲載させていただきます。
+      </p>
+
+      <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 md:p-8 border border-gray-200 shadow-sm">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          @for(donor of donors; track donor.period) {
+            <div class="bg-white rounded-lg p-4 md:p-5 shadow-md border border-gray-100">
+              <h4 class="font-oswald text-lg md:text-xl font-bold text-[#002D62] mb-3 pb-2 border-b-2 border-[#002D62]/20">
+                {{donor.period}}
+              </h4>
+              <ul class="space-y-2">
+                @for(name of donor.names; track name) {
+                  <li class="text-sm md:text-base text-gray-700 font-serif-jp">
+                    {{name}}
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
     <div class="mt-10" id="credit">
       <h3 class="font-oswald text-xl text-[#333]">クレジット決済</h3>
       <p class="text-sm text-gray-600 mt-1">下記ボタンから決済ページへ遷移します。</p>
