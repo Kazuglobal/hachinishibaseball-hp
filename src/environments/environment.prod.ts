@@ -1,4 +1,11 @@
-import { Environment } from './environment';
+interface Environment {
+  production: boolean;
+  gasWebAppUrl: string;
+  stripe: {
+    buyButtonId: string;
+    publishableKey: string;
+  };
+}
 
 export const environment: Environment = {
   production: true,
