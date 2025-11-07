@@ -144,19 +144,70 @@
         class="fade-in-up text-center">
         <app-section-title mainTitle="SUPPORT" subTitle="ご支援のお願い"></app-section-title>
       </div>
+      <div class="mt-8 max-w-4xl mx-auto text-center mb-12">
+        <p class="text-gray-700 leading-relaxed font-serif-jp">
+          野球部の活動を支えてくださる皆様へ、心より感謝申し上げます。<br>
+          部員たちがより良い環境で練習に励み、甲子園出場を目指して全力で取り組めるよう、<br>
+          会費納入へのご協力をお願い申し上げます。
+        </p>
+      </div>
       <div class="mt-16 grid md:grid-cols-3 gap-8">
         @for (item of [
-          {img: 'https://picsum.photos/seed/support1/800/600', title: '寄付のお願い', delay: ''}, 
-          {img: 'https://picsum.photos/seed/support2/800/600', title: 'OB会へのご参加', delay: 'delay-200'}, 
-          {img: 'https://picsum.photos/seed/support3/800/600', title: '応援メッセージ', delay: 'delay-400'}
+          {img: 'https://picsum.photos/seed/support1/800/600', title: '寄付のお願い', description: '会費納入で野球部を支援', link: '/support', fragment: 'credit', delay: ''}, 
+          {img: 'https://picsum.photos/seed/support2/800/600', title: 'OB会へのご参加', description: 'OB会員として活動に参加', link: '/support', fragment: '', delay: 'delay-200'}, 
+          {img: 'https://picsum.photos/seed/support3/800/600', title: '応援メッセージ', description: '部員への応援メッセージ', link: '/support', fragment: '', delay: 'delay-400'}
           ]; track item.title) {
-          <div 
+          <a 
+            [routerLink]="[item.link]" 
+            [fragment]="item.fragment || null"
             [class.is-visible]="otherServiceVisible()"
-            class="fade-in-up text-center {{item.delay}}">
-            <img ngSrc="{{item.img}}" width="800" height="600" alt="{{item.title}}" class="w-full shadow-lg">
-            <h3 class="font-serif-jp text-xl mt-4">{{item.title}}</h3>
-          </div>
+            class="fade-in-up text-center {{item.delay}} group cursor-pointer block">
+            <div class="relative overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+              <img ngSrc="{{item.img}}" width="800" height="600" alt="{{item.title}}" class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                <p class="text-sm">{{item.description}}</p>
+              </div>
+            </div>
+            <h3 class="font-serif-jp text-xl mt-4 text-gray-800 group-hover:text-[#002D62] transition-colors duration-300">{{item.title}}</h3>
+            <p class="text-sm text-gray-600 mt-2 group-hover:text-gray-800 transition-colors duration-300">詳細を見る →</p>
+          </a>
         }
+      </div>
+      
+      <!-- 会費納入の詳細情報 -->
+      <div class="mt-16 max-w-4xl mx-auto">
+        <div 
+          [class.is-visible]="otherServiceVisible()"
+          class="fade-in-up bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-8 md:p-12 shadow-md">
+          <h3 class="text-2xl font-bold font-serif-jp text-gray-800 mb-6 text-center">会費納入について</h3>
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+              <h4 class="font-bold text-lg text-[#002D62] mb-4">納入金額</h4>
+              <p class="text-3xl font-bold text-gray-800">年間 5,000円</p>
+            </div>
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+              <h4 class="font-bold text-lg text-[#002D62] mb-4">活用内容</h4>
+              <ul class="text-sm text-gray-700 space-y-2">
+                <li>• 最新練習用具の購入・メンテナンス</li>
+                <li>• 遠征費の補助</li>
+                <li>• ユニフォーム・用具の購入</li>
+                <li>• グラウンド整備費用</li>
+              </ul>
+            </div>
+          </div>
+          <div class="text-center">
+            <a 
+              [routerLink]="['/support']" 
+              [fragment]="'credit'"
+              class="inline-flex items-center gap-2 bg-[#002D62] text-white font-bold py-4 px-8 rounded-lg hover:bg-blue-950 transition-colors duration-300 shadow-lg hover:shadow-xl">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              会費納入の詳細を見る
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
