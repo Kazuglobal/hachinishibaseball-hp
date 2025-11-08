@@ -46,14 +46,17 @@
       <!-- メイン動画 -->
       <div class="mb-8 md:mb-12">
         <h3 class="text-xl md:text-2xl font-bold font-serif-jp text-[#002D62] mb-4 text-center">メイン動画</h3>
-        <div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl animate-fade-in-up bg-black">
-          <iframe 
-            [src]="getSafeUrl(fukushimaInfo.mainVideo + '?rel=0&enablejsapi=1&playsinline=1&modestbranding=1&controls=1')"
+        <div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl animate-fade-in-up bg-black" style="touch-action: manipulation;">
+          <iframe
+            [src]="getSafeUrl(fukushimaInfo.mainVideo + '?autoplay=0&rel=0&enablejsapi=1&playsinline=1&modestbranding=1&controls=1')"
+            title="福島蓮選手 メイン動画"
             class="absolute top-0 left-0 w-full h-full border-0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-            [allowFullscreen]="true"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
+            allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin"
             loading="lazy"
-            style="pointer-events: auto;">
+            style="pointer-events: auto; z-index: 1;">
           </iframe>
         </div>
       </div>
@@ -63,14 +66,17 @@
         <h3 class="text-xl md:text-2xl font-bold font-serif-jp text-[#002D62] mb-6 text-center">関連動画</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           @for(video of fukushimaInfo.videos; track video; let i = $index) {
-            <div class="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 animate-fade-in-up bg-black" [style.animation-delay]="(i * 100) + 'ms'">
-              <iframe 
-                [src]="getSafeUrl(video + '?rel=0&enablejsapi=1&playsinline=1&modestbranding=1&controls=1')"
+            <div class="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 animate-fade-in-up bg-black" [style.animation-delay]="(i * 100) + 'ms'" style="touch-action: manipulation;">
+              <iframe
+                [src]="getSafeUrl(video + '?autoplay=0&rel=0&enablejsapi=1&playsinline=1&modestbranding=1&controls=1')"
+                title="福島蓮選手 関連動画 {{i + 1}}"
                 class="absolute top-0 left-0 w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                allowFullscreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
+                allowfullscreen
+                referrerpolicy="strict-origin-when-cross-origin"
                 loading="lazy"
-                style="pointer-events: auto;">
+                style="pointer-events: auto; z-index: 1;">
               </iframe>
             </div>
           }
