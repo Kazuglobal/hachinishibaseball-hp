@@ -6,6 +6,7 @@ import { filter } from 'rxjs';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { environment } from '../../environments/environment';
+import { SEOService } from '../../services/seo.service';
 
 interface Donor {
   period: string;
@@ -24,6 +25,7 @@ export class SupportComponent implements OnInit, AfterViewInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private seoService = inject(SEOService);
   isVisible = signal(true);
 
   // 昨年の入金者一覧
@@ -74,6 +76,14 @@ export class SupportComponent implements OnInit, AfterViewInit {
   private readonly GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrFlZnWu0rwYNQ2z-CC7TUQYo2Dod-vh3CcNHbGRqqN2Glgc_xE6eTiXxBu5OVpFB0/exec';
 
   ngOnInit() {
+    // SEO設定
+    this.seoService.updateSEO({
+      title: 'ご支援のお願い',
+      description: '八戸西高等学校野球部OB会へのご支援をお願いします。現役チームへの支援、OB会への参加、寄付など、様々な形でご支援いただけます。',
+      keywords: '八戸西高等学校,野球部,OB会,支援,寄付,現役チーム支援,OB会参加',
+      url: 'https://hachinishibaseball-ob.com/support'
+    });
+
     // ルーティング変更時にフラグメントを処理
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))

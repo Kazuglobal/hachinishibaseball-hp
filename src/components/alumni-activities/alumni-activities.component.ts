@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, signal, computed, PLATFORM_ID, Inject, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, signal, computed, PLATFORM_ID, Inject, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
@@ -6,6 +6,7 @@ import { BackButtonComponent } from '../shared/back-button/back-button.component
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { NgOptimizedImage } from '@angular/common';
+import { SEOService } from '../../services/seo.service';
 
 interface ActiveAlumni {
   period: string;
@@ -152,6 +153,8 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
     }
   ];
 
+  private seoService = inject(SEOService);
+
   constructor(
     private sanitizer: DomSanitizer,
     @Inject(PLATFORM_ID) platformId: object,
@@ -162,6 +165,26 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.isVisible.set(true);
+    
+    // SEO設定
+    this.seoService.updateSEO({
+      title: 'OB活躍情報',
+      description: '八戸西高等学校野球部OBの活躍情報を掲載。プロ野球で活躍する福島蓮選手（日本ハムファイターズ）をはじめ、現役で活躍するOBの情報を動画とプロフィールで紹介しています。',
+      keywords: 'OB活躍情報,福島蓮,日本ハムファイターズ,八戸西野球OB,プロ野球選手,高校野球OB,青森県野球',
+      url: 'https://hachinishibaseball-ob.com/alumni-activities'
+    });
+
+    // 動画ページ用の構造化データを追加
+    if (this.fukushimaInfo.mainVideo) {
+      const videoId = this.getVideoId(this.fukushimaInfo.mainVideo);
+      this.seoService.addVideoStructuredData({
+        name: `福島蓮選手の活躍動画 - ${this.fukushimaInfo.name}`,
+        description: this.fukushimaInfo.description,
+        thumbnailUrl: this.getThumbnailUrl(videoId, 'high'),
+        uploadDate: new Date().toISOString(),
+        contentUrl: this.getWatchUrl(this.fukushimaInfo.mainVideo)
+      });
+    }
     
     if (this.isBrowser) {
       this.updateWindowWidth();

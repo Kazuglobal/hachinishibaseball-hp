@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit } from '@angular/core';
 import { NgOptimizedImage, CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
@@ -8,6 +8,7 @@ import { WorksComponent } from '../works/works.component';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
 import { ScrollService } from '../../services/scroll.service';
+import { SEOService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-home',
@@ -25,8 +26,18 @@ import { ScrollService } from '../../services/scroll.service';
   templateUrl: './home.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   scrollService = inject(ScrollService);
+  private seoService = inject(SEOService);
+
+  ngOnInit(): void {
+    this.seoService.updateSEO({
+      title: '八戸西高等学校野球OB会',
+      description: '八戸西高等学校野球部OB会の公式ウェブサイト。活動報告、試合結果、OB活躍情報、現役チームへの支援情報などを掲載。OBと現役選手、ファンを繋ぐ情報ハブです。',
+      keywords: '八戸西高等学校,野球部,OB会,八戸西野球,青森県野球,高校野球,OB活躍情報,試合結果,活動報告,福島蓮,日本ハムファイターズ',
+      url: 'https://hachinishibaseball-ob.com/'
+    });
+  }
 
   brandStoryVisible = signal(false);
   galleryVisible = signal(false);

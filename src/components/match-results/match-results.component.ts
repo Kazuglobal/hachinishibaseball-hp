@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
+import { SEOService } from '../../services/seo.service';
 
 interface Match {
   date: string;
@@ -30,10 +31,19 @@ export class MatchResultsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private seoService = inject(SEOService);
   isVisible = signal(false);
   viewMode = signal<'practice' | 'official'>('practice');
 
   ngOnInit() {
+    // SEO設定
+    this.seoService.updateSEO({
+      title: '試合結果',
+      description: '八戸西高等学校野球部の試合結果を掲載。公式戦（室岡杯、春季県大会、甲子園予選、秋季リーグ戦、秋季県大会、1年生大会）と練習試合の結果を詳しく紹介しています。',
+      keywords: '八戸西高等学校,野球部,試合結果,公式戦,練習試合,甲子園予選,春季県大会,秋季県大会',
+      url: 'https://hachinishibaseball-ob.com/match-results'
+    });
+
     // 初期表示を有効にする
     this.isVisible.set(true);
     

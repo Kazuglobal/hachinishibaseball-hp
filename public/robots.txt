@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://hachinishibaseball-ob.com/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /.angular/
+
+# Allow important pages
+Allow: /
+Allow: /about
+Allow: /match-results
+Allow: /support
+Allow: /contact
+Allow: /alumni-activities
+Allow: /activity/
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+

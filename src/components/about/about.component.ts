@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnInit, PLATFORM_ID, Inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnInit, PLATFORM_ID, Inject, signal, inject } from '@angular/core';
 import { isPlatformBrowser, CommonModule, NgOptimizedImage } from '@angular/common';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
+import { SEOService } from '../../services/seo.service';
 
 declare var d3: any;
 
@@ -111,12 +112,21 @@ export class AboutComponent implements OnInit, AfterViewInit {
   }
 
   private isBrowser: boolean;
+  private seoService = inject(SEOService);
 
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
   ngOnInit(): void {
+    // SEO設定
+    this.seoService.updateSEO({
+      title: '野球部について',
+      description: '八戸西高等学校野球部の紹介。監督・コーチ陣のプロフィール、部員の出身中学校データ、OB会の活動内容などを掲載しています。',
+      keywords: '八戸西高等学校,野球部,監督,コーチ,部員,出身中学校,OB会',
+      url: 'https://hachinishibaseball-ob.com/about'
+    });
+
     // 初期表示を有効にする
     this.isVisible.set(true);
     this.staffVisible.set(true);
