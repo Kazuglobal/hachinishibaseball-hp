@@ -43,6 +43,7 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
   cardIndex = signal(0);
   windowWidth = signal(1024);
   private isBrowser: boolean;
+  private readonly YOUTUBE_EMBED_HOST = 'www.youtube.com';
   private intervalId: any;
   private resizeListener?: () => void;
   private touchStartX = 0;
@@ -68,6 +69,11 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
     const clampedIndex = Math.min(this.cardIndex(), maxIndex);
     return `translateX(-${clampedIndex * (100 / cardsPerView)}%)`;
   });
+
+  // モバイル判定
+  isMobile = computed(() => {
+    return this.windowWidth() < 768;
+  });
   
   // 福島蓮選手のメイン情報
   fukushimaInfo = {
@@ -78,13 +84,13 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
     description: '今季５勝を挙げ勝率1.000の好成績をおさめクライマックスシリーズにも登板しました！私たちOB会一同、福島選手の活躍を心から祝福し、更なる飛躍を期待しています。',
     message: '目指せ、日本ハムのエース！来シーズンも福島蓮選手への熱い応援をよろしくお願いします！',
     profileUrl: 'https://media.fighters.co.jp/player/94/',
-    mainVideo: 'https://www.youtube.com/embed/qwNSVgz7pPY',
+    mainVideo: 'https://youtu.be/qwNSVgz7pPY',
     videos: [
-      'https://www.youtube.com/embed/0gzmhnoMEtc',
-      'https://www.youtube.com/embed/5nEeOwuVlyg',
-      'https://www.youtube.com/embed/e-WA7cYmV5I',
-      'https://www.youtube.com/embed/FIGkQhN6YIk',
-      'https://www.youtube.com/embed/GY1X0xAQ2i8'
+      'https://youtu.be/0gzmhnoMEtc',
+      'https://youtu.be/5nEeOwuVlyg',
+      'https://youtu.be/e-WA7cYmV5I',
+      'https://youtu.be/FIGkQhN6YIk',
+      'https://youtu.be/GY1X0xAQ2i8'
     ]
   };
 
@@ -307,8 +313,175 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
     return Array.from({ length: this.alumniCards.length }, (_, i) => i);
   }
 
+  // YouTubeのvideoIdを抽出
+  getVideoId(url: string): string {
+    if (!url || typeof url !== 'string') {
+      return '';
+    }
+
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname.toLowerCase();
+
+      if (hostname === 'youtu.be') {
+        const pathParts = urlObj.pathname.split('/').filter(Boolean);
+        return pathParts[0]?.split('?')[0].split('#')[0].trim() || '';
+      } else if (hostname.includes('youtube.com')) {
+        const segments = urlObj.pathname.split('/').filter(Boolean);
+        if (segments[0] === 'embed' && segments[1]) {
+          return segments[1];
+        } else if (urlObj.pathname === '/watch') {
+          return urlObj.searchParams.get('v') || '';
+        }
+      }
+    } catch (e) {
+      // URL解析に失敗した場合のフォールバック
+      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?v=))([^?&#]+)/);
+      return match ? match[1] : '';
+    }
+
+    return '';
+  }
+
+  // YouTubeのサムネイル画像URLを取得
+  getThumbnailUrl(videoId: string, quality: 'default' | 'medium' | 'high' | 'maxres' = 'maxres'): string {
+    if (!videoId) {
+      return '';
+    }
+    // maxresdefault.jpgが存在しない場合は、hqdefault.jpgにフォールバック
+    const qualityMap: Record<string, string> = {
+      'maxres': 'maxresdefault',
+      'high': 'hqdefault',
+      'medium': 'mqdefault',
+      'default': 'default'
+    };
+    return `https://i.ytimg.com/vi/${videoId}/${qualityMap[quality] || 'hqdefault'}.jpg`;
+  }
+
+  // 画像エラーハンドリング
+  handleImageError(event: Event, videoId: string): void {
+    const img = event.target as HTMLImageElement;
+    if (img && videoId) {
+      // 高解像度が失敗した場合は、中解像度にフォールバック
+      if (img.src.includes('hqdefault')) {
+        img.src = this.getThumbnailUrl(videoId, 'medium');
+      } else if (img.src.includes('mqdefault')) {
+        img.src = this.getThumbnailUrl(videoId, 'default');
+      }
+    }
+  }
+
+  // YouTubeの再生URLを取得（モバイル用）
+  getWatchUrl(url: string): string {
+    const videoId = this.getVideoId(url);
+    if (!videoId) {
+      return url;
+    }
+    return `https://www.youtube.com/watch?v=${videoId}`;
+  }
+
   getSafeUrl(url: string): SafeResourceUrl {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    // モバイルではiframeを使用しないため、空のURLを返す
+    if (this.isMobile()) {
+      return this.sanitizer.bypassSecurityTrustResourceUrl('');
+    }
+
+    // YouTubeのURLパラメータを最適化（確実に動作する最小限の設定）
+    if (!url || typeof url !== 'string') {
+      return this.sanitizer.bypassSecurityTrustResourceUrl('');
+    }
+
+    try {
+      // 完全なURLかどうかを確認
+      let urlObj: URL;
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        urlObj = new URL(url);
+      } else {
+        // 相対URLの場合は、https://www.youtube.comをベースにする
+        urlObj = new URL(url, 'https://www.youtube.com');
+      }
+      
+      urlObj = this.ensureNoCookieEmbedUrl(urlObj);
+      
+      // 既存のパラメータをクリアして、確実に動作する最小限のパラメータのみ設定
+      urlObj.search = ''; // 既存のパラメータをクリア
+      
+      // 確実に動作する最小限のパラメータ
+      urlObj.searchParams.set('rel', '0'); // 関連動画を非表示
+      urlObj.searchParams.set('playsinline', '1'); // iOS Safariでインライン再生を有効化（必須）
+      urlObj.searchParams.set('controls', '1'); // コントロールを表示
+      urlObj.searchParams.set('modestbranding', '1'); // YouTubeロゴを小さく
+      urlObj.searchParams.set('enablejsapi', '0'); // JavaScript APIを無効化（モバイルでの問題を回避）
+      
+      const finalUrl = urlObj.toString();
+      return this.sanitizer.bypassSecurityTrustResourceUrl(finalUrl);
+    } catch (e) {
+      // URL解析に失敗した場合は、シンプルなフォールバック処理
+      const baseParams = 'rel=0&playsinline=1&controls=1&modestbranding=1';
+      const fallbackUrl = this.ensureFallbackNoCookieUrl(url);
+      const separator = fallbackUrl.includes('?') ? '&' : '?';
+      const optimizedUrl = `${fallbackUrl}${separator}${baseParams}`;
+      return this.sanitizer.bypassSecurityTrustResourceUrl(optimizedUrl);
+    }
+  }
+
+  private ensureNoCookieEmbedUrl(urlObj: URL): URL {
+    const hostname = urlObj.hostname.toLowerCase();
+    const isYouTubeHost = hostname.includes('youtube.com') || hostname === 'youtu.be';
+    if (!isYouTubeHost) {
+      return urlObj;
+    }
+
+    let videoId = '';
+
+    if (hostname === 'youtu.be') {
+      // youtu.be/VIDEO_ID の形式からvideoIdを抽出
+      const pathParts = urlObj.pathname.split('/').filter(Boolean);
+      videoId = pathParts[0] || '';
+      // クエリパラメータやハッシュが含まれている場合は除去
+      if (videoId) {
+        videoId = videoId.split('?')[0].split('#')[0].trim();
+      }
+    } else {
+      const segments = urlObj.pathname.split('/').filter(Boolean);
+      if (segments[0] === 'embed' && segments[1]) {
+        videoId = segments[1];
+      } else if (segments[0] === 'shorts' && segments[1]) {
+        videoId = segments[1];
+      } else if (urlObj.pathname === '/watch') {
+        videoId = urlObj.searchParams.get('v') ?? '';
+      }
+    }
+
+    // videoIdが取得できない場合は元のURLを返す
+    if (!videoId) {
+      return urlObj;
+    }
+
+    // 新しいURLオブジェクトを作成（通常のyoutube.comを使用して確実に動作）
+    const sanitizedUrl = new URL(`https://${this.YOUTUBE_EMBED_HOST}/embed/${videoId}`);
+    
+    return sanitizedUrl;
+  }
+
+  private ensureFallbackNoCookieUrl(url: string): string {
+    if (!url) {
+      return '';
+    }
+
+    const trimmed = url.trim();
+    const shortUrlNeedle = 'youtu.be/';
+
+    if (trimmed.includes(shortUrlNeedle)) {
+      const parts = trimmed.split(shortUrlNeedle);
+      const rest = parts[1] ?? '';
+      const videoId = rest.split(/[?&#]/)[0];
+      if (videoId) {
+        return `https://${this.YOUTUBE_EMBED_HOST}/embed/${videoId}`;
+      }
+    }
+
+    return trimmed.replace(/https?:\/\/(?:www\.)?youtube\.com/gi, `https://${this.YOUTUBE_EMBED_HOST}`);
   }
 }
 

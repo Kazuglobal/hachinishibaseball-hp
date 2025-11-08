@@ -17,6 +17,23 @@
         originalWarn.apply(console, args);
       };
     }
+
+    // YouTube広告トラッキングのCORSエラーを抑制
+    // このエラーはYouTubeの広告システムによるもので、動画の再生には影響しません
+    (function() {
+      const originalError = console.error;
+      console.error = function(...args) {
+        // YouTube広告トラッキングのCORSエラーをフィルタリング
+        const errorMessage = args[0]?.toString() || '';
+        const fullMessage = args.join(' ');
+        
+        if (errorMessage.includes('googleads.g.doubleclick.net') || 
+            (fullMessage.includes('Access to fetch') && fullMessage.includes('CORS policy') && fullMessage.includes('youtube.com'))) {
+          return; // YouTube広告トラッキングのCORSエラーを無視
+        }
+        originalError.apply(console, args);
+      };
+    })();
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>

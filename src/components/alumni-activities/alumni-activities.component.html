@@ -46,15 +46,49 @@
       <!-- メイン動画 -->
       <div class="mb-8 md:mb-12">
         <h3 class="text-xl md:text-2xl font-bold font-serif-jp text-[#002D62] mb-4 text-center">メイン動画</h3>
-        <div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl animate-fade-in-up bg-black">
-          <iframe 
-            [src]="getSafeUrl(fukushimaInfo.mainVideo + '?rel=0&enablejsapi=1&playsinline=1&modestbranding=1&controls=1')"
-            class="absolute top-0 left-0 w-full h-full border-0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-            [allowFullscreen]="true"
-            loading="lazy"
-            style="pointer-events: auto;">
-          </iframe>
+        <div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl bg-black" style="min-height: 200px;">
+          @if(fukushimaInfo.mainVideo) {
+            <!-- モバイル: サムネイル画像とリンク -->
+            @if(isMobile()) {
+              @let videoId = getVideoId(fukushimaInfo.mainVideo);
+              <a 
+                [href]="getWatchUrl(fukushimaInfo.mainVideo)"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="absolute inset-0 flex items-center justify-center group cursor-pointer bg-black">
+                <img 
+                  [src]="getThumbnailUrl(videoId, 'high')"
+                  [alt]="'メイン動画: ' + fukushimaInfo.name"
+                  class="w-full h-full object-cover"
+                  loading="eager"
+                  (error)="handleImageError($event, videoId)">
+                <!-- 再生ボタンオーバーレイ -->
+                <div class="absolute inset-0 bg-black/30 group-active:bg-black/40 transition-colors flex items-center justify-center">
+                  <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-active:scale-95 transition-transform">
+                    <svg class="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                </div>
+              </a>
+            } @else {
+              <!-- デスクトップ: iframe埋め込み -->
+              <iframe 
+                [src]="getSafeUrl(fukushimaInfo.mainVideo)"
+                class="absolute top-0 left-0 w-full h-full border-0"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                allowFullscreen
+                style="width: 100%; height: 100%; border: none; display: block;"
+                title="メイン動画"
+                frameborder="0"
+                scrolling="no">
+              </iframe>
+            }
+          } @else {
+            <div class="absolute inset-0 flex items-center justify-center text-white">
+              <p>動画を読み込めませんでした</p>
+            </div>
+          }
         </div>
       </div>
 
@@ -64,14 +98,41 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           @for(video of fukushimaInfo.videos; track video; let i = $index) {
             <div class="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 animate-fade-in-up bg-black" [style.animation-delay]="(i * 100) + 'ms'">
-              <iframe 
-                [src]="getSafeUrl(video + '?rel=0&enablejsapi=1&playsinline=1&modestbranding=1&controls=1')"
-                class="absolute top-0 left-0 w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                allowFullscreen
-                loading="lazy"
-                style="pointer-events: auto;">
-              </iframe>
+              <!-- モバイル: サムネイル画像とリンク -->
+              @if(isMobile()) {
+                @let videoId = getVideoId(video);
+                <a 
+                  [href]="getWatchUrl(video)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="absolute inset-0 flex items-center justify-center group cursor-pointer bg-black">
+                  <img 
+                    [src]="getThumbnailUrl(videoId, 'high')"
+                    [alt]="'関連動画 ' + (i + 1)"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                    (error)="handleImageError($event, videoId)">
+                  <!-- 再生ボタンオーバーレイ -->
+                  <div class="absolute inset-0 bg-black/30 group-active:bg-black/40 transition-colors flex items-center justify-center">
+                    <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-xl group-active:scale-95 transition-transform">
+                      <svg class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </div>
+                  </div>
+                </a>
+              } @else {
+                <!-- デスクトップ: iframe埋め込み -->
+                <iframe 
+                  [src]="getSafeUrl(video)"
+                  class="absolute top-0 left-0 w-full h-full border-0"
+                  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                  allowFullscreen
+                  style="width: 100%; height: 100%; border: none; display: block;"
+                  frameborder="0"
+                  scrolling="no">
+                </iframe>
+              }
             </div>
           }
         </div>
@@ -285,4 +346,3 @@
     <app-back-button></app-back-button>
   </div>
 </section>
-
