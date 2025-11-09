@@ -13,7 +13,118 @@
   [class.translate-y-0]="showFloatingCta()"
   [class.opacity-0]="!showFloatingCta()"
   [class.translate-y-10]="!showFloatingCta()">
-    <a [routerLink]="['/support']" [fragment]="'credit'" class="w-24 h-24 bg-[#B31B1B] rounded-full flex items-center justify-center text-white text-center text-sm leading-tight shadow-lg hover:scale-110 transition-transform duration-300">
-        ご支援<br>のお願い
+    <a [routerLink]="['/support']" [fragment]="'credit'" class="relative w-24 h-24 rounded-full flex items-center justify-center text-[#B31B1B] text-center text-xs font-bold leading-tight shadow-2xl hover:scale-110 transition-transform duration-300 overflow-hidden group" style="background: radial-gradient(circle at 25% 25%, #fffef7 0%, #f8f6f0 30%, #f0ede5 60%, #e8e5dd 100%);">
+      <!-- 野球ボールの縫い目パターン（究極版） -->
+      <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs>
+          <!-- 縫い目の立体感を出すためのグラデーション -->
+          <linearGradient id="stitch-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#cc0000;stop-opacity:1" />
+            <stop offset="50%" style="stop-color:#B31B1B;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#8b0000;stop-opacity:1" />
+          </linearGradient>
+          
+          <!-- 縫い目の影効果（より強く） -->
+          <filter id="stitch-shadow-strong" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="0.8"/>
+            <feOffset dx="0.5" dy="0.5" result="offsetblur"/>
+            <feComponentTransfer>
+              <feFuncA type="linear" slope="0.5"/>
+            </feComponentTransfer>
+            <feMerge>
+              <feMergeNode/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          
+          <!-- 縫い目のハイライト -->
+          <linearGradient id="stitch-highlight" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8" />
+            <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.3" />
+          </linearGradient>
+        </defs>
+        
+        <!-- メインの縫い目パターン（実際の野球ボールの形状） -->
+        <!-- 左側の縫い目（上から下へ） -->
+        <g>
+          <!-- 影 -->
+          <path d="M 18 12 Q 28 50, 18 88" 
+                stroke="#8b0000" 
+                stroke-width="3.5" 
+                fill="none" 
+                stroke-linecap="round" 
+                stroke-linejoin="round"
+                opacity="0.4"/>
+          <!-- メインの縫い目 -->
+          <path d="M 18 12 Q 28 50, 18 88" 
+                stroke="url(#stitch-gradient)" 
+                stroke-width="3" 
+                fill="none" 
+                stroke-linecap="round" 
+                stroke-linejoin="round"
+                filter="url(#stitch-shadow-strong)"/>
+          <!-- ハイライト -->
+          <path d="M 18 12 Q 28 50, 18 88" 
+                stroke="url(#stitch-highlight)" 
+                stroke-width="1.5" 
+                fill="none" 
+                stroke-linecap="round" 
+                stroke-linejoin="round"/>
+        </g>
+        
+        <!-- 右側の縫い目（上から下へ） -->
+        <g>
+          <path d="M 82 12 Q 72 50, 82 88" 
+                stroke="#8b0000" 
+                stroke-width="3.5" 
+                fill="none" 
+                stroke-linecap="round" 
+                stroke-linejoin="round"
+                opacity="0.4"/>
+          <path d="M 82 12 Q 72 50, 82 88" 
+                stroke="url(#stitch-gradient)" 
+                stroke-width="3" 
+                fill="none" 
+                stroke-linecap="round" 
+                stroke-linejoin="round"
+                filter="url(#stitch-shadow-strong)"/>
+          <path d="M 82 12 Q 72 50, 82 88" 
+                stroke="url(#stitch-highlight)" 
+                stroke-width="1.5" 
+                fill="none" 
+                stroke-linecap="round" 
+                stroke-linejoin="round"/>
+        </g>
+        
+        <!-- 中央の交差部分（より立体的に） -->
+        <g>
+          <circle cx="50" cy="50" r="4" fill="#8b0000" opacity="0.6"/>
+          <circle cx="50" cy="50" r="3.5" fill="#B31B1B" opacity="0.9"/>
+          <circle cx="50" cy="50" r="2.5" fill="#cc0000"/>
+          <circle cx="49" cy="49" r="1" fill="#ffffff" opacity="0.8"/>
+        </g>
+        
+        <!-- 縫い目の細かいディテール（実際の縫い目のように） -->
+        <g opacity="0.6">
+          <!-- 左側の縫い目の細かい線 -->
+          <path d="M 18 25 Q 25 50, 18 75" stroke="#ffffff" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+          <path d="M 18 30 Q 26 50, 18 70" stroke="#ffffff" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+          <!-- 右側の縫い目の細かい線 -->
+          <path d="M 82 25 Q 75 50, 82 75" stroke="#ffffff" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+          <path d="M 82 30 Q 74 50, 82 70" stroke="#ffffff" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+        </g>
+      </svg>
+      
+      <!-- テキスト -->
+      <span class="relative z-10 px-2 drop-shadow-lg" style="text-shadow: 0 1px 2px rgba(255,255,255,0.8);">ご支援<br>のお願い</span>
+      
+      <!-- 光沢効果（よりリアルに） -->
+      <div class="absolute inset-0 rounded-full pointer-events-none" style="background: radial-gradient(circle at 25% 25%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 25%, transparent 50%);"></div>
+      
+      <!-- 反射光 -->
+      <div class="absolute inset-0 rounded-full pointer-events-none opacity-40" style="background: radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.6) 0%, transparent 40%);"></div>
+      
+      <!-- 革の質感（微細なテクスチャ） -->
+      <div class="absolute inset-0 rounded-full pointer-events-none opacity-20" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px);"></div>
     </a>
 </div>
