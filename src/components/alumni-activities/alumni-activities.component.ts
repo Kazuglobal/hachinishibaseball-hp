@@ -14,6 +14,7 @@ interface ActiveAlumni {
   team: string;
   position: string;
   note: string;
+  links?: string[];
 }
 
 interface AlumniCard {
@@ -98,23 +99,25 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
   // 現役活躍OB情報
   activeAlumni: ActiveAlumni[] = [
     { period: '34期', name: '長井 正哉', team: '北海道日本ハムファイターズ', position: 'トレーナー', note: '3年目' },
-    { period: '40期', name: '竹本 祐瑛', team: 'JR東日本東北', position: '投手', note: '4年目' },
-    { period: '44期', name: '沢田 浩太', team: '札幌国際大学', position: '内野手', note: '4年' },
-    { period: '45期', name: '相前 雄一朗', team: '城西大学', position: '内野手', note: '3年' },
-    { period: '45期', name: '宮崎 一綺', team: '清和大学', position: '内野手', note: '3年' },
-    { period: '45期', name: '福島 蓮', team: '北海道日本ハムファイターズ', position: '投手', note: '3年目' },
-    { period: '45期', name: '大釜 温斗', team: '清和大学', position: '捕手', note: '3年' },
-    { period: '45期', name: '藤本 楓都', team: '帝京平成大学', position: '捕手', note: '3年' },
-    { period: '45期', name: '村上 歩夢', team: '獨協大学', position: '外野手', note: '3年' },
-    { period: '45期', name: '平内 友悠', team: '青森中央学院大学', position: '投手', note: '3年' },
-    { period: '45期', name: '津嶋 優吉', team: '青森中央学院大学', position: '外野手', note: '3年' },
-    { period: '45期', name: '廣田 大和', team: '東北マークス', position: '投手', note: '3年目' },
-    { period: '45期', name: '桐山 大空', team: '青森中央学院大学', position: '内野手', note: '3年' },
-    { period: '46期', name: '椛木 聡斗', team: '札幌国際大学', position: '投手', note: '2年' },
-    { period: '47期', name: '吉田 知史', team: '札幌国際大学', position: '外野手', note: '1年' },
-    { period: '47期', name: '大平 翔琉', team: '青森中央学院大学', position: '外野手', note: '1年' },
-    { period: '47期', name: '村上 流聖', team: '清和大学', position: '内野手', note: '1年' },
-    { period: '47期', name: '小山石 花隠', team: '中央学院大学', position: 'マネージャー', note: '1年' }
+    { period: '40期', name: '竹本 祐瑛', team: 'JR東日本東北', position: '投手', note: '4年目', links: ['https://sports.yahoo.co.jp/official/detail/2025063000149-spnaviow', 'https://www.nikkansports.com/baseball/news/202509030000882.html'] },
+    { period: '45期', name: '相前 雄一朗', team: '城西大学', position: '内野手', note: '4年' },
+    { period: '45期', name: '宮崎 一綺', team: '清和大学', position: '内野手', note: '4年' },
+    { period: '45期', name: '福島 蓮', team: '北海道日本ハムファイターズ', position: '投手', note: '4年目' },
+    { period: '45期', name: '大釜 温斗', team: '清和大学', position: '捕手', note: '4年' },
+    { period: '45期', name: '藤本 楓都', team: '帝京平成大学', position: '捕手', note: '4年' },
+    { period: '45期', name: '村上 歩夢', team: '獨協大学', position: '外野手', note: '4年' },
+    { period: '45期', name: '平内 友悠', team: '青森中央学院大学', position: '投手', note: '4年' },
+    { period: '45期', name: '津嶋 優吉', team: '青森中央学院大学', position: '外野手', note: '4年' },
+    { period: '45期', name: '廣田 大和', team: '東北マークス', position: '投手', note: '4年目' },
+    { period: '45期', name: '桐山 大空', team: '青森中央学院大学', position: '内野手', note: '4年' },
+    { period: '46期', name: '椛木 聡斗', team: '札幌国際大学', position: '投手', note: '3年' },
+    { period: '47期', name: '吉田 知史', team: '札幌国際大学', position: '外野手', note: '2年' },
+    { period: '47期', name: '大平 翔琉', team: '青森中央学院大学', position: '外野手', note: '2年' },
+    { period: '47期', name: '村上 流聖', team: '清和大学', position: '内野手', note: '2年' },
+    { period: '47期', name: '小山石 花隠', team: '中央学院大学', position: 'マネージャー', note: '2年' },
+    { period: '48期', name: '工藤', team: '', position: '投手', note: '1年' },
+    { period: '48期', name: '田中', team: '', position: '捕手', note: '1年' },
+    { period: '48期', name: '田中', team: '', position: '外野手', note: '1年' }
   ];
 
   // OB情報カード（4人分）
@@ -125,7 +128,7 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
       team: '中村畳工店',
       position: '代表',
       achievement: 'nakamuratatami.jimdofree.com/',
-      image: 'https://picsum.photos/seed/alumni-nakamura/800/600'
+      image: '/assets/images/alumni-nakamura.jpg'
     },
     {
       period: '25期',
@@ -133,7 +136,7 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
       team: '株式会社たから',
       position: '代表',
       achievement: 'takara229.base.shop/',
-      image: 'https://picsum.photos/seed/alumni-takara/800/600'
+      image: '/assets/images/alumni-takara.jpg'
     },
     {
       period: '29期',
@@ -141,7 +144,7 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
       team: '株式会社サン・ベンディング',
       position: '代表',
       achievement: 'sunvending-hachinohe.jp/',
-      image: 'https://picsum.photos/seed/alumni-kodama/800/600'
+      image: '/assets/images/alumni-kodama.jpg'
     },
     {
       period: '33期',
@@ -149,7 +152,7 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
       team: '株式会社創電工業',
       position: '代表',
       achievement: 'souden-kougyou.site/',
-      image: 'https://picsum.photos/seed/alumni-ueno/800/600'
+      image: '/assets/images/alumni-ueno.jpg'
     }
   ];
 

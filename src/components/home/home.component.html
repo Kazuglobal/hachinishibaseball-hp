@@ -48,7 +48,9 @@
 
   <app-owners-voice></app-owners-voice>
   
-  <app-works></app-works>
+  <section id="activities">
+    <app-works></app-works>
+  </section>
 
   <!-- History Gallery Section -->
   <section 
@@ -58,22 +60,22 @@
       <div 
         [class.is-visible]="galleryVisible()"
         class="fade-in-up">
-        <app-section-title mainTitle="OUR HISTORY" subTitle="栄光の記録"></app-section-title>
+        <app-section-title mainTitle="HACHINISHI" subTitle="白球"></app-section-title>
       </div>
       <div class="mt-16 grid grid-cols-2 gap-8 items-center">
           <div 
             class="space-y-8 transition-transform duration-1000 ease-out"
             [class.translate-x-0]="galleryVisible()"
             [class.-translate-x-full]="!galleryVisible()">
-              <img ngSrc="https://picsum.photos/seed/baseball-history1/800/600" width="800" height="600" alt="Gallery image 1" class="w-full shadow-xl">
-              <img ngSrc="https://picsum.photos/seed/baseball-history2/800/1000" width="800" height="1000" alt="Gallery image 2" class="w-full shadow-xl">
+              <img ngSrc="/assets/images/baseball-history1.jpg" width="800" height="600" alt="Gallery image 1" class="w-full shadow-xl">
+              <img ngSrc="/assets/images/baseball-history2.jpg" width="800" height="1000" alt="Gallery image 2" class="w-full shadow-xl">
           </div>
           <div 
             class="space-y-8 transition-transform duration-1000 ease-out delay-200"
             [class.translate-x-0]="galleryVisible()"
             [class.translate-x-full]="!galleryVisible()">
-              <img ngSrc="https://picsum.photos/seed/baseball-history3/800/1000" width="800" height="1000" alt="Gallery image 3" class="w-full shadow-xl">
-              <img ngSrc="https://picsum.photos/seed/baseball-history4/800/600" width="800" height="600" alt="Gallery image 4" class="w-full shadow-xl">
+              <img ngSrc="/assets/images/baseball-history3.jpg" width="800" height="1000" alt="Gallery image 3" class="w-full shadow-xl">
+              <img ngSrc="/assets/images/baseball-history4.jpg" width="800" height="600" alt="Gallery image 4" class="w-full shadow-xl">
           </div>
       </div>
     </div>

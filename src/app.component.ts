@@ -1,10 +1,12 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, PLATFORM_ID, Inject } from '@angular/core';
 import { HeaderComponent } from './components/header/header.component';
 import { SideUiComponent } from './components/side-ui/side-ui.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { MenuComponent } from './components/menu/menu.component';
 import { ScrollService } from './services/scroll.service';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, NavigationEnd, Router } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -18,8 +20,10 @@ import { RouterOutlet } from '@angular/router';
     MenuComponent,
   ]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   scrollService = inject(ScrollService);
+  router = inject(Router);
+  private isBrowser: boolean;
 
   navItems = [
     '野球部について',
@@ -30,7 +34,36 @@ export class AppComponent {
     'お問い合わせ'
   ];
 
-  constructor() {
+  constructor(@Inject(PLATFORM_ID) platformId: object) {
+    this.isBrowser = isPlatformBrowser(platformId);
     this.scrollService.init();
+  }
+
+  ngOnInit() {
+    if (this.isBrowser) {
+      // ルーティング完了後にフラグメントにスクロール
+      this.router.events
+        .pipe(filter(event => event instanceof NavigationEnd))
+        .subscribe(() => {
+          setTimeout(() => {
+            const url = this.router.url;
+            const fragmentIndex = url.indexOf('#');
+            if (fragmentIndex !== -1) {
+              const fragment = url.substring(fragmentIndex + 1);
+              const element = document.getElementById(fragment);
+              if (element) {
+                const headerOffset = 80; // ヘッダーの高さ
+                const elementPosition = element.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                window.scrollTo({
+                  top: offsetPosition,
+                  behavior: 'smooth'
+                });
+              }
+            }
+          }, 200);
+        });
+    }
   }
 }

@@ -49,6 +49,13 @@ export class WorksComponent implements OnInit, OnDestroy {
     // 初期表示を有効にする（モバイル画面での表示問題を解決）
     this.sectionVisible.set(true);
     
+    // 日付順にソート（最新が上）
+    this.works.sort((a, b) => {
+      const dateA = this.parseDate(a.date);
+      const dateB = this.parseDate(b.date);
+      return dateB.getTime() - dateA.getTime(); // 降順（新しい順）
+    });
+    
     if (this.isBrowser) {
       this.updateWindowWidth();
       this.resizeListener = () => this.updateWindowWidth();
@@ -60,6 +67,20 @@ export class WorksComponent implements OnInit, OnDestroy {
     if (this.isBrowser && this.windowWidth() < 768) {
       this.startAutoSlide();
     }
+  }
+
+  // 日付文字列をDateオブジェクトに変換
+  private parseDate(dateString: string): Date {
+    // "2025年10月5日" または "2025年6月7日（土）8日（日）" の形式をパース
+    // 最初の日付（開始日）を使用
+    const match = dateString.match(/(\d+)年(\d+)月(\d+)日/);
+    if (match) {
+      const year = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1; // 月は0から始まる
+      const day = parseInt(match[3], 10);
+      return new Date(year, month, day);
+    }
+    return new Date(0); // パースに失敗した場合は古い日付を返す
   }
 
   ngOnDestroy() {
@@ -328,6 +349,87 @@ export class WorksComponent implements OnInit, OnDestroy {
       date: '2024年8月8日',
       content: '8月8日（木）、AIを活用した質問力向上のワークショップを開催しました。この取り組みは、限られた練習時間を有効活用するためのAI導入を目的としています。ワークショップには、テクノロジー法務の専門家である金子晋輔弁護士と大舘さん（30期）が講師として参加し、AIの可能性や法的・倫理的側面について指導しました。部員たちは、AIを活用して練習メニューを作成し、その提案を批判的に評価することで、AIの効果的な活用方法を学びました。',
       additionalImages: ['/assets/images/ai-workshop-2024-2.jpg'],
+      delay: '' 
+    },
+    { 
+      id: 'freeblaze-support-2025',
+      image: '/assets/images/freeblaze-support-2025.jpg', 
+      category: '応援活動', 
+      title: 'フリーブレイズ応援', 
+      date: '2025年3月15日',
+      content: '八戸フリーブレイズの試合に応援に行きました。部員一同、プロ野球の迫力あるプレーに大興奮でした。特に、OBの福島投手が登板した際は、会場全体が一体となって応援する姿が印象的でした。試合後には選手との交流の機会もいただき、部員たちにとって貴重な経験となりました。',
+      delay: 'delay-200' 
+    },
+    { 
+      id: 'elementary-baseball-clinic-2025',
+      image: '/assets/images/elementary-baseball-clinic-2025.jpg', 
+      category: '地域貢献', 
+      title: '小学生向け野球教室', 
+      date: '2025年2月22日(土)',
+      content: '2025年2月22日(土)ダイヤモンドクラブ八戸さんとの野球教室が行われました。八西野球部の練習を一緒にし、藤田トレーナーのウォーミングアップや津村さんのメンタルトレーニング、ポジション別の守備練習やバッティングなどを体験していただきました。選手も人に教えるという貴重な経験ができる良い機会となりました。ありがとうございました。',
+      delay: 'delay-400' 
+    },
+    { 
+      id: 'graduation-ceremony-2025',
+      image: '/assets/images/graduation-ceremony-2025.jpg', 
+      category: 'イベントレポート', 
+      title: '卒業式', 
+      date: '2025年3月1日(土)',
+      content: '3月1日(土)卒業式が行われました。1、2年生からは3年生に向けて激励のハカを送り、その後応援歌と共に胴上げをし、卒業を祝福しました。3年生の皆さん、ご卒業おめでとうございます。新たなステージでの更なる活躍期待しています！！',
+      delay: '' 
+    },
+    { 
+      id: 'hachikoshi-practice-2025',
+      image: '/assets/images/hachikoshi-practice-2025.jpg', 
+      category: '練習', 
+      title: '八高支練習', 
+      date: '2025年5月10日',
+      content: '八戸高等支援学校の生徒さんたちと合同練習を行いました。お互いに刺激を受けながら、楽しく練習に取り組みました。',
+      delay: 'delay-200' 
+    },
+    { 
+      id: 'sansha-festival-2025',
+      image: '/assets/images/sansha-festival-2025.jpg', 
+      category: '地域貢献', 
+      title: '三社大祭', 
+      date: '2025年7月20日',
+      content: '三社大祭に参加しました。地域の伝統行事に参加し、地域の方々との交流を深めることができました。',
+      delay: 'delay-400' 
+    },
+    { 
+      id: 'training-camp-2025',
+      image: '/assets/images/training-camp-2025.jpg', 
+      category: '練習', 
+      title: '合宿', 
+      date: '2025年8月5日',
+      content: '夏季合宿を行いました。集中した練習と生活を通じて、技術面だけでなく精神面も大きく成長しました。',
+      delay: '' 
+    },
+    { 
+      id: 'exchange-activity-2025',
+      image: '/assets/images/exchange-activity-2025.jpg', 
+      category: '交流会', 
+      title: '交流', 
+      date: '2025年6月15日',
+      content: '他校との交流活動を行いました。お互いの技術を高め合い、友情を深めることができました。',
+      delay: 'delay-200' 
+    },
+    { 
+      id: 'sendai-expedition-2025',
+      image: '/assets/images/sendai-expedition-2025.jpg', 
+      category: '遠征', 
+      title: '仙台遠征', 
+      date: '2025年6月7日（土）8日（日）',
+      content: '2025年6月7日（土）8日（日）の2日間、甲子園予選に向けた強化合宿として仙台遠征に行きました。今回の試合を通して、春季大会から成長した所とこれからの課題が明確になった試合となりました。千葉経済大学附属高校さん、仙台育英学園高校さんありがとうございました！',
+      delay: 'delay-400' 
+    },
+    { 
+      id: 'yoga-training-2025',
+      image: '/assets/images/yoga-training-2025.jpg', 
+      category: 'トレーニング', 
+      title: 'ヨガトレーニング', 
+      date: '2025年6月18日',
+      content: '2025年6月18日　ヨガ・瞑想トレーナーの恵先生から呼吸法やストレッチ、ヨガを教えていただきました。柔軟性と集中力の向上を目的とし、部員たちも積極的に取り組みました。心身のバランスを整えることで、パフォーマンスの向上にもつながっています。',
       delay: '' 
     },
   ];

@@ -28,7 +28,7 @@
                   {{ item }}
                 </a>
               } @else if (item === '活動報告') {
-                <a routerLink="/alumni-activities" (click)="menuService.close()" class="text-xl md:text-2xl font-serif-jp pb-2 border-b-2 border-transparent hover:border-white transition-colors duration-300 block w-full">
+                <a [routerLink]="['/']" [fragment]="'activities'" (click)="menuService.close()" class="text-xl md:text-2xl font-serif-jp pb-2 border-b-2 border-transparent hover:border-white transition-colors duration-300 block w-full">
                   {{ item }}
                 </a>
               } @else if (item === '試合結果') {
