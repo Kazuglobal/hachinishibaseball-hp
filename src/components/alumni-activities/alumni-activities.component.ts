@@ -115,9 +115,9 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
     { period: '47期', name: '大平 翔琉', team: '青森中央学院大学', position: '外野手', note: '2年' },
     { period: '47期', name: '村上 流聖', team: '清和大学', position: '内野手', note: '2年' },
     { period: '47期', name: '小山石 花隠', team: '中央学院大学', position: 'マネージャー', note: '2年' },
-    { period: '48期', name: '工藤', team: '', position: '投手', note: '1年' },
-    { period: '48期', name: '田中', team: '', position: '捕手', note: '1年' },
-    { period: '48期', name: '田中', team: '', position: '外野手', note: '1年' }
+    { period: '48期', name: '工藤 柊也', team: '八戸工業大学', position: '投手', note: '1年' },
+    { period: '48期', name: '田中 咲多', team: '八戸工業大学', position: '捕手', note: '1年' },
+    { period: '48期', name: '田中 我空', team: '八戸工業大学', position: '外野手', note: '1年' }
   ];
 
   // OB情報カード（4人分）
