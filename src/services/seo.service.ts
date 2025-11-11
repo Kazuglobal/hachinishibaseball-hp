@@ -194,6 +194,100 @@ export class SEOService {
 
     this.addStructuredData(videoData);
   }
+
+  /**
+   * パンくずリスト用の構造化データを追加
+   */
+  addBreadcrumbStructuredData(items: Array<{ name: string; url: string }>): void {
+    const breadcrumbData = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": items.map((item, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": item.name,
+        "item": item.url
+      }))
+    };
+
+    this.addStructuredData(breadcrumbData);
+  }
+
+  /**
+   * スポーツチーム用の構造化データを追加
+   */
+  addSportsTeamStructuredData(data: {
+    name: string;
+    sport: string;
+    description?: string;
+    url?: string;
+  }): void {
+    const teamData = {
+      "@context": "https://schema.org",
+      "@type": "SportsTeam",
+      "name": data.name,
+      "sport": data.sport,
+      "description": data.description || "",
+      "url": data.url || this.baseUrl,
+      "memberOf": {
+        "@type": "Organization",
+        "name": this.siteName
+      }
+    };
+
+    this.addStructuredData(teamData);
+  }
+
+  /**
+   * イベント用の構造化データを追加
+   */
+  addEventStructuredData(data: {
+    name: string;
+    description: string;
+    startDate: string;
+    endDate?: string;
+    location?: string;
+    image?: string;
+  }): void {
+    const eventData = {
+      "@context": "https://schema.org",
+      "@type": "Event",
+      "name": data.name,
+      "description": data.description,
+      "startDate": data.startDate,
+      "endDate": data.endDate || data.startDate,
+      "location": data.location ? {
+        "@type": "Place",
+        "name": data.location
+      } : undefined,
+      "image": data.image || this.defaultImage,
+      "organizer": {
+        "@type": "Organization",
+        "name": this.siteName,
+        "url": this.baseUrl
+      }
+    };
+
+    // undefinedのプロパティを削除
+    Object.keys(eventData).forEach(key => {
+      if (eventData[key as keyof typeof eventData] === undefined) {
+        delete eventData[key as keyof typeof eventData];
+      }
+    });
+
+    this.addStructuredData(eventData);
+  }
+
+  /**
+   * 構造化データを削除
+   */
+  removeStructuredData(): void {
+    if (!this.isBrowser) return;
+    const existing = this.document.getElementById('structured-data');
+    if (existing) {
+      existing.remove();
+    }
+  }
 }
 
 

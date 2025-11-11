@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+# サイトマップの場所
+Sitemap: https://hachinishibaseball-ob.com/sitemap.xml
+
+# 検索エンジンにインデックスさせたいページ
+Allow: /
+Allow: /about
+Allow: /alumni-activities
+Allow: /match-results
+Allow: /support
+Allow: /contact
+Allow: /activity/
+
+# 検索エンジンにインデックスさせたくないディレクトリ
+Disallow: /assets/
+Disallow: /*.json$
+Disallow: /api/
+
+# クローラーのクロール頻度
+Crawl-delay: 1
+

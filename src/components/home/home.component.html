@@ -8,10 +8,10 @@
     [class.is-visible]="brandStoryVisible()"
     class="fade-in-up py-24 px-4 sm:px-8 md:px-16 container mx-auto relative overflow-hidden">
     <div class="absolute top-0 left-0 w-1/3 opacity-30 z-0" [style.transform]="parallaxImage1Transform()">
-      <img ngSrc="https://picsum.photos/800/1200?grayscale&blur=2&random=1" width="800" height="1200" alt="Abstract background image 1" class="object-cover">
+      <img ngSrc="https://picsum.photos/800/1200?grayscale&blur=2&random=1" width="800" height="1200" alt="八戸西高等学校野球部OB会 会長挨拶セクション背景" loading="lazy" decoding="async" class="object-cover">
     </div>
       <div class="absolute bottom-0 right-0 w-1/4 opacity-30 z-0" [style.transform]="parallaxImage2Transform()">
-      <img ngSrc="https://picsum.photos/600/900?grayscale&blur=2&random=2" width="600" height="900" alt="Abstract background image 2" class="object-cover">
+      <img ngSrc="https://picsum.photos/600/900?grayscale&blur=2&random=2" width="600" height="900" alt="八戸西高等学校野球部OB会 背景画像" loading="lazy" decoding="async" class="object-cover">
     </div>
     <div class="relative z-10">
       <app-section-title mainTitle="会長挨拶" subTitle="MESSAGE"></app-section-title>
@@ -67,15 +67,15 @@
             class="space-y-8 transition-transform duration-1000 ease-out"
             [class.translate-x-0]="galleryVisible()"
             [class.-translate-x-full]="!galleryVisible()">
-              <img ngSrc="/assets/images/baseball-history1.jpg" width="800" height="600" alt="Gallery image 1" class="w-full shadow-xl">
-              <img ngSrc="/assets/images/baseball-history2.jpg" width="800" height="1000" alt="Gallery image 2" class="w-full shadow-xl">
+              <img ngSrc="/assets/images/baseball-history1.jpg" width="800" height="600" alt="八戸西高等学校野球部の歴史と栄光の記録" class="w-full shadow-xl">
+              <img ngSrc="/assets/images/baseball-history2.jpg" width="800" height="1000" alt="八戸西高等学校野球部の伝統と歴史" class="w-full shadow-xl">
           </div>
           <div 
             class="space-y-8 transition-transform duration-1000 ease-out delay-200"
             [class.translate-x-0]="galleryVisible()"
             [class.translate-x-full]="!galleryVisible()">
-              <img ngSrc="/assets/images/baseball-history3.jpg" width="800" height="1000" alt="Gallery image 3" class="w-full shadow-xl">
-              <img ngSrc="/assets/images/baseball-history4.jpg" width="800" height="600" alt="Gallery image 4" class="w-full shadow-xl">
+              <img ngSrc="/assets/images/baseball-history3.jpg" width="800" height="1000" alt="八戸西高等学校野球部の白球に捧げた青春" class="w-full shadow-xl">
+              <img ngSrc="/assets/images/baseball-history4.jpg" width="800" height="600" alt="八戸西高等学校野球部OB会の絆と歴史" class="w-full shadow-xl">
           </div>
       </div>
     </div>
@@ -107,7 +107,7 @@
           [class.is-visible]="buildingHouseVisible()"
           class="fade-in-up delay-200">
           <div class="relative">
-            <img ngSrc="https://picsum.photos/seed/alumni-activities/800/1000" width="800" height="1000" alt="OB活躍情報" class="shadow-2xl w-full h-auto object-cover rounded-lg">
+            <img ngSrc="https://picsum.photos/seed/alumni-activities/800/1000" width="800" height="1000" alt="八戸西高等学校野球部OB活躍情報と現役選手の活動" loading="lazy" decoding="async" class="shadow-2xl w-full h-auto object-cover rounded-lg">
             <div class="absolute inset-0 bg-gradient-to-t from-[#002D62]/20 to-transparent rounded-lg"></div>
           </div>
         </div>
@@ -171,7 +171,7 @@
             [class.is-visible]="otherServiceVisible()"
             class="fade-in-up text-center {{item.delay}} group cursor-pointer block">
             <div class="relative overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-              <img ngSrc="{{item.img}}" width="800" height="600" alt="{{item.title}}" class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300">
+              <img ngSrc="{{item.img}}" width="800" height="600" alt="八戸西高等学校野球部 {{item.title}} - {{item.description}}" loading="lazy" decoding="async" class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300">
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                 <p class="text-sm">{{item.description}}</p>

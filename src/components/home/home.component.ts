@@ -32,9 +32,9 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.seoService.updateSEO({
-      title: '八戸西高等学校野球OB会',
-      description: '八戸西高等学校野球部OB会の公式ウェブサイト。活動報告、試合結果、OB活躍情報、現役チームへの支援情報などを掲載。OBと現役選手、ファンを繋ぐ情報ハブです。',
-      keywords: '八戸西高等学校,野球部,OB会,八戸西野球,青森県野球,高校野球,OB活躍情報,試合結果,活動報告,福島蓮,日本ハムファイターズ',
+      title: '八戸西高校 野球部OB会',
+      description: '八戸西高校野球部OB会の公式ウェブサイト。活動報告、試合結果、OB活躍情報、現役チームへの支援情報などを掲載。八戸西高校野球部OBと現役選手、ファンを繋ぐ情報ハブです。',
+      keywords: '八戸西高校,八戸西高等学校,野球部,OB会,八戸西野球,青森県野球,高校野球,OB活躍情報,試合結果,活動報告,福島蓮,日本ハムファイターズ',
       url: 'https://hachinishibaseball-ob.com/'
     });
   }
