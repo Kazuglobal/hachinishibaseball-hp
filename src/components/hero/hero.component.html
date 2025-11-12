@@ -17,7 +17,9 @@
         alt="野球場のホームプレート" 
         priority 
         [disableOptimizedSrcset]="true" 
-        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 z-10"
+        decoding="async"
+        (load)="baseImageLoaded.set(true)"
+        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out z-10"
         [class.opacity-0]="showGif() && !gifError()"
         [class.opacity-100]="!showGif() || gifError()">
       <!-- GIFアニメーション（ロード時に表示、一定時間後に非表示） -->
@@ -25,11 +27,12 @@
         #heroGif
         [src]="gifSrc()"
         alt="ロードアニメーション"
-        loading="lazy"
+        loading="eager"
         decoding="async"
-        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 z-20"
+        fetchpriority="high"
+        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out z-20"
         [class.opacity-0]="!showGif() || gifError()"
-        [class.opacity-100]="showGif() && !gifError()"
+        [class.opacity-100]="showGif() && !gifError() && gifLoaded()"
         (error)="onGifError($event)"
         (load)="onGifLoaded()">
       <div class="absolute inset-0 bg-black/50"></div>
