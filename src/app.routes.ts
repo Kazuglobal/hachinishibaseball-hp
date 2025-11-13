@@ -4,6 +4,7 @@ import { AboutComponent } from './components/about/about.component';
 import { SupportComponent } from './components/support/support.component';
 import { MatchResultsComponent } from './components/match-results/match-results.component';
 import { ActivityDetailComponent } from './components/activity-detail/activity-detail.component';
+import { ActivitiesListComponent } from './components/activities-list/activities-list.component';
 import { AlumniActivitiesComponent } from './components/alumni-activities/alumni-activities.component';
 import { ContactComponent } from './components/contact/contact.component';
 import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-policy.component';
@@ -14,6 +15,7 @@ export const routes: Routes = [
     { path: 'match-results', component: MatchResultsComponent },
     { path: 'support', component: SupportComponent },
     { path: 'contact', component: ContactComponent },
+    { path: 'activities', component: ActivitiesListComponent },
     { path: 'activity/:id', component: ActivityDetailComponent },
     { path: 'alumni-activities', component: AlumniActivitiesComponent },
     { path: 'privacy-policy', component: PrivacyPolicyComponent },

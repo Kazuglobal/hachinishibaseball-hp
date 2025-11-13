@@ -54,6 +54,9 @@ export class SupportComponent implements OnInit, AfterViewInit {
     { period: '46期', names: ['三浦 滉斗 様', '菊地 凜 様'] }
   ];
 
+  // 2025年の支援者一覧
+  donors2025: Donor[] = [];
+
   // OB会参加フォーム
   participationForm = {
     name: '',

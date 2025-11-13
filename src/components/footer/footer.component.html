@@ -22,6 +22,12 @@
                 <a routerLink="/about" class="hover:text-white transition-colors">{{section.title}}</a>
               } @else if (section.title === '試合結果') {
                 <a routerLink="/match-results" class="hover:text-white transition-colors">{{section.title}}</a>
+              } @else if (section.title === '活動報告') {
+                <a routerLink="/activities" class="hover:text-white transition-colors">{{section.title}}</a>
+              } @else if (section.title === '現役チームへ支援') {
+                <a routerLink="/support" class="hover:text-white transition-colors">{{section.title}}</a>
+              } @else if (section.title === 'お問い合わせ') {
+                <a routerLink="/contact" class="hover:text-white transition-colors">{{section.title}}</a>
               } @else if (section.links.length === 0) {
                  <a href="#" class="hover:text-white transition-colors">{{section.title}}</a>
               } @else {
@@ -36,6 +42,10 @@
                       <a routerLink="/match-results" [queryParams]="{tab: 'official'}" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
                     } @else if (section.title === '試合結果' && link === '練習試合') {
                       <a routerLink="/match-results" [queryParams]="{tab: 'practice'}" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
+                    } @else if (section.title === '野球部について' && link === '会長挨拶') {
+                      <a routerLink="/" [fragment]="'message'" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
+                    } @else if (section.title === '活動報告' && link === 'イベントレポート') {
+                      <a routerLink="/activities" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
                     } @else {
                       <a href="#" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
                     }

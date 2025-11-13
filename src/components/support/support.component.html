@@ -33,9 +33,30 @@
           </div>
         </div>
 
+        <!-- 2025年の支援者一覧 -->
+        @if (donors2025.length > 0) {
+          <div class="mt-10 mb-8">
+            <h3 class="text-xl md:text-2xl font-bold text-[#002D62] mb-6 text-center">ご支援ありがとうございました！！</h3>
+            <p class="text-center text-gray-600 mb-6 text-sm md:text-base">2025年支援者一覧</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              @for (donor of donors2025; track donor.period) {
+                <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                  <h4 class="font-bold text-[#002D62] mb-2">{{donor.period}}</h4>
+                  <ul class="text-sm text-gray-700 space-y-1">
+                    @for (name of donor.names; track name) {
+                      <li>{{name}}</li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         <!-- 昨年の入金者一覧 -->
         <div class="mt-10 mb-8">
           <h3 class="text-xl md:text-2xl font-bold text-[#002D62] mb-6 text-center">ご支援ありがとうございました！！</h3>
+          <p class="text-center text-gray-600 mb-6 text-sm md:text-base">2025年支援者一覧</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             @for (donor of donors; track donor.period) {
               <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">

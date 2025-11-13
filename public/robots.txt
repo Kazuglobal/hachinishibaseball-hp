@@ -21,3 +21,4 @@ Disallow: /api/
 # クローラーのクロール頻度
 Crawl-delay: 1
 
+

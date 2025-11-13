@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 })
 export class FooterComponent {
   sitemap = [
-    { title: '野球部について', links: ['会長挨拶', '会則', '役員紹介'] },
+    { title: '野球部について', links: ['会長挨拶'] },
     { title: '活動報告', links: ['イベントレポート', '支援活動'] },
     { title: '試合結果', links: ['公式戦', '練習試合'] },
     { title: '現役チームへ支援', links: [] },

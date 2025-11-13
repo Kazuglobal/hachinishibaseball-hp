@@ -1,0 +1,61 @@
+<div class="min-h-screen bg-[#F8F8F7] py-12 md:py-24">
+  <div class="container mx-auto px-4 sm:px-8">
+    <!-- 戻るボタン -->
+    <div class="mb-8">
+      <app-back-button></app-back-button>
+    </div>
+
+    <!-- タイトル -->
+    <div 
+      [class.is-visible]="isVisible()"
+      class="fade-in-up mb-12 md:mb-16">
+      <app-section-title mainTitle="活動報告一覧" subTitle="ACTIVITIES"></app-section-title>
+    </div>
+
+    <!-- 活動報告一覧 -->
+    <div 
+      [class.is-visible]="isVisible()"
+      class="fade-in-up grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+      @for(activity of sortedActivities; track activity.id; let i = $index) {
+        <a 
+          [routerLink]="['/activity', activity.id]"
+          class="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 block">
+          <!-- 画像 -->
+          <div class="relative overflow-hidden aspect-[4/3]">
+            <img 
+              [ngSrc]="activity.image" 
+              [alt]="activity.title"
+              width="800"
+              height="600"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <div class="absolute top-4 left-4">
+              <span class="px-3 py-1 bg-[#002D62]/90 text-white text-xs font-semibold rounded-full backdrop-blur-sm">
+                {{activity.category}}
+              </span>
+            </div>
+          </div>
+          
+          <!-- コンテンツ -->
+          <div class="p-6">
+            <span class="text-xs md:text-sm text-gray-500 font-medium">{{activity.date}}</span>
+            <h3 class="font-serif-jp text-lg md:text-xl font-bold text-gray-800 mt-2 mb-3 line-clamp-2 group-hover:text-[#002D62] transition-colors duration-300">
+              {{activity.title}}
+            </h3>
+            <p class="text-sm text-gray-600 leading-relaxed line-clamp-3 mb-4">
+              {{getPreviewText(activity.content)}}
+            </p>
+            <div class="flex items-center text-[#002D62] text-sm font-semibold group-hover:text-[#B31B1B] transition-colors duration-300">
+              続きを読む
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        </a>
+      }
+    </div>
+  </div>
+</div>
+
