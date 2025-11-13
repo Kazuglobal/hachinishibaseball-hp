@@ -107,7 +107,7 @@
           [class.is-visible]="buildingHouseVisible()"
           class="fade-in-up delay-200">
           <div class="relative">
-            <img ngSrc="https://picsum.photos/seed/alumni-activities/800/1000" width="800" height="1000" alt="八戸西高等学校野球部OB活躍情報と現役選手の活動" loading="lazy" decoding="async" class="shadow-2xl w-full h-auto object-cover rounded-lg">
+            <img ngSrc="/assets/images/uniform.jpg" width="800" height="1000" alt="八戸西高等学校野球部OB活躍情報と現役選手の活動" loading="lazy" decoding="async" class="shadow-2xl w-full h-auto object-cover rounded-lg">
             <div class="absolute inset-0 bg-gradient-to-t from-[#002D62]/20 to-transparent rounded-lg"></div>
           </div>
         </div>
@@ -171,7 +171,7 @@
             [class.is-visible]="otherServiceVisible()"
             class="fade-in-up text-center {{item.delay}} group cursor-pointer block">
             <div class="relative overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-              <img ngSrc="{{item.img}}" width="800" height="600" alt="八戸西高等学校野球部 {{item.title}} - {{item.description}}" loading="lazy" decoding="async" class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300">
+              <img ngSrc="{{item.img}}" width="800" height="600" alt="八戸西高等学校野球部 {{item.title}} - {{item.description}}" loading="lazy" decoding="async" class="w-full h-auto aspect-[4/3] object-cover group-hover:scale-110 transition-transform duration-300">
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                 <p class="text-sm">{{item.description}}</p>

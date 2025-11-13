@@ -89,13 +89,6 @@ export class AboutComponent implements OnInit, AfterViewInit {
       period: '',
       education: ['八戸高校（平成６年甲子園出場）', '東京学芸大学'],
       career: []
-    },
-    {
-      name: '宇波　毅',
-      position: '副部長　投手',
-      period: '',
-      education: ['八戸高校', '早稲田大学'],
-      career: []
     }
   ];
 
