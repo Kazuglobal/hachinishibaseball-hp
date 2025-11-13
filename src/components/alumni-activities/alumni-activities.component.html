@@ -141,6 +141,71 @@
     </div>
   </div>
 
+  <!-- 竹本祐瑛選手メインセクション -->
+  <div class="max-w-6xl mx-auto mb-16 md:mb-24">
+    <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-2xl shadow-xl p-6 md:p-10 border border-[#002D62]/10">
+      <!-- 選手情報ヘッダー -->
+      <div class="text-center mb-8 md:mb-12">
+        <div class="inline-block px-4 py-2 bg-[#002D62] text-white text-sm md:text-base font-bold rounded-full mb-4">
+          {{takemotoInfo.period}} {{takemotoInfo.note}}
+        </div>
+        <h2 class="font-serif-jp text-2xl md:text-4xl font-bold text-[#002D62] mb-2">
+          {{takemotoInfo.name}}
+        </h2>
+        <p class="text-lg md:text-xl text-gray-700 font-semibold mb-1">
+          {{takemotoInfo.team}}
+        </p>
+        <p class="text-base md:text-lg text-gray-600">
+          {{takemotoInfo.position}}
+        </p>
+      </div>
+
+      <!-- 選手説明 -->
+      <div class="mb-8 md:mb-12 text-center">
+        <p class="text-base md:text-lg leading-relaxed text-gray-800 mb-4">
+          {{takemotoInfo.description}}
+        </p>
+        <p class="text-xl md:text-2xl font-bold text-[#002D62] mb-4">
+          {{takemotoInfo.message}}
+        </p>
+        @if(takemotoInfo.links && takemotoInfo.links.length > 0) {
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            @for(link of takemotoInfo.links; track link) {
+              <a 
+                [href]="link" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                class="inline-block bg-[#B31B1B] text-white py-3 px-8 rounded-lg hover:bg-red-700 transition-colors duration-300 shadow-lg hover:shadow-xl">
+                関連記事を見る →
+              </a>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- 選手画像 -->
+      @if(takemotoInfo.image) {
+        <div class="mb-8 md:mb-12">
+          <div class="relative w-full max-w-2xl mx-auto rounded-xl overflow-hidden shadow-2xl">
+            <img 
+              [ngSrc]="takemotoInfo.image" 
+              [alt]="takemotoInfo.name + '選手の写真'"
+              width="800"
+              height="600"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-auto object-cover">
+            @if(takemotoInfo.imageSource) {
+              <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs py-2 px-4 text-right">
+                出典: {{takemotoInfo.imageSource}}
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
   <!-- 現役活躍OB情報セクション -->
   <div class="max-w-6xl mx-auto mb-12 md:mb-16">
     <div class="text-center mb-8 md:mb-12">
