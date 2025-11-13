@@ -118,8 +118,6 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
     { period: '34期', name: '長井 正哉', team: '北海道日本ハムファイターズ', position: 'トレーナー', note: '3年目' },
     { period: '45期', name: '相前 雄一朗', team: '城西大学', position: '内野手', note: '4年' },
     { period: '45期', name: '宮崎 一綺', team: '清和大学', position: '内野手', note: '4年' },
-    { period: '45期', name: '福島 蓮', team: '北海道日本ハムファイターズ', position: '投手', note: '4年目' },
-    { period: '40期', name: '竹本 祐瑛', team: 'JR東日本東北', position: '投手', note: '4年目', links: ['https://sports.yahoo.co.jp/official/detail/2025063000149-spnaviow', 'https://www.nikkansports.com/baseball/news/202509030000882.html'] },
     { period: '45期', name: '大釜 温斗', team: '清和大学', position: '捕手', note: '4年' },
     { period: '45期', name: '藤本 楓都', team: '帝京平成大学', position: '捕手', note: '4年' },
     { period: '45期', name: '村上 歩夢', team: '獨協大学', position: '外野手', note: '4年' },
