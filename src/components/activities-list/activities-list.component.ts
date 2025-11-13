@@ -1,10 +1,11 @@
-import { Component, ChangeDetectionStrategy, OnInit, signal, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, signal, PLATFORM_ID, Inject, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { NgOptimizedImage } from '@angular/common';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
+import { SEOService } from '../../services/seo.service';
 
 interface Activity {
   id: string;
@@ -32,6 +33,7 @@ interface Activity {
 })
 export class ActivitiesListComponent implements OnInit {
   private isBrowser: boolean;
+  private seoService = inject(SEOService);
   isVisible = signal(false);
 
   // 活動報告データ（ActivityDetailComponentと同じデータ）
@@ -189,6 +191,14 @@ export class ActivitiesListComponent implements OnInit {
 
   ngOnInit() {
     this.isVisible.set(true);
+    
+    // SEO設定
+    this.seoService.updateSEO({
+      title: '活動報告一覧 | 八戸西高校 | 八戸西高等学校',
+      description: '八戸西高校（八戸西高等学校）野球部の活動報告一覧。練習試合、遠征、イベント、OB会活動など、八戸西高校野球部の最新の活動情報を掲載しています。',
+      keywords: '八戸西高校,八戸西高等学校,八戸西高校野球部,活動報告,活動報告一覧,練習試合,遠征,イベント,OB会活動,八戸西高校野球部活動',
+      url: 'https://hachinishibaseball-ob.com/activities'
+    });
     
     // 日付順にソート（最新が最初）
     this.sortedActivities = [...this.activities].sort((a, b) => {

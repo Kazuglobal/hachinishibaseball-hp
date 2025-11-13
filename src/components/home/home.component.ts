@@ -32,10 +32,25 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.seoService.updateSEO({
-      title: '八戸西高校 野球部OB会',
-      description: '八戸西高校野球部OB会の公式ウェブサイト。活動報告、試合結果、OB活躍情報、現役チームへの支援情報などを掲載。八戸西高校野球部OBと現役選手、ファンを繋ぐ情報ハブです。',
-      keywords: '八戸西高校,八戸西高等学校,野球部,OB会,八戸西野球,青森県野球,高校野球,OB活躍情報,試合結果,活動報告,福島蓮,日本ハムファイターズ',
+      title: '八戸西高校 野球部OB会 | 八戸西高等学校',
+      description: '八戸西高校（八戸西高等学校）野球部OB会の公式ウェブサイト。活動報告、試合結果、OB活躍情報、現役チームへの支援情報などを掲載。八戸西高校野球部OBと現役選手、ファンを繋ぐ情報ハブです。八戸西高校野球部の歴史、伝統、そしてOBの活躍を紹介しています。',
+      keywords: '八戸西高校,八戸西高等学校,八戸西高校野球部,八戸西高等学校野球部,野球部,OB会,八戸西野球,青森県野球,高校野球,OB活躍情報,試合結果,活動報告,福島蓮,日本ハムファイターズ,八戸西高校OB会,八戸西高等学校OB会',
       url: 'https://hachinishibaseball-ob.com/'
+    });
+    
+    // 構造化データを追加
+    this.seoService.addStructuredData({
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "八戸西高校 野球部OB会 | 八戸西高等学校",
+      "description": "八戸西高校（八戸西高等学校）野球部OB会の公式ウェブサイト",
+      "url": "https://hachinishibaseball-ob.com/",
+      "inLanguage": "ja-JP",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "八戸西高等学校野球OB会",
+        "url": "https://hachinishibaseball-ob.com"
+      }
     });
   }
 

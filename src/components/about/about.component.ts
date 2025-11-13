@@ -114,9 +114,9 @@ export class AboutComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     // SEO設定
     this.seoService.updateSEO({
-      title: '野球部について',
-      description: '八戸西高等学校野球部の紹介。監督・コーチ陣のプロフィール、部員の出身中学校データ、OB会の活動内容などを掲載しています。',
-      keywords: '八戸西高等学校,野球部,監督,コーチ,部員,出身中学校,OB会',
+      title: '野球部について | 八戸西高校 | 八戸西高等学校',
+      description: '八戸西高校（八戸西高等学校）野球部の紹介。監督・コーチ陣のプロフィール、部員の出身中学校データ、OB会の活動内容などを掲載しています。八戸西高校野球部の歴史と伝統を紹介しています。',
+      keywords: '八戸西高校,八戸西高等学校,八戸西高校野球部,八戸西高等学校野球部,野球部,監督,コーチ,部員,出身中学校,OB会,八戸西高校OB会',
       url: 'https://hachinishibaseball-ob.com/about'
     });
 

@@ -187,9 +187,9 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
     
     // SEO設定
     this.seoService.updateSEO({
-      title: 'OB活躍情報',
-      description: '八戸西高等学校野球部OBの活躍情報を掲載。プロ野球で活躍する福島蓮選手（日本ハムファイターズ）をはじめ、現役で活躍するOBの情報を動画とプロフィールで紹介しています。',
-      keywords: 'OB活躍情報,福島蓮,日本ハムファイターズ,八戸西野球OB,プロ野球選手,高校野球OB,青森県野球',
+      title: 'OB活躍情報 | 八戸西高校 | 八戸西高等学校',
+      description: '八戸西高校（八戸西高等学校）野球部OBの活躍情報を掲載。プロ野球で活躍する福島蓮選手（日本ハムファイターズ）をはじめ、現役で活躍するOBの情報を動画とプロフィールで紹介しています。八戸西高校野球部OBの活躍を応援しています。',
+      keywords: '八戸西高校,八戸西高等学校,OB活躍情報,福島蓮,日本ハムファイターズ,八戸西野球OB,八戸西高校OB,プロ野球選手,高校野球OB,青森県野球,八戸西高校野球部OB',
       url: 'https://hachinishibaseball-ob.com/alumni-activities'
     });
 

@@ -53,6 +53,14 @@
     <priority>0.7</priority>
   </url>
   
+  <!-- Activities List -->
+  <url>
+    <loc>https://hachinishibaseball-ob.com/activities</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
   <!-- Privacy Policy -->
   <url>
     <loc>https://hachinishibaseball-ob.com/privacy-policy</loc>
