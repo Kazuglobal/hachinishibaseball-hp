@@ -38,30 +38,40 @@
         </div>
       </div>
 
-      <!-- OB会とAIワークショップのみ追加画像を表示 -->
-      @if ((activity()!.id === 'newyear-ob-2025' || activity()!.id === 'ai-workshop-2024') && activity()!.additionalImages && activity()!.additionalImages.length > 0) {
+      <!-- 追加画像を表示 -->
+      @if ((activity()!.id === 'newyear-ob-2025' || activity()!.id === 'ai-workshop-2024' || activity()!.id === 'sansha-festival-2025' || activity()!.id === 'hachikoshi-practice-2025' || activity()!.id === 'yoga-training-2025') && activity()!.additionalImages && activity()!.additionalImages.length > 0) {
         <div class="mb-8">
           <h3 class="text-xl font-bold font-serif-jp text-gray-800 mb-4">関連画像</h3>
-          <div class="grid grid-cols-1 gap-4">
-            @for (additionalImage of activity()!.additionalImages; track additionalImage) {
-              <div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @for (additionalImage of activity()!.additionalImages; track additionalImage; let i = $index) {
+              <div class="relative overflow-hidden rounded-lg shadow-lg">
                 <img 
                   ngSrc="{{additionalImage}}" 
                   width="1200" 
                   height="800" 
-                  [alt]="activity()!.title + ' 追加画像'" 
-                  loading="lazy"
+                  [alt]="activity()!.title + ' 追加画像 ' + (i + 1)" 
+                  [loading]="i === 0 ? 'eager' : 'lazy'"
+                  [fetchpriority]="i === 0 ? 'high' : 'auto'"
+                  decoding="async"
                   [disableOptimizedSrcset]="true"
-                  class="w-full rounded-lg shadow-lg object-cover">
+                  class="w-full h-auto max-h-[400px] md:max-h-[500px] rounded-lg shadow-lg object-contain transition-transform duration-300 hover:scale-105">
               </div>
             }
           </div>
         </div>
       }
 
-      <!-- 戻るボタン -->
-      <div class="mt-12">
+      <!-- ナビゲーションボタン -->
+      <div class="mt-12 flex flex-col sm:flex-row justify-between items-center gap-4">
         <app-back-button></app-back-button>
+        @if (nextActivity()) {
+          <a 
+            [routerLink]="['/activity', nextActivity()!.id]"
+            class="inline-flex items-center gap-2 px-3 py-2 rounded border border-[#002D62] text-[#002D62] hover:bg-[#002D62] hover:text-white transition-colors font-semibold">
+            次の記事へ
+            <span aria-hidden="true">→</span>
+          </a>
+        }
       </div>
     </div>
   }

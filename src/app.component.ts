@@ -41,7 +41,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     if (this.isBrowser) {
-      // ルーティング完了後にフラグメントにスクロール
+      // ルーティング完了後にフラグメントにスクロール、またはページ上部にスクロール
       this.router.events
         .pipe(filter(event => event instanceof NavigationEnd))
         .subscribe(() => {
@@ -49,6 +49,7 @@ export class AppComponent implements OnInit {
             const url = this.router.url;
             const fragmentIndex = url.indexOf('#');
             if (fragmentIndex !== -1) {
+              // フラグメントがある場合は、フラグメントにスクロール
               const fragment = url.substring(fragmentIndex + 1);
               const element = document.getElementById(fragment);
               if (element) {
@@ -61,8 +62,14 @@ export class AppComponent implements OnInit {
                   behavior: 'smooth'
                 });
               }
+            } else {
+              // フラグメントがない場合は、ページの上部にスクロール
+              window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+              });
             }
-          }, 200);
+          }, 100);
         });
     }
   }

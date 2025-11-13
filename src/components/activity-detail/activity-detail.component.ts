@@ -1,6 +1,6 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, AfterViewInit, inject, signal, computed, ChangeDetectorRef, PLATFORM_ID, Inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { NgOptimizedImage } from '@angular/common';
@@ -23,11 +23,16 @@ interface Activity {
   templateUrl: './activity-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ActivityDetailComponent implements OnInit {
+export class ActivityDetailComponent implements OnInit, AfterViewInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private isBrowser: boolean;
   isVisible = signal(false);
+
+  constructor(@Inject(PLATFORM_ID) platformId: object) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   // 活動報告データ
   private activities: Activity[] = [
@@ -119,7 +124,11 @@ export class ActivityDetailComponent implements OnInit {
       category: '練習', 
       title: '八高支練習', 
       date: '2025年11月10日',
-      content: '八戸高等支援学校の生徒さんたちと交流しました。お互いに刺激を受けながら、楽しく練習に取り組みました。この交流を通じて、部員たちは多様性を理解し、お互いを尊重することの大切さを学びました。'
+      content: '八戸高等支援学校の生徒さんたちと交流しました。お互いに刺激を受けながら、楽しく練習に取り組みました。この交流を通じて、部員たちは多様性を理解し、お互いを尊重することの大切さを学びました。',
+      additionalImages: [
+        '/assets/images/hachishien2.jpg',
+        '/assets/images/hachishien3.jpg'
+      ]
     },
     { 
       id: 'sansha-festival-2025',
@@ -127,7 +136,13 @@ export class ActivityDetailComponent implements OnInit {
       category: '地域貢献', 
       title: '三社大祭', 
       date: '2025年7月20日',
-      content: '三社大祭に参加しました。地域の伝統行事に参加し、地域の方々との交流を深めることができました。部員たちは地域の一員として、祭りの運営にも協力させていただきました。'
+      content: '三社大祭に参加しました。地域の伝統行事に参加し、地域の方々との交流を深めることができました。部員たちは地域の一員として、祭りの運営にも協力させていただきました。',
+      additionalImages: [
+        '/assets/images/taisai1.jpg',
+        '/assets/images/taisai2.jpg',
+        '/assets/images/taisai3.jpg',
+        '/assets/images/taisai4.jpg'
+      ]
     },
     { 
       id: 'training-camp-2025',
@@ -159,14 +174,27 @@ export class ActivityDetailComponent implements OnInit {
       category: 'トレーニング', 
       title: 'ヨガトレーニング', 
       date: '2025年6月18日',
-      content: '2025年6月18日　ヨガ・瞑想トレーナーの恵先生から呼吸法やストレッチ、ヨガを教えていただきました。柔軟性と集中力の向上を目的とし、部員たちも積極的に取り組みました。心身のバランスを整えることで、パフォーマンスの向上にもつながっています。'
+      content: '2025年6月18日　ヨガ・瞑想トレーナーの恵先生から呼吸法やストレッチ、ヨガを教えていただきました。柔軟性と集中力の向上を目的とし、部員たちも積極的に取り組みました。心身のバランスを整えることで、パフォーマンスの向上にもつながっています。',
+      additionalImages: [
+        '/assets/images/yoga1.jpg'
+      ]
     },
   ];
 
   activity = signal<Activity | null>(null);
+  currentActivityIndex = signal<number>(-1);
+  sortedActivities = signal<Activity[]>([]);
 
   ngOnInit() {
     this.isVisible.set(true);
+    
+    // 日付順にソート（最新が最初）
+    const sorted = [...this.activities].sort((a, b) => {
+      const dateA = this.parseDate(a.date);
+      const dateB = this.parseDate(b.date);
+      return dateB.getTime() - dateA.getTime(); // 降順（新しい順）
+    });
+    this.sortedActivities.set(sorted);
     
     this.route.params.subscribe(params => {
       const id = params['id'];
@@ -174,12 +202,49 @@ export class ActivityDetailComponent implements OnInit {
       
       if (foundActivity) {
         this.activity.set(foundActivity);
+        // ソート済み配列でのインデックスを取得
+        const index = sorted.findIndex(a => a.id === id);
+        this.currentActivityIndex.set(index);
       } else {
         // 記事が見つからない場合はホームにリダイレクト
         this.router.navigate(['/']);
       }
       this.cdr.markForCheck();
     });
+  }
+
+  // 日付文字列をDateオブジェクトに変換
+  private parseDate(dateString: string): Date {
+    // "2025年10月5日" または "2025年6月7日（土）8日（日）" の形式をパース
+    const match = dateString.match(/(\d+)年(\d+)月(\d+)日/);
+    if (match) {
+      const year = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1; // 月は0から始まる
+      const day = parseInt(match[3], 10);
+      return new Date(year, month, day);
+    }
+    return new Date(0); // パースに失敗した場合は古い日付を返す
+  }
+
+  nextActivity = computed(() => {
+    const currentIndex = this.currentActivityIndex();
+    const sorted = this.sortedActivities();
+    if (currentIndex >= 0 && currentIndex < sorted.length - 1) {
+      return sorted[currentIndex + 1];
+    }
+    return null;
+  });
+
+  ngAfterViewInit() {
+    // ページ遷移時にページの上部にスクロール
+    if (this.isBrowser) {
+      setTimeout(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }, 100);
+    }
   }
 }
 
