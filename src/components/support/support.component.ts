@@ -104,6 +104,22 @@ export class SupportComponent implements OnInit, AfterViewInit {
     setTimeout(() => {
       this.scrollToFragment();
     }, 300);
+    
+    // Stripeスクリプトを動的に読み込む
+    this.loadStripeScript();
+  }
+
+  private loadStripeScript(): void {
+    // 既に読み込まれているか確認
+    if (document.querySelector('script[src="https://js.stripe.com/v3/buy-button.js"]')) {
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://js.stripe.com/v3/buy-button.js';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
   }
 
   private scrollToFragment() {
