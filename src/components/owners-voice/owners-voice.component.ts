@@ -18,7 +18,7 @@ export class OwnersVoiceComponent implements OnInit, OnDestroy {
   voices = [
     {
       id: 'hayashino-satoshi',
-      image: 'https://picsum.photos/seed/alumni1/800/1000',
+      image: '/assets/images/hayashino.jpg',
       title: '野球部での経験が、今の自分の礎です。',
       family: '32期生 - 林野 智 様',
     },

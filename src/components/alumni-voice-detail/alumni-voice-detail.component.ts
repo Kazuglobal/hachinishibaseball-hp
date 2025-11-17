@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, OnInit, AfterViewInit, inject, signal, computed, ChangeDetectorRef, PLATFORM_ID, Inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule, isPlatformBrowser, DomSanitizer, SafeHtml } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { NgOptimizedImage } from '@angular/common';
@@ -39,7 +40,7 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
   private alumniVoices: AlumniVoice[] = [
     {
       id: 'hayashino-satoshi',
-      image: 'https://picsum.photos/seed/alumni1/800/1000',
+      image: '/assets/images/hayashino.jpg',
       title: '野球部での経験が、今の自分の礎です。',
       family: '32期生 - 林野 智 様',
       generation: '32期生',
@@ -61,6 +62,12 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
 「大学生の頃、野球が好きだったので、アルバイト先も元プロ野球選手の方が店長をやっている居酒屋で働いていました」
 
 そこで出会った常連客に連れられて行った寿司店の親方が、仙台育英で甲子園準優勝経験のある人物だった。その親方から「お前も手伝え」と誘われたのが、仙台宮城野リトルシニアでのコーチの始まりだった。
+
+[IMAGE:hayashino4.jpg:宮城野リトルシニアの選手たち]
+
+[IMAGE:hayashino3.jpg:コーチ時代の林野さん]
+
+[IMAGE:hayashino2.jpg:]
 
 「高校の時の後悔があったのも、指導を続ける大きな理由でしたね。約10年間、中学生たちに野球を教えていました」
 
@@ -139,14 +146,57 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
     if (!content) return this.sanitizer.bypassSecurityTrustHtml('');
     
     let html = content
-      .replace(/### (.+)/g, '<h3 class="text-xl font-bold font-serif-jp text-gray-800 mt-8 mb-4">$1</h3>')
+      // 画像マーカーを処理 [IMAGE:filename.jpg:caption]
+      .replace(/\[IMAGE:([^:]+):([^\]]*)\]/g, (match, filename, caption) => {
+        const imagePath = `/assets/images/${filename.trim()}`;
+        const captionText = caption.trim();
+        if (captionText) {
+          return `<figure class="my-8 md:my-12 -mx-4 sm:mx-0">
+            <div class="relative overflow-hidden bg-gray-100">
+              <img 
+                src="${imagePath}" 
+                width="800" 
+                height="600" 
+                alt="${captionText}" 
+                loading="lazy"
+                decoding="async"
+                class="w-full h-auto max-h-[350px] sm:max-h-[450px] md:max-h-[500px] lg:max-h-[600px] object-cover">
+            </div>
+            <figcaption class="mt-3 px-4 sm:px-0 text-center text-xs sm:text-sm text-gray-600 italic">
+              ${captionText}
+            </figcaption>
+          </figure>`;
+        } else {
+          return `<figure class="my-8 md:my-12 -mx-4 sm:mx-0">
+            <div class="relative overflow-hidden bg-gray-100">
+              <img 
+                src="${imagePath}" 
+                width="800" 
+                height="600" 
+                alt="" 
+                loading="lazy"
+                decoding="async"
+                class="w-full h-auto max-h-[350px] sm:max-h-[450px] md:max-h-[500px] lg:max-h-[600px] object-cover">
+            </div>
+          </figure>`;
+        }
+      })
+      .replace(/### (.+)/g, '<h2 class="text-2xl md:text-3xl font-bold font-serif-jp text-gray-900 mt-16 mb-6 pb-4 border-b-2 border-gray-900">$1</h2>')
       .split('\n\n')
       .map(para => {
-        if (para.trim().startsWith('<h3')) {
-          return para.trim();
+        const trimmed = para.trim();
+        if (trimmed.startsWith('<h2') || trimmed.startsWith('<figure')) {
+          return trimmed;
         }
-        return `<p class="mb-4">${para.trim().replace(/\n/g, '<br>')}</p>`;
+        if (trimmed === '') {
+          return '';
+        }
+        // 引用符で囲まれたテキストは通常のスタイルで表示
+        const processedText = trimmed
+          .replace(/\n/g, '<br>');
+        return `<p class="mb-8 text-gray-700 leading-[1.9]">${processedText}</p>`;
       })
+      .filter(p => p !== '')
       .join('');
     
     return this.sanitizer.bypassSecurityTrustHtml(html);
