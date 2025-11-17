@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, signal, computed, OnInit, OnDestroy, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
 import { NgOptimizedImage } from '@angular/common';
@@ -7,7 +8,7 @@ import { NgOptimizedImage } from '@angular/common';
 @Component({
   selector: 'app-owners-voice',
   templateUrl: './owners-voice.component.html',
-  imports: [SectionTitleComponent, ObserveVisibilityDirective, NgOptimizedImage],
+  imports: [SectionTitleComponent, ObserveVisibilityDirective, NgOptimizedImage, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OwnersVoiceComponent implements OnInit, OnDestroy {
@@ -16,21 +17,25 @@ export class OwnersVoiceComponent implements OnInit, OnDestroy {
 
   voices = [
     {
+      id: 'hayashino-satoshi',
       image: 'https://picsum.photos/seed/alumni1/800/1000',
       title: '野球部での経験が、今の自分の礎です。',
-      family: '平成10年度卒 - 山田 太郎 様',
+      family: '32期生 - 林野 智 様',
     },
     {
+      id: 'coming-soon-2',
       image: 'https://picsum.photos/seed/alumni2/800/1000',
       title: '出会えたことに感謝しています。',
       family: '平成15年度卒 - 佐藤 次郎 様',
     },
     {
+      id: 'coming-soon-3',
       image: 'https://picsum.photos/seed/alumni3/800/1000',
       title: '現役選手たちの活躍が、何よりの励みになります。',
       family: '平成20年度卒 - 鈴木 三郎 様',
     },
     {
+      id: 'coming-soon-4',
       image: 'https://picsum.photos/seed/alumni4/800/1000',
       title: '八戸西の野球魂を、次の世代に繋いでいきたい。',
       family: '平成25年度卒 - 高橋 四郎 様',

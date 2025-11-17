@@ -13,22 +13,42 @@
         <div class="flex transition-transform duration-700 ease-in-out" [style.transform]="carouselTransform()">
           @for (voice of voices; track voice.title; let i = $index) {
             <div class="flex-shrink-0 px-2 sm:px-4" [style.width]="cardWidth()">
-              <div class="relative group h-full max-w-[280px] sm:max-w-sm md:max-w-none mx-auto">
-                <img 
-                  ngSrc="{{voice.image}}" 
-                  width="800" 
-                  height="1000" 
-                  [alt]="voice.title" 
-                  [priority]="i === 0"
-                  [loading]="i === 0 ? null : 'lazy'"
-                  [disableOptimizedSrcset]="true"
-                  class="w-full object-cover shadow-xl aspect-[3/4] sm:aspect-[4/5] max-h-[380px] sm:max-h-[450px] md:max-h-none transition-opacity duration-300"
-                  style="background-color: #e5e7eb;">
-                <div class="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-6 lg:p-8 bg-gradient-to-t from-black/85 via-black/70 to-transparent text-white">
-                  <h3 class="font-serif-jp text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-tight line-clamp-2">{{voice.title}}</h3>
-                  <p class="text-xs sm:text-sm mt-1.5 sm:mt-2">{{voice.family}}</p>
+              @if (voice.id === 'hayashino-satoshi') {
+                <a [routerLink]="['/alumni-voice', voice.id]" class="block relative group h-full max-w-[280px] sm:max-w-sm md:max-w-none mx-auto cursor-pointer hover:opacity-90 transition-opacity duration-300">
+                  <img 
+                    ngSrc="{{voice.image}}" 
+                    width="800" 
+                    height="1000" 
+                    [alt]="voice.title" 
+                    [priority]="i === 0"
+                    [loading]="i === 0 ? null : 'lazy'"
+                    [disableOptimizedSrcset]="true"
+                    class="w-full object-cover shadow-xl aspect-[3/4] sm:aspect-[4/5] max-h-[380px] sm:max-h-[450px] md:max-h-none transition-opacity duration-300"
+                    style="background-color: #e5e7eb;">
+                  <div class="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-6 lg:p-8 bg-gradient-to-t from-black/85 via-black/70 to-transparent text-white">
+                    <h3 class="font-serif-jp text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-tight line-clamp-2">{{voice.title}}</h3>
+                    <p class="text-xs sm:text-sm mt-1.5 sm:mt-2">{{voice.family}}</p>
+                  </div>
+                </a>
+              } @else {
+                <div class="relative group h-full max-w-[280px] sm:max-w-sm md:max-w-none mx-auto">
+                  <img 
+                    ngSrc="{{voice.image}}" 
+                    width="800" 
+                    height="1000" 
+                    [alt]="voice.title" 
+                    [priority]="i === 0"
+                    [loading]="i === 0 ? null : 'lazy'"
+                    [disableOptimizedSrcset]="true"
+                    class="w-full object-cover shadow-xl aspect-[3/4] sm:aspect-[4/5] max-h-[380px] sm:max-h-[450px] md:max-h-none transition-opacity duration-300 opacity-50"
+                    style="background-color: #e5e7eb;">
+                  <div class="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-6 lg:p-8 bg-gradient-to-t from-black/85 via-black/70 to-transparent text-white">
+                    <h3 class="font-serif-jp text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-tight line-clamp-2">{{voice.title}}</h3>
+                    <p class="text-xs sm:text-sm mt-1.5 sm:mt-2">{{voice.family}}</p>
+                    <p class="text-xs mt-1 text-gray-300">Coming Soon</p>
+                  </div>
                 </div>
-              </div>
+              }
             </div>
           }
         </div>

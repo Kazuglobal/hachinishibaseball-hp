@@ -8,6 +8,7 @@ import { ActivitiesListComponent } from './components/activities-list/activities
 import { AlumniActivitiesComponent } from './components/alumni-activities/alumni-activities.component';
 import { ContactComponent } from './components/contact/contact.component';
 import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-policy.component';
+import { AlumniVoiceDetailComponent } from './components/alumni-voice-detail/alumni-voice-detail.component';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -18,6 +19,7 @@ export const routes: Routes = [
     { path: 'activities', component: ActivitiesListComponent },
     { path: 'activity/:id', component: ActivityDetailComponent },
     { path: 'alumni-activities', component: AlumniActivitiesComponent },
+    { path: 'alumni-voice/:id', component: AlumniVoiceDetailComponent },
     { path: 'privacy-policy', component: PrivacyPolicyComponent },
     { path: '**', redirectTo: '' }
 ];
