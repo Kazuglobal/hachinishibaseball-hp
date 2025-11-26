@@ -66,7 +66,19 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   private scheduleTimeout(callback: () => void, delay: number): void {
-    const id = window.setTimeout(callback, delay);
+    let id: number;
+    const wrappedCallback = () => {
+      try {
+        callback();
+      } finally {
+        const index = this.scheduledTimeouts.indexOf(id);
+        if (index !== -1) {
+          this.scheduledTimeouts.splice(index, 1);
+        }
+      }
+    };
+
+    id = window.setTimeout(wrappedCallback, delay);
     this.scheduledTimeouts.push(id);
   }
   

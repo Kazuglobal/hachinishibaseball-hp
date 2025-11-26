@@ -160,21 +160,17 @@
         <!-- モバイル操作ボタン -->
         <div class="flex justify-center gap-4 md:hidden">
           <button 
-            (touchstart)="movePlayer('left')"
-            (touchend)="$event.preventDefault()"
+            (touchstart)="$event.preventDefault(); movePlayer('left')"
             class="flex-1 max-w-[150px] bg-gradient-to-b from-gray-600 to-gray-800 text-white text-3xl font-black py-6 rounded-2xl shadow-[0_6px_0_#1f2937] active:shadow-none active:translate-y-[6px] transition-all duration-100 touch-manipulation">
             ◀
           </button>
           <button 
-            (touchstart)="dive($event)"
-            (touchend)="$event.preventDefault()"
-            (click)="dive($event)"
+            (touchstart)="$event.preventDefault(); dive($event)"
             class="px-6 bg-gradient-to-b from-cyan-500 to-cyan-700 text-white text-sm font-bold py-4 rounded-2xl shadow-[0_6px_0_#0e7490] active:shadow-none active:translate-y-[6px] transition-all duration-100 touch-manipulation">
             DIVE
           </button>
           <button 
-            (touchstart)="movePlayer('right')"
-            (touchend)="$event.preventDefault()"
+            (touchstart)="$event.preventDefault(); movePlayer('right')"
             class="flex-1 max-w-[150px] bg-gradient-to-b from-gray-600 to-gray-800 text-white text-3xl font-black py-6 rounded-2xl shadow-[0_6px_0_#1f2937] active:shadow-none active:translate-y-[6px] transition-all duration-100 touch-manipulation">
             ▶
           </button>
