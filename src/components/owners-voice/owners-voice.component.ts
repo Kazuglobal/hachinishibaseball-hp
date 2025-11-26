@@ -66,6 +66,9 @@ export class OwnersVoiceComponent implements OnInit, OnDestroy {
 
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
+    // 初期表示で林野さんの記事が先頭にくるように設定
+    const initialIndex = this.voices.findIndex(v => v.id === 'hayashino-satoshi');
+    this.currentIndex.set(initialIndex >= 0 ? initialIndex : 0);
   }
 
   ngOnInit(): void {
