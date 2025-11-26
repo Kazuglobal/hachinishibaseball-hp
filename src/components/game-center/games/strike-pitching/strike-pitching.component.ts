@@ -150,15 +150,12 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
       this.canvasWidth = canvas.width;
       this.canvasHeight = canvas.height;
 
-      // レイアウト変更時に現在の状態に応じて再描画してレスポンシブ性を保つ
+      // レイアウト変更時に現在の状態に応じて静的画面のみ再描画する
       const state = this.gameState();
       if (state === 'ready') {
         this.drawReadyScreen();
-      } else if (state === 'selecting' || state === 'power' || state === 'throwing' || state === 'result') {
-        // ゲーム進行中は現在フレームを再描画
-        this.drawGame();
       } else if (state === 'gameover') {
-        // ゲームオーバー時も背景/ゾーン/ミットを最新サイズで描画
+        // ゲームオーバー時は静的な最終結果画面のみ再描画
         this.drawGame();
       }
     }

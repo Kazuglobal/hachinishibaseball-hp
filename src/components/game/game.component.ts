@@ -34,6 +34,7 @@ export class GameComponent implements OnInit, OnDestroy {
   private animationFrameId: number | null = null;
   private pitchStartTime = 0;
   private pitchDuration = 2000; // 2秒で投球
+  private scheduledTimeouts: number[] = [];
   
   // 計算プロパティ
   remainingBalls = computed(() => this.totalBalls - this.currentBall());
@@ -57,6 +58,16 @@ export class GameComponent implements OnInit, OnDestroy {
   
   ngOnDestroy(): void {
     this.stopAnimation();
+    // 登録済みのタイマーを全てクリア
+    for (const id of this.scheduledTimeouts) {
+      clearTimeout(id);
+    }
+    this.scheduledTimeouts = [];
+  }
+
+  private scheduleTimeout(callback: () => void, delay: number): void {
+    const id = window.setTimeout(callback, delay);
+    this.scheduledTimeouts.push(id);
   }
   
   startGame(): void {
@@ -90,11 +101,11 @@ export class GameComponent implements OnInit, OnDestroy {
     this.startAnimation();
     
     // ストライクゾーン到達を検知
-    setTimeout(() => {
+    this.scheduleTimeout(() => {
       if (this.gameState() === 'pitching') {
         this.gameState.set('ready');
         // 0.3秒以内に打たないとMISS
-        setTimeout(() => {
+        this.scheduleTimeout(() => {
           if (this.gameState() === 'ready') {
             this.processSwing(null);
           }
@@ -136,7 +147,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.gameState.set('swinging');
     this.stopAnimation();
     
-    setTimeout(() => {
+    this.scheduleTimeout(() => {
       this.processSwing(currentPos);
     }, 100);
   }
@@ -173,7 +184,7 @@ export class GameComponent implements OnInit, OnDestroy {
     }
     
     // 結果表示後、次の投球へ
-    setTimeout(() => {
+    this.scheduleTimeout(() => {
       if (this.currentBall() < this.totalBalls) {
         this.nextPitch();
       } else {

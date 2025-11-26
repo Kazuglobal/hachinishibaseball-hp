@@ -215,6 +215,58 @@
             box-shadow: 0 6px 20px rgba(30, 58, 138, 0.4);
         }
 
+        /* Responsive layout */
+        @media (max-width: 768px) {
+            .slide-wrapper {
+                padding: 20px;
+            }
+
+            .slide-title {
+                margin-bottom: 40px;
+            }
+
+            .slide-title h1 {
+                font-size: 32px;
+            }
+
+            .slide-title p {
+                font-size: 16px;
+            }
+
+            .alumni-showcase {
+                flex-direction: column;
+                gap: 24px;
+            }
+
+            .showcase-card {
+                width: 100%;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .slide-wrapper {
+                padding: 16px;
+            }
+
+            .slide-title h1 {
+                font-size: 26px;
+            }
+
+            .slide-title p {
+                font-size: 14px;
+            }
+
+            .quote {
+                font-size: 18px;
+            }
+
+            .showcase-image {
+                height: 200px;
+            }
+        }
+
         @keyframes fadeInDown {
             from {
                 opacity: 0;
