@@ -13,6 +13,7 @@ export class FooterComponent {
     { title: '野球部について', links: ['会長挨拶'] },
     { title: '活動報告', links: ['イベントレポート', '支援活動'] },
     { title: '試合結果', links: ['公式戦', '練習試合'] },
+    { title: 'ゲーム', links: [] },
     { title: '現役チームへ支援', links: [] },
     { title: 'お問い合わせ', links: [] }
   ];
