@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
         
         <div 
           class="rounded-xl p-6 mb-6"
-          [style.background]="'linear-gradient(135deg, ' + themeColor() + ', ' + themeColorDark() + ')'">
+          [style.background]="'linear-gradient(135deg, ' + safeThemeColor + ', ' + safeThemeColorDark + ')'">
           <p class="text-white text-sm mb-1">最終スコア</p>
           <p class="text-5xl font-oswald font-bold text-white">{{score() | number}}</p>
         </div>
@@ -32,11 +32,11 @@ import { FormsModule } from '@angular/forms';
               placeholder="名無し"
               maxlength="10"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent outline-none"
-              [style.--tw-ring-color]="themeColor()">
+              [style.--tw-ring-color]="safeThemeColor">
             <button 
               (click)="save.emit()"
               class="w-full mt-3 text-white py-3 rounded-lg font-bold transition-colors"
-              [style.backgroundColor]="themeColor()">
+              [style.backgroundColor]="safeThemeColor">
               スコアを保存
             </button>
           </div>
@@ -74,4 +74,30 @@ export class GameResultComponent {
   nicknameChange = output<string>();
   save = output<void>();
   retry = output<void>();
+
+  // テンプレートからは常にサニタイズ済みの値を参照する
+  get safeThemeColor(): string {
+    return this.sanitizeColor(this.themeColor(), '#002D62');
+  }
+
+  get safeThemeColorDark(): string {
+    return this.sanitizeColor(this.themeColorDark(), '#001a3d');
+  }
+
+  private sanitizeColor(color: string, fallback: string): string {
+    if (typeof color !== 'string') {
+      return fallback;
+    }
+
+    // Hex colors: #RGB or #RRGGBB
+    const hexPattern = /^#([0-9A-Fa-f]{3}){1,2}$/;
+    // rgb() / rgba(): rgb(0-255,0-255,0-255[,0-1])
+    const rgbPattern = /^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(,\s*(0|0?\.\d+|1(\.0+)?)\s*)?\)$/;
+
+    if (hexPattern.test(color) || rgbPattern.test(color)) {
+      return color;
+    }
+
+    return fallback;
+  }
 }

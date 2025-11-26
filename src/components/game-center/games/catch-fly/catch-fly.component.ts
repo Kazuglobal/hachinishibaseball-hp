@@ -225,7 +225,12 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  dive(): void {
+  dive(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
     if (this.isDiving || this.gameState() !== 'playing') return;
     
     this.isDiving = true;

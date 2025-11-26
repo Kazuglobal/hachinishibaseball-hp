@@ -56,27 +56,6 @@
         #gameCanvas 
         class="w-full h-full">
       </canvas>
-      
-      <!-- ゾーン選択オーバーレイ（タッチ用） -->
-      @if (gameState() === 'selecting') {
-        <!-- ターゲットのコース表示やストライクゾーンを隠さないよう、グリッドを少し下げて配置 -->
-        <div class="absolute inset-0 flex justify-center items-start pt-10 sm:pt-12">
-          <div class="grid grid-cols-3 gap-1 w-[50vw] max-w-[200px] aspect-square">
-            @for (zone of zones; track zone) {
-              <button 
-                (click)="selectZone(zone)"
-                (mouseenter)="hoverZone(zone)"
-                (mouseleave)="hoverZone(0)"
-                class="rounded transition-all duration-200 flex items-center justify-center"
-                [class.bg-yellow-500/30]="zone === targetZone()"
-                [class.bg-transparent]="zone !== targetZone()"
-                [class.hover:bg-blue-500/30]="zone !== targetZone()">
-              </button>
-            }
-          </div>
-        </div>
-      }
-      
       <!-- 結果表示オーバーレイ -->
       @if (showResult() && currentResult()) {
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -159,6 +138,27 @@
         </div>
       }
     </div>
+
+    <!-- ゾーン選択グリッド（キャンバス下・通常フロー） -->
+    @if (gameState() === 'selecting') {
+      <div class="mt-4 flex justify-center">
+        <div class="bg-black/60 border border-blue-500/40 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-sm">
+          <div class="grid grid-cols-3 gap-1 w-full max-w-[220px] sm:max-w-[240px] mx-auto">
+            @for (zone of zones; track zone) {
+              <button 
+                (click)="selectZone(zone)"
+                (mouseenter)="hoverZone(zone)"
+                (mouseleave)="hoverZone(0)"
+                class="aspect-square min-w-[40px] min-h-[40px] rounded-md transition-all duration-200 flex items-center justify-center border border-white/10"
+                [class.bg-yellow-500/30]="zone === targetZone()"
+                [class.bg-transparent]="zone !== targetZone()"
+                [class.hover:bg-blue-500/30]="zone !== targetZone()">
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
 
     <!-- 操作エリア -->
     <div class="mt-4 flex-1 flex flex-col justify-center min-h-[100px]">

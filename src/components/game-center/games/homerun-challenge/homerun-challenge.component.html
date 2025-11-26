@@ -119,8 +119,13 @@
                   type="text" 
                   [(ngModel)]="nickname"
                   placeholder="名無し"
-                  maxlength="10"
+                  maxlength="20"
                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none">
+                @if (nicknameError()) {
+                  <p class="mt-2 text-sm text-red-400 text-left">
+                    {{nicknameError()}}
+                  </p>
+                }
                 <button 
                   (click)="saveScore()"
                   class="w-full mt-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-black py-3 rounded-lg font-bold hover:from-yellow-400 hover:to-orange-400 transition-all shadow-lg shadow-yellow-500/30">

@@ -42,6 +42,7 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   private ctx!: CanvasRenderingContext2D;
   private animationId: number = 0;
   private isBrowser: boolean;
+  private resizeHandler?: () => void;
   
   private seoService = inject(SEOService);
   private gameScoreService = inject(GameScoreService);
@@ -93,6 +94,7 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   nickname = '';
   savedRank = signal(0);
   highScore = signal(0);
+  nicknameError = signal<string | null>(null);
 
   // サウンド
   private swingSound?: HTMLAudioElement;
@@ -104,6 +106,8 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   private frameCount = 0;
   private slowMotion = false;
   private slowMotionFactor = 1;
+  private flyingTimeoutId: number | null = null;
+  private resultTimeoutId: number | null = null;
 
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -139,13 +143,25 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
       this.resizeCanvas();
       this.drawReadyScreen();
       
-      window.addEventListener('resize', () => this.resizeCanvas());
+      this.resizeHandler = () => this.resizeCanvas();
+      window.addEventListener('resize', this.resizeHandler);
     }
   }
 
   ngOnDestroy(): void {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
+    }
+    if (this.isBrowser && this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+    }
+    if (this.flyingTimeoutId !== null) {
+      clearTimeout(this.flyingTimeoutId);
+      this.flyingTimeoutId = null;
+    }
+    if (this.resultTimeoutId !== null) {
+      clearTimeout(this.resultTimeoutId);
+      this.resultTimeoutId = null;
     }
   }
 
@@ -177,6 +193,25 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     if (this.currentBall() >= this.totalBalls) {
       this.endGame();
       return;
+    }
+
+    // キャンバスサイズがまだ取得できていない場合のガード
+    // （初回描画前に startGame()/nextPitch() が呼ばれると width/height が 0 のことがある）
+    if (this.canvasWidth <= 0 || this.canvasHeight <= 0) {
+      // 可能なら実際の要素サイズで再計算
+      if (this.isBrowser && this.canvasRef?.nativeElement) {
+        this.resizeCanvas();
+      }
+
+      // それでも 0 の場合はデフォルトサイズを使用して、ボールが (0,0) にならないようにする
+      const DEFAULT_WIDTH = 800;
+      const DEFAULT_HEIGHT = 450;
+      if (this.canvasWidth <= 0) {
+        this.canvasWidth = DEFAULT_WIDTH;
+      }
+      if (this.canvasHeight <= 0) {
+        this.canvasHeight = DEFAULT_HEIGHT;
+      }
     }
 
     this.currentBall.update(v => v + 1);
@@ -311,10 +346,14 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
       cancelAnimationFrame(this.animationId);
       this.showResultMessage.set(true);
       this.gameState.set('result');
-      
-      setTimeout(() => {
+
+      if (this.flyingTimeoutId !== null) {
+        clearTimeout(this.flyingTimeoutId);
+      }
+      this.flyingTimeoutId = window.setTimeout(() => {
         this.showResultMessage.set(false);
         this.nextPitch();
+        this.flyingTimeoutId = null;
       }, 2000);
     }
   }
@@ -409,10 +448,14 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
       // ファウル、空振り、見逃しの場合
       this.showResultMessage.set(true);
       this.gameState.set('result');
-      
-      setTimeout(() => {
+
+      if (this.resultTimeoutId !== null) {
+        clearTimeout(this.resultTimeoutId);
+      }
+      this.resultTimeoutId = window.setTimeout(() => {
         this.showResultMessage.set(false);
         this.nextPitch();
+        this.resultTimeoutId = null;
       }, 1500);
     }
   }
@@ -980,7 +1023,28 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   saveScore(): void {
-    const rank = this.gameScoreService.addScore('homerun', this.nickname, this.score());
+    const rawNickname = this.nickname ?? '';
+    // 前後の空白をトリムし、制御文字を除去
+    const trimmed = rawNickname.trim();
+    const sanitized = trimmed.replace(/[\u0000-\u001F\u007F]/g, '');
+
+    // バリデーション: 空/空白のみは禁止
+    if (!sanitized) {
+      this.nicknameError.set('ニックネームを入力してください。');
+      return;
+    }
+
+    // バリデーション: 長さ 1〜20 文字
+    if (sanitized.length < 1 || sanitized.length > 20) {
+      this.nicknameError.set('ニックネームは1〜20文字で入力してください。');
+      return;
+    }
+
+    // 成功時は、クリーンな値を状態に反映してエラーをクリア
+    this.nickname = sanitized;
+    this.nicknameError.set(null);
+
+    const rank = this.gameScoreService.addScore('homerun', sanitized, this.score());
     this.savedRank.set(rank);
     this.highScore.set(this.gameScoreService.getHighScore('homerun'));
   }

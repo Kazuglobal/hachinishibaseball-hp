@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALUMNI VOICE カード</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 380px;
+            margin: 0 auto;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .card-content {
+            padding: 24px;
+        }
+
+        .alumni-label {
+            background-color: #1e3a8a;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1a1a1a;
+            margin: 0 0 8px 0;
+            line-height: 1.4;
+        }
+
+        .card-subtitle {
+            color: #666;
+            font-size: 14px;
+            margin: 0 0 16px 0;
+        }
+
+        .card-description {
+            color: #333;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .generation {
+            color: #1e3a8a;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .current-job {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .read-more {
+            color: #1e3a8a;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: gap 0.3s ease;
+        }
+
+        .read-more:hover {
+            gap: 8px;
+        }
+
+        .read-more::after {
+            content: '→';
+        }
+
+        /* スライド用のスタイル */
+        .slide-container {
+            max-width: 1200px;
+            margin: 40px auto;
+        }
+
+        .slide-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .slide-header h1 {
+            font-size: 36px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .slide-header p {
+            color: #666;
+            font-size: 18px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 32px;
+            padding: 0 20px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="slide-container">
+        <div class="slide-header">
+            <h1>ALUMNI VOICE</h1>
+            <p>OBからの声 - 野球部での経験が今につながる</p>
+        </div>
+
+        <div class="cards-grid">
+            <!-- 林野智さんのカード -->
+            <div class="card">
+                <img src="https://picsum.photos/seed/alumni1/800/1000" alt="林野智さん" class="card-image">
+                <div class="card-content">
+                    <span class="alumni-label">ALUMNI VOICE</span>
+                    <h2 class="card-title">野球部での経験が、今の自分の礎です</h2>
+                    <p class="card-subtitle">高校時代の挫折から警察官への挑戦まで</p>
+                    <p class="card-description">
+                        仙台西高野球部での3年間。選手として活躍できなかった悔しさが、10年間の指導者経験を生み、35歳での警察官への転職につながった。
+                    </p>
+                    <div class="card-footer">
+                        <div>
+                            <div class="generation">32期生</div>
+                            <div class="current-job">宮城県警察官</div>
+                        </div>
+                        <a href="#" class="read-more">詳しく読む</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- プレースホルダーカード（今後のOB追加用） -->
+            <div class="card" style="opacity: 0.5;">
+                <img src="https://picsum.photos/seed/alumni2/800/1000" alt="Coming Soon" class="card-image">
+                <div class="card-content">
+                    <span class="alumni-label">COMING SOON</span>
+                    <h2 class="card-title">次回のALUMNI VOICEをお楽しみに</h2>
+                    <p class="card-subtitle">新たなOBインタビューを準備中</p>
+                    <p class="card-description">
+                        様々な分野で活躍する仙台西高野球部OBの声をお届けします。
+                    </p>
+                    <div class="card-footer">
+                        <div>
+                            <div class="generation">-</div>
+                            <div class="current-job">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- プレースホルダーカード2 -->
+            <div class="card" style="opacity: 0.5;">
+                <img src="https://picsum.photos/seed/alumni3/800/1000" alt="Coming Soon" class="card-image">
+                <div class="card-content">
+                    <span class="alumni-label">COMING SOON</span>
+                    <h2 class="card-title">次回のALUMNI VOICEをお楽しみに</h2>
+                    <p class="card-subtitle">新たなOBインタビューを準備中</p>
+                    <p class="card-description">
+                        様々な分野で活躍する仙台西高野球部OBの声をお届けします。
+                    </p>
+                    <div class="card-footer">
+                        <div>
+                            <div class="generation">-</div>
+                            <div class="current-job">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

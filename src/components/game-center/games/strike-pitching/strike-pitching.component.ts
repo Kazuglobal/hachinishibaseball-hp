@@ -142,13 +142,25 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas) return;
-    
+
     const container = canvas.parentElement;
     if (container) {
       canvas.width = container.clientWidth;
       canvas.height = Math.min(container.clientWidth * 0.75, 500);
       this.canvasWidth = canvas.width;
       this.canvasHeight = canvas.height;
+
+      // レイアウト変更時に現在の状態に応じて再描画してレスポンシブ性を保つ
+      const state = this.gameState();
+      if (state === 'ready') {
+        this.drawReadyScreen();
+      } else if (state === 'selecting' || state === 'power' || state === 'throwing' || state === 'result') {
+        // ゲーム進行中は現在フレームを再描画
+        this.drawGame();
+      } else if (state === 'gameover') {
+        // ゲームオーバー時も背景/ゾーン/ミットを最新サイズで描画
+        this.drawGame();
+      }
     }
   }
 

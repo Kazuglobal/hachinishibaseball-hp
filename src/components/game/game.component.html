@@ -1,0 +1,161 @@
+<div class="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-blue-50 py-12 px-4 sm:px-8">
+  <div class="container mx-auto max-w-4xl">
+    <!-- ヘッダー -->
+    <div class="text-center mb-8">
+      <h1 class="font-oswald text-4xl md:text-5xl text-[#002D62] mb-2">ホームラン王チャレンジ</h1>
+      <p class="text-gray-600 font-serif-jp">タイミングを合わせてホームランを打とう！</p>
+    </div>
+
+    <!-- ゲーム画面 -->
+    <div class="bg-white rounded-lg shadow-2xl p-6 md:p-8 mb-6">
+      <!-- スコア表示 -->
+      <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-gray-200">
+        <div>
+          <div class="text-sm text-gray-600 font-serif-jp">スコア</div>
+          <div class="text-3xl font-bold text-[#002D62]">{{ score() }}</div>
+        </div>
+        <div class="text-center">
+          <div class="text-sm text-gray-600 font-serif-jp">残り</div>
+          <div class="text-3xl font-bold text-[#002D62]">{{ remainingBalls() }}球</div>
+        </div>
+        <div class="text-right">
+          <div class="text-sm text-gray-600 font-serif-jp">ハイスコア</div>
+          <div class="text-3xl font-bold text-yellow-500">{{ highScore() }}</div>
+        </div>
+      </div>
+
+      <!-- ゲームエリア -->
+      @if (gameState() === 'idle' || gameState() === 'finished') {
+        <div class="text-center py-16">
+          @if (gameState() === 'idle') {
+            <div class="mb-8">
+              <div class="text-6xl mb-4">⚾</div>
+              <h2 class="text-2xl font-serif-jp text-gray-700 mb-4">10球勝負でハイスコアを目指そう！</h2>
+              <p class="text-gray-600 mb-8">ストライクゾーンに来たタイミングで「打つ！」ボタンを押してください</p>
+            </div>
+          } @else {
+            <div class="mb-8">
+              <div class="text-6xl mb-4">🎉</div>
+              <h2 class="text-2xl font-serif-jp text-gray-700 mb-4">ゲーム終了！</h2>
+              <p class="text-xl font-bold text-[#002D62] mb-2">最終スコア: {{ score() }}点</p>
+              @if (score() >= highScore() && score() > 0) {
+                <p class="text-yellow-500 font-bold mb-4">🎊 ハイスコア更新！ 🎊</p>
+              }
+            </div>
+          }
+          <button
+            (click)="startGame()"
+            class="bg-[#002D62] text-white font-bold py-4 px-12 rounded-lg hover:bg-blue-950 transition-colors duration-300 text-lg shadow-lg hover:shadow-xl">
+            {{ gameState() === 'idle' ? 'ゲーム開始' : 'もう一度プレイ' }}
+          </button>
+        </div>
+      } @else {
+        <!-- フィールド表示 -->
+        <div class="relative h-64 md:h-80 mb-8 bg-gradient-to-b from-green-200 to-green-300 rounded-lg overflow-hidden">
+          <!-- 投手 -->
+          <div class="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+            <div class="text-4xl">👨‍⚾</div>
+          </div>
+
+          <!-- ボール -->
+          <div 
+            class="absolute top-1/2 -translate-y-1/2 z-20"
+            [style.left.%]="ballPosition()">
+            <div class="text-3xl">⚾</div>
+          </div>
+
+          <!-- ストライクゾーン -->
+          <div 
+            class="absolute top-1/2 -translate-y-1/2 z-5 border-4 border-yellow-400 rounded-lg bg-yellow-200/30 transition-opacity duration-300"
+            [style.left.%]="perfectZone() - perfectZoneWidth"
+            [style.width.%]="perfectZoneWidth * 2"
+            [style.height.px]="80"
+            [class.opacity-100]="gameState() === 'ready'"
+            [class.opacity-30]="gameState() === 'pitching'">
+          </div>
+
+          <!-- 打者 -->
+          <div class="absolute right-4 top-1/2 -translate-y-1/2 z-10">
+            <div class="text-4xl">👤</div>
+          </div>
+
+          <!-- スイングタイミング表示 -->
+          @if (swingTiming() !== null) {
+            <div 
+              class="absolute top-1/2 -translate-y-1/2 z-30 w-1 h-20 bg-red-500"
+              [style.left.%]="swingTiming()">
+            </div>
+          }
+        </div>
+
+        <!-- 結果表示 -->
+        @if (lastResult() !== null) {
+          <div class="text-center mb-6 animate-bounce">
+            <div class="text-4xl font-bold {{ getResultColor(lastResult()) }}">
+              {{ getResultMessage(lastResult()) }}
+            </div>
+            @if (lastResult() === 'PERFECT') {
+              <div class="text-6xl mt-2">💥</div>
+            } @else if (lastResult() === 'GREAT') {
+              <div class="text-6xl mt-2">🔥</div>
+            } @else if (lastResult() === 'GOOD') {
+              <div class="text-6xl mt-2">👍</div>
+            }
+          </div>
+        }
+
+        <!-- 打つボタン -->
+        <div class="text-center">
+          <button
+            (click)="swing()"
+            [disabled]="gameState() !== 'ready' && gameState() !== 'pitching'"
+            class="bg-[#C8102E] text-white font-bold py-6 px-16 rounded-lg text-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-700 active:scale-95">
+            打つ！
+          </button>
+          @if (gameState() === 'pitching') {
+            <p class="mt-4 text-gray-600 font-serif-jp">ボールが来るのを待って...</p>
+          } @else if (gameState() === 'ready') {
+            <p class="mt-4 text-yellow-600 font-bold font-serif-jp animate-pulse">今！打つタイミングです！</p>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- スコアリング説明 -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+      <h2 class="font-oswald text-2xl text-[#002D62] mb-4">スコアリング</h2>
+      <div class="grid md:grid-cols-4 gap-4">
+        <div class="text-center p-4 bg-yellow-50 rounded-lg">
+          <div class="text-3xl mb-2">💥</div>
+          <div class="font-bold text-yellow-600">PERFECT</div>
+          <div class="text-2xl font-bold">+100点</div>
+        </div>
+        <div class="text-center p-4 bg-orange-50 rounded-lg">
+          <div class="text-3xl mb-2">🔥</div>
+          <div class="font-bold text-orange-600">GREAT</div>
+          <div class="text-2xl font-bold">+50点</div>
+        </div>
+        <div class="text-center p-4 bg-green-50 rounded-lg">
+          <div class="text-3xl mb-2">👍</div>
+          <div class="font-bold text-green-600">GOOD</div>
+          <div class="text-2xl font-bold">+20点</div>
+        </div>
+        <div class="text-center p-4 bg-gray-50 rounded-lg">
+          <div class="text-3xl mb-2">😢</div>
+          <div class="font-bold text-gray-600">MISS</div>
+          <div class="text-2xl font-bold">+0点</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 戻るボタン -->
+    <div class="text-center">
+      <a 
+        routerLink="/"
+        class="inline-block bg-gray-200 text-gray-700 font-bold py-3 px-8 rounded-lg hover:bg-gray-300 transition-colors duration-300">
+        トップページに戻る
+      </a>
+    </div>
+  </div>
+</div>
+
