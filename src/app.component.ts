@@ -30,6 +30,7 @@ export class AppComponent implements OnInit {
     '活動報告',
     '試合結果',
     'OB活躍情報',
+    'ゲーム',
     'ご支援のお願い',
     'お問い合わせ'
   ];
