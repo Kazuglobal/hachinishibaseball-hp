@@ -1,0 +1,22 @@
+<nav aria-label="パンくずリスト" class="breadcrumb-nav py-3 px-4 bg-gray-50/50">
+  <ol class="flex flex-wrap items-center gap-2 text-sm max-w-7xl mx-auto" itemscope itemtype="https://schema.org/BreadcrumbList">
+    @for (item of breadcrumbs(); track item.url; let i = $index; let last = $last) {
+      <li class="flex items-center gap-2" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        @if (!last) {
+          <a
+            [routerLink]="item.url"
+            class="text-gray-600 hover:text-[#002D62] transition-colors duration-200 hover:underline"
+            itemprop="item">
+            <span itemprop="name">{{ item.label }}</span>
+          </a>
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        } @else {
+          <span class="text-[#002D62] font-medium" itemprop="name">{{ item.label }}</span>
+        }
+        <meta itemprop="position" [content]="i + 1" />
+      </li>
+    }
+  </ol>
+</nav>

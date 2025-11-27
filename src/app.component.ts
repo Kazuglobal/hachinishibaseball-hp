@@ -3,6 +3,7 @@ import { HeaderComponent } from './components/header/header.component';
 import { SideUiComponent } from './components/side-ui/side-ui.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { MenuComponent } from './components/menu/menu.component';
+import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 import { ScrollService } from './services/scroll.service';
 import { RouterOutlet, NavigationEnd, Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
@@ -18,6 +19,7 @@ import { filter } from 'rxjs';
     SideUiComponent,
     FooterComponent,
     MenuComponent,
+    BreadcrumbComponent,
   ]
 })
 export class AppComponent implements OnInit {
