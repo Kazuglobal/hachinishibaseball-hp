@@ -5,6 +5,18 @@
   <title>八戸西高校 野球部OB会 | 八戸西高等学校 | 公式サイト | 活動報告・試合結果・OB活躍情報</title>
   <base href="/" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX', {
+      'anonymize_ip': true,
+      'cookie_flags': 'SameSite=None;Secure'
+    });
+  </script>
   
   <!-- Primary Meta Tags -->
   <meta name="title" content="八戸西高校 野球部OB会 | 八戸西高等学校 | 公式サイト | 活動報告・試合結果・OB活躍情報" />
@@ -16,7 +28,11 @@
   <meta name="revisit-after" content="7 days" />
   <meta name="distribution" content="global" />
   <meta name="rating" content="general" />
-  
+  <meta name="geo.region" content="JP-02" />
+  <meta name="geo.placename" content="八戸市" />
+  <meta name="geo.position" content="40.5124;141.4883" />
+  <meta name="ICBM" content="40.5124, 141.4883" />
+
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://hachinishibaseball-ob.com/" />
@@ -55,9 +71,6 @@
   <link rel="preload" href="/assets/images/hero-loading.gif" as="image" type="image/gif" fetchpriority="high" />
   <link rel="preload" href="/assets/index.css" as="style" />
   
-  <!-- Resource Hints for Performance -->
-  <link rel="prefetch" href="https://fonts.googleapis.com" />
-  <link rel="prefetch" href="https://fonts.gstatic.com" />
   
   <!-- Structured Data (JSON-LD) -->
   <script type="application/ld+json">
@@ -144,11 +157,8 @@
     "@type": "WebSite",
     "name": "八戸西高等学校野球OB会",
     "url": "https://hachinishibaseball-ob.com",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://hachinishibaseball-ob.com/search?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
+    "description": "八戸西高校（八戸西高等学校）野球部OB会の公式ウェブサイト。活動報告、試合結果、OB活躍情報を掲載。",
+    "inLanguage": "ja-JP"
   }
   </script>
   
@@ -160,6 +170,9 @@
     "alternateName": ["八戸西高校野球部", "八戸西高野球部"],
     "sport": "野球",
     "description": "青森県八戸市にある八戸西高校（八戸西高等学校）の硬式野球部。明るく、礼儀正しく、かっこよくをモットーに活動しています。平成28年春季青森県大会優勝、令和3年第93回選抜高校野球大会（春の甲子園）初出場の実績があります。",
+    "url": "https://hachinishibaseball-ob.com",
+    "image": "https://hachinishibaseball-ob.com/assets/og-image.jpg",
+    "logo": "https://hachinishibaseball-ob.com/assets/logo.png",
     "memberOf": {
       "@type": "School",
       "name": "八戸西高等学校",
@@ -176,9 +189,18 @@
       "@type": "Person",
       "jobTitle": "監督"
     },
+    "foundingDate": "1978",
     "award": [
       "平成28年春季青森県大会優勝",
       "令和3年第93回選抜高校野球大会（春の甲子園）初出場"
+    ],
+    "athlete": [
+      {
+        "@type": "Person",
+        "name": "福島蓮",
+        "memberOf": "北海道日本ハムファイターズ",
+        "jobTitle": "プロ野球選手"
+      }
     ]
   }
   </script>
