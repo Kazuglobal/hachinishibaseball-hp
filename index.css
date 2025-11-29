@@ -38,6 +38,7 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -51,6 +52,7 @@ body {
   from {
     transform: translateX(100%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -60,5 +62,148 @@ body {
   animation: slideInRight 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
+/* 3D Transform Extensions */
+.perspective-1000 {
+  perspective: 1000px;
+}
 
+.perspective-500 {
+  perspective: 500px;
+}
 
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+/* Extend transform to support 3D rotation and Z-translation */
+.transform {
+  transform: translate3d(var(--tw-translate-x, 0), var(--tw-translate-y, 0), var(--tw-translate-z, 0)) rotate(var(--tw-rotate, 0)) skewX(var(--tw-skew-x, 0)) skewY(var(--tw-skew-y, 0)) scaleX(var(--tw-scale-x, 1)) scaleY(var(--tw-scale-y, 1)) rotateX(var(--tw-rotate-x, 0)) rotateY(var(--tw-rotate-y, 0)) !important;
+}
+
+.rotate-x-10 {
+  --tw-rotate-x: 10deg;
+}
+
+.rotate-x-2 {
+  --tw-rotate-x: 2deg;
+}
+
+.rotate-y-2 {
+  --tw-rotate-y: 2deg;
+}
+
+.hover\:rotate-x-0:hover {
+  --tw-rotate-x: 0deg;
+}
+
+.hover\:rotate-x-2:hover {
+  --tw-rotate-x: 2deg;
+}
+
+.hover\:rotate-y-2:hover {
+  --tw-rotate-y: 2deg;
+}
+
+.group-hover\:translate-z-10:hover {
+  --tw-translate-z: 10px;
+}
+
+/* Keyframe Animation for Staggered Entrance */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0;
+}
+
+/* Pulse Slow Animation */
+@keyframes pulseSlow {
+
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: scale(1.1);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulseSlow 8s ease-in-out infinite;
+}
+
+/* Delay Utilities */
+.delay-1000 {
+  animation-delay: 1000ms;
+}
+
+/* Z-Translate Utilities */
+.group-hover\:translate-z-20:hover {
+  --tw-translate-z: 20px;
+}
+
+.group-hover\:translate-z-5:hover {
+  --tw-translate-z: 5px;
+}
+
+.translate-z-10 {
+  --tw-translate-z: 10px;
+}
+
+.translate-z-20 {
+  --tw-translate-z: 20px;
+}
+
+/* Glare Effect Styles */
+.js-tilt-glare {
+  border-radius: inherit;
+}
+
+.js-tilt-glare-inner {
+  box-shadow: 0 0 50px 2px rgba(255, 255, 255, 0.3);
+}
+
+/* Spin Slow Animation */
+@keyframes spinSlow {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 60s linear infinite;
+}
+
+/* Bounce Slow Animation */
+@keyframes bounceSlow {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounceSlow 3s ease-in-out infinite;
+}

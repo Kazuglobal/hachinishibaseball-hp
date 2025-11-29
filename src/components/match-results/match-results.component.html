@@ -1,92 +1,208 @@
-<main
-  (visible)="isVisible.set(true)"
-  [class.is-visible]="isVisible()"
-  class="bg-white pt-32 pb-24 px-4 sm:px-8 fade-in-up">
-  <div class="container mx-auto">
-    <h1 class="sr-only">八戸西高等学校野球部試合結果</h1>
-    <app-section-title mainTitle="MATCH RESULTS" subTitle="試合結果"></app-section-title>
+<main (visible)="isVisible.set(true)" [class.is-visible]="isVisible()"
+  class="bg-slate-50 pt-32 pb-24 px-4 sm:px-8 fade-in-up min-h-screen overflow-hidden perspective-1000 relative">
 
-    <div class="max-w-6xl mx-auto mt-16">
-      <app-back-button class="mb-6 inline-block"></app-back-button>
+  <!-- Holographic Background & Baseball Icons -->
+  <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+    <!-- Base Texture -->
+    <div
+      class="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]">
+    </div>
+
+    <!-- Giant Rotating Baseball Background -->
+    <div
+      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] opacity-[0.05] animate-spin-slow">
+      <svg viewBox="0 0 24 24" fill="currentColor" class="w-full h-full text-slate-900">
+        <path
+          d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8
+        c0-0.46,0.04-0.92,0.1-1.36c2.98,1.14,5.44,3.6,6.58,6.58C10.24,17.26,9.78,17.3,9.32,17.3z M12,4c0.46,0,0.92,0.04,1.36,0.1
+        c-2.98,1.14-5.44,3.6-6.58,6.58C7.22,10.24,7.68,10.2,8.14,10.2z M14.68,17.22c1.14-2.98,3.6-5.44,6.58-6.58
+        c-0.06,0.44-0.1,0.9-0.1,1.36C21.16,16.41,17.57,20,13.16,20C13.62,19.96,14.08,19.92,14.68,17.22z M15.86,6.78
+        c-1.14,2.98-3.6,5.44-6.58,6.58c0.06-0.44,0.1-0.9,0.1-1.36c0-4.41,3.59-8,8-8C16.92,4.04,16.46,4.08,15.86,6.78z" />
+      </svg>
+    </div>
+
+    <!-- Floating Glows -->
+    <div
+      class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-200/40 rounded-full blur-[150px] animate-pulse-slow">
+    </div>
+    <div
+      class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-red-200/40 rounded-full blur-[150px] animate-pulse-slow delay-1000">
+    </div>
+  </div>
+
+  <div class="container mx-auto relative z-10">
+    <div class="flex items-center justify-center gap-4 mb-4">
+      <svg viewBox="0 0 24 24" fill="currentColor" class="w-12 h-12 text-slate-800 animate-bounce-slow drop-shadow-md">
+        <path
+          d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8
+        c0-0.46,0.04-0.92,0.1-1.36c2.98,1.14,5.44,3.6,6.58,6.58C10.24,17.26,9.78,17.3,9.32,17.3z M12,4c0.46,0,0.92,0.04,1.36,0.1
+        c-2.98,1.14-5.44,3.6-6.58,6.58C7.22,10.24,7.68,10.2,8.14,10.2z M14.68,17.22c1.14-2.98,3.6-5.44,6.58-6.58
+        c-0.06,0.44-0.1,0.9-0.1,1.36C21.16,16.41,17.57,20,13.16,20C13.62,19.96,14.08,19.92,14.68,17.22z M15.86,6.78
+        c-1.14,2.98-3.6,5.44-6.58,6.58c0.06-0.44,0.1-0.9,0.1-1.36c0-4.41,3.59-8,8-8C16.92,4.04,16.46,4.08,15.86,6.78z" />
+      </svg>
+      <h1 class="sr-only">八戸西高等学校野球部試合結果</h1>
+    </div>
+    <app-section-title mainTitle="MATCH RESULTS" subTitle="試合結果"
+      class="text-slate-900 drop-shadow-sm"></app-section-title>
+
+    <div class="max-w-7xl mx-auto mt-16">
+      <app-back-button
+        class="mb-12 inline-block transform hover:scale-110 transition-transform duration-300"></app-back-button>
 
       <!-- タブナビゲーション -->
-      <div class="flex items-center gap-2 mb-8 border-b-2 border-gray-200">
-        <button
-          (click)="switchTab('practice')"
-          class="px-6 py-3 font-bold transition-all relative"
-          [class.text-[#002D62]]="viewMode() === 'practice'"
-          [class.text-gray-500]="viewMode() !== 'practice'">
-          練習試合
-          <div
-            class="absolute bottom-0 left-0 right-0 h-1 bg-[#002D62] transition-transform duration-300"
-            [class.scale-x-100]="viewMode() === 'practice'"
-            [class.scale-x-0]="viewMode() !== 'practice'"></div>
-        </button>
-        <button
-          (click)="switchTab('official')"
-          class="px-6 py-3 font-bold transition-all relative"
-          [class.text-[#002D62]]="viewMode() === 'official'"
-          [class.text-gray-500]="viewMode() !== 'official'">
-          公式戦
-          <div
-            class="absolute bottom-0 left-0 right-0 h-1 bg-[#002D62] transition-transform duration-300"
-            [class.scale-x-100]="viewMode() === 'official'"
-            [class.scale-x-0]="viewMode() !== 'official'"></div>
-        </button>
+      <div class="flex justify-center mb-20 perspective-1000">
+        <div appTilt [tiltScale]="1.1" [tiltMaxAngleX]="10" [tiltMaxAngleY]="10"
+          class="bg-white/80 backdrop-blur-xl p-2 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.1)] inline-flex border border-slate-200 transform-style-3d group">
+          <button (click)="switchTab('practice')"
+            class="px-10 py-4 rounded-full font-black tracking-widest transition-all duration-500 transform relative overflow-hidden group/btn"
+            [class.bg-gradient-to-br]="viewMode() === 'practice'" [class.from-blue-500]="viewMode() === 'practice'"
+            [class.to-blue-700]="viewMode() === 'practice'" [class.text-white]="viewMode() === 'practice'"
+            [class.text-slate-500]="viewMode() !== 'practice'"
+            [class.shadow-[0_5px_15px_rgba(59,130,246,0.4)]]="viewMode() === 'practice'">
+            <span class="relative z-10 text-lg transform-style-3d group-hover/btn:translate-z-10 block">練習試合</span>
+            <div *ngIf="viewMode() === 'practice'"
+              class="absolute inset-0 bg-white/30 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 skew-y-12">
+            </div>
+          </button>
+          <button (click)="switchTab('official')"
+            class="px-10 py-4 rounded-full font-black tracking-widest transition-all duration-500 transform relative overflow-hidden group/btn"
+            [class.bg-gradient-to-br]="viewMode() === 'official'" [class.from-red-500]="viewMode() === 'official'"
+            [class.to-red-700]="viewMode() === 'official'" [class.text-white]="viewMode() === 'official'"
+            [class.text-slate-500]="viewMode() !== 'official'"
+            [class.shadow-[0_5px_15px_rgba(239,68,68,0.4)]]="viewMode() === 'official'">
+            <span class="relative z-10 text-lg transform-style-3d group-hover/btn:translate-z-10 block">公式戦</span>
+            <div *ngIf="viewMode() === 'official'"
+              class="absolute inset-0 bg-white/30 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 skew-y-12">
+            </div>
+          </button>
+        </div>
       </div>
 
       <!-- 練習試合セクション -->
       <div *ngIf="viewMode() === 'practice'" class="fade-in-up is-visible">
         <!-- 統計情報 -->
-        <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 mb-8 shadow-md">
-          <h3 class="text-xl font-bold font-serif-jp text-gray-800 mb-4">練習試合成績</h3>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="text-center">
-              <p class="text-3xl font-bold text-[#002D62]">{{ practiceStats.total }}</p>
-              <p class="text-sm text-gray-600 mt-1">試合数</p>
+        <div appTilt [tiltScale]="1.02" [tiltMaxAngleX]="5" [tiltMaxAngleY]="5"
+          class="relative bg-white/90 backdrop-blur-md rounded-3xl p-10 mb-20 shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden group">
+          <div class="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-transparent opacity-50 pointer-events-none">
+          </div>
+
+          <h3
+            class="relative text-4xl font-black font-oswald text-slate-800 mb-12 text-center transform-style-3d group-hover:translate-z-10 transition-transform duration-500">
+            <span class="inline-block border-b-4 border-blue-500 pb-2 px-6 tracking-widest">シーズン成績</span>
+          </h3>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-8 relative z-10">
+            <div class="text-center group/stat transform-style-3d transition-transform duration-300 hover:scale-110">
+              <div class="relative inline-block transform-style-3d group-hover/stat:translate-z-20">
+                <p
+                  class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-slate-700 to-slate-900 drop-shadow-sm">
+                  {{ practiceStats.total }}</p>
+              </div>
+              <p
+                class="text-sm font-bold text-blue-600 mt-4 tracking-[0.3em] uppercase transform-style-3d group-hover/stat:translate-z-10">
+                試合数</p>
             </div>
-            <div class="text-center">
-              <p class="text-3xl font-bold text-green-600">{{ practiceStats.wins }}</p>
-              <p class="text-sm text-gray-600 mt-1">勝利</p>
+            <div class="text-center group/stat transform-style-3d transition-transform duration-300 hover:scale-110">
+              <div class="relative inline-block transform-style-3d group-hover/stat:translate-z-20">
+                <p
+                  class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-blue-500 to-blue-700 drop-shadow-sm">
+                  {{ practiceStats.wins }}</p>
+              </div>
+              <p
+                class="text-sm font-bold text-slate-500 mt-4 tracking-[0.3em] uppercase transform-style-3d group-hover/stat:translate-z-10">
+                勝</p>
             </div>
-            <div class="text-center">
-              <p class="text-3xl font-bold text-red-600">{{ practiceStats.losses }}</p>
-              <p class="text-sm text-gray-600 mt-1">敗北</p>
+            <div class="text-center group/stat transform-style-3d transition-transform duration-300 hover:scale-110">
+              <div class="relative inline-block transform-style-3d group-hover/stat:translate-z-20">
+                <p
+                  class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-red-500 to-red-700 drop-shadow-sm">
+                  {{ practiceStats.losses }}</p>
+              </div>
+              <p
+                class="text-sm font-bold text-slate-500 mt-4 tracking-[0.3em] uppercase transform-style-3d group-hover/stat:translate-z-10">
+                負</p>
             </div>
-            <div class="text-center">
-              <p class="text-3xl font-bold text-yellow-600">{{ practiceStats.draws }}</p>
-              <p class="text-sm text-gray-600 mt-1">引分</p>
+            <div class="text-center group/stat transform-style-3d transition-transform duration-300 hover:scale-110">
+              <div class="relative inline-block transform-style-3d group-hover/stat:translate-z-20">
+                <p
+                  class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-400 to-yellow-600 drop-shadow-sm">
+                  {{ practiceStats.draws }}</p>
+              </div>
+              <p
+                class="text-sm font-bold text-slate-500 mt-4 tracking-[0.3em] uppercase transform-style-3d group-hover/stat:translate-z-10">
+                分</p>
             </div>
           </div>
         </div>
 
         <!-- 試合結果一覧 -->
-        <div class="space-y-3">
-          <div
-            *ngFor="let match of practiceMatches; let i = index"
-            class="bg-white border-2 rounded-lg p-4 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-            [ngClass]="getResultClass(match.result)">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div class="flex items-center gap-3">
-                <span class="text-sm text-gray-600 font-medium min-w-[80px]">
-                  {{ match.date || '日付未定' }}
-                </span>
-                <span class="font-bold text-lg">
-                  {{ match.ourScore }} - {{ match.opponentScore }}
-                </span>
-                <span class="text-gray-700">vs {{ match.opponent }}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <span
-                  class="px-3 py-1 rounded-full text-sm font-bold"
-                  [ngClass]="getResultClass(match.result)">
-                  {{ getResultText(match.result) }}
-                </span>
-                <span
-                  *ngIf="match.notes"
-                  class="text-xs text-gray-500 italic">
-                  ({{ match.notes }})
-                </span>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          <div *ngFor="let match of practiceMatches; let i = index" appTilt [tiltScale]="1.05" [tiltMaxAngleX]="15"
+            [tiltMaxAngleY]="15" class="group relative h-full" [style.animation-delay]="i * 50 + 'ms'"
+            [ngClass]="'animate-fade-in-up'">
+
+            <!-- Card Container -->
+            <div
+              class="bg-white/90 backdrop-blur-md rounded-2xl p-6 h-full border border-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.05)] overflow-hidden relative z-10 transform-style-3d transition-all duration-500 group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] group-hover:border-slate-300"
+              [class.border-l-8]="true" [class.border-l-blue-500]="match.result === 'win'"
+              [class.border-l-red-500]="match.result === 'loss'" [class.border-l-yellow-500]="match.result === 'draw'">
+
+              <!-- Dynamic Background Glow -->
+              <div
+                class="absolute -top-20 -right-20 w-60 h-60 rounded-full opacity-10 blur-[60px] transition-all duration-700 group-hover:scale-150 group-hover:opacity-20"
+                [class.bg-blue-500]="match.result === 'win'" [class.bg-red-500]="match.result === 'loss'"
+                [class.bg-yellow-500]="match.result === 'draw'"></div>
+
+              <!-- Content Layer -->
+              <div class="relative z-10 transform-style-3d">
+                <!-- Header -->
+                <div class="flex justify-between items-start mb-8 transform-style-3d group-hover:translate-z-10">
+                  <span
+                    class="text-sm font-black text-slate-600 bg-slate-100 px-4 py-1.5 rounded-full shadow-sm border border-slate-200">
+                    {{ match.date || '日時未定' }}
+                  </span>
+                  <span
+                    class="text-xs font-black px-4 py-1.5 rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.1)] transform transition-transform duration-300 group-hover:scale-110 tracking-widest"
+                    [class.text-white]="true" [class.bg-gradient-to-r]="true"
+                    [class.from-blue-500]="match.result === 'win'" [class.to-blue-400]="match.result === 'win'"
+                    [class.from-red-500]="match.result === 'loss'" [class.to-red-400]="match.result === 'loss'"
+                    [class.from-yellow-500]="match.result === 'draw'" [class.to-yellow-400]="match.result === 'draw'">
+                    {{ getResultText(match.result) }}
+                  </span>
+                </div>
+
+                <!-- Score Section -->
+                <div
+                  class="flex items-center justify-between mb-6 transform-style-3d group-hover:translate-z-20 transition-transform duration-500">
+                  <div class="flex-1 text-center">
+                    <p class="text-[10px] text-slate-500 font-bold mb-2 tracking-[0.2em] uppercase">八戸西</p>
+                    <p class="text-6xl font-black drop-shadow-sm transform transition-transform duration-300 group-hover:scale-110"
+                      [class.text-blue-600]="match.result === 'win'" [class.text-slate-800]="match.result !== 'win'">{{
+                      match.ourScore }}</p>
+                  </div>
+                  <div class="px-2 text-slate-300 text-5xl font-thin transform -skew-x-12">
+                    /
+                  </div>
+                  <div class="flex-1 text-center">
+                    <p class="text-[10px] text-slate-500 font-bold mb-2 tracking-[0.2em] uppercase truncate px-1"
+                      title="{{ match.opponent }}">対戦校</p>
+                    <p
+                      class="text-6xl font-black text-slate-700 drop-shadow-sm transform transition-transform duration-300 group-hover:scale-110">
+                      {{ match.opponentScore }}</p>
+                  </div>
+                </div>
+
+                <!-- Opponent Name -->
+                <div class="text-center transform-style-3d group-hover:translate-z-10">
+                  <p class="text-xl font-bold text-slate-800 tracking-wider truncate" title="{{ match.opponent }}">{{
+                    match.opponent }}</p>
+                </div>
+
+                <!-- Notes -->
+                <div *ngIf="match.notes"
+                  class="mt-6 pt-4 border-t border-slate-100 text-center transform-style-3d group-hover:translate-z-5">
+                  <p class="text-xs text-slate-500 font-medium italic">{{ match.notes }}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -96,52 +212,127 @@
       <!-- 公式戦セクション -->
       <div *ngIf="viewMode() === 'official'" class="fade-in-up is-visible">
         <!-- 統計情報 -->
-        <div class="bg-gradient-to-r from-red-50 to-red-100 rounded-lg p-6 mb-8 shadow-md">
-          <h3 class="text-xl font-bold font-serif-jp text-gray-800 mb-4">公式戦成績</h3>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div class="text-center">
-              <p class="text-3xl font-bold text-[#002D62]">{{ officialStats.total }}</p>
-              <p class="text-sm text-gray-600 mt-1">試合数</p>
+        <div appTilt [tiltScale]="1.02" [tiltMaxAngleX]="5" [tiltMaxAngleY]="5"
+          class="relative bg-white/90 backdrop-blur-md rounded-3xl p-10 mb-20 shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden group">
+          <div class="absolute inset-0 bg-gradient-to-b from-red-50/50 to-transparent opacity-50 pointer-events-none">
+          </div>
+
+          <h3
+            class="relative text-4xl font-black font-oswald text-slate-800 mb-12 text-center transform-style-3d group-hover:translate-z-10 transition-transform duration-500">
+            <span class="inline-block border-b-4 border-red-500 pb-2 px-6 tracking-widest">公式戦成績</span>
+          </h3>
+
+          <div class="grid grid-cols-3 gap-8 relative z-10">
+            <div class="text-center group/stat transform-style-3d transition-transform duration-300 hover:scale-110">
+              <div class="relative inline-block transform-style-3d group-hover/stat:translate-z-20">
+                <p
+                  class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-slate-700 to-slate-900 drop-shadow-sm">
+                  {{ officialStats.total }}</p>
+              </div>
+              <p
+                class="text-sm font-bold text-red-500 mt-4 tracking-[0.3em] uppercase transform-style-3d group-hover/stat:translate-z-10">
+                試合数</p>
             </div>
-            <div class="text-center">
-              <p class="text-3xl font-bold text-green-600">{{ officialStats.wins }}</p>
-              <p class="text-sm text-gray-600 mt-1">勝利</p>
+            <div class="text-center group/stat transform-style-3d transition-transform duration-300 hover:scale-110">
+              <div class="relative inline-block transform-style-3d group-hover/stat:translate-z-20">
+                <p
+                  class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-blue-500 to-blue-700 drop-shadow-sm">
+                  {{ officialStats.wins }}</p>
+              </div>
+              <p
+                class="text-sm font-bold text-slate-500 mt-4 tracking-[0.3em] uppercase transform-style-3d group-hover/stat:translate-z-10">
+                勝</p>
             </div>
-            <div class="text-center">
-              <p class="text-3xl font-bold text-red-600">{{ officialStats.losses }}</p>
-              <p class="text-sm text-gray-600 mt-1">敗北</p>
+            <div class="text-center group/stat transform-style-3d transition-transform duration-300 hover:scale-110">
+              <div class="relative inline-block transform-style-3d group-hover/stat:translate-z-20">
+                <p
+                  class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-red-500 to-red-700 drop-shadow-sm">
+                  {{ officialStats.losses }}</p>
+              </div>
+              <p
+                class="text-sm font-bold text-slate-500 mt-4 tracking-[0.3em] uppercase transform-style-3d group-hover/stat:translate-z-10">
+                負</p>
             </div>
           </div>
         </div>
 
         <!-- 大会ごとの試合結果 -->
-        <div class="space-y-8">
-          <div
-            *ngFor="let tournament of officialTournaments; let i = index"
-            class="border-2 border-gray-200 rounded-lg overflow-hidden">
-            <div class="bg-gradient-to-r from-[#002D62] to-[#0050B3] text-white px-6 py-4">
-              <h3 class="text-xl font-bold font-serif-jp">《{{ tournament.name }}》</h3>
-            </div>
-            <div class="p-4 space-y-3">
+        <div class="space-y-20">
+          <div *ngFor="let tournament of officialTournaments; let tIndex = index" class="relative perspective-1000">
+
+            <div class="flex items-center mb-10 transform transition-transform duration-500 hover:translate-x-4">
               <div
-                *ngFor="let match of tournament.matches"
-                class="bg-white border-2 rounded-lg p-4 hover:shadow-lg transition-all duration-300"
-                [ngClass]="getResultClass(match.result)">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <div class="flex items-center gap-3">
-                    <span class="text-sm text-gray-600 font-medium min-w-[80px]">
-                      {{ match.date }}
-                    </span>
-                    <span class="font-bold text-lg">
-                      {{ match.ourScore }} - {{ match.opponentScore }}
-                    </span>
-                    <span class="text-gray-700">vs {{ match.opponent }}</span>
+                class="h-12 w-2 bg-gradient-to-b from-red-500 to-red-800 rounded-full mr-6 shadow-[0_0_15px_rgba(239,68,68,0.4)]">
+              </div>
+              <h3 class="text-4xl font-black font-oswald text-slate-800 tracking-tight drop-shadow-sm">{{
+                tournament.name }}</h3>
+              <div class="flex-1 h-px bg-gradient-to-r from-slate-300 to-transparent ml-8"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+              <div *ngFor="let match of tournament.matches; let mIndex = index" appTilt [tiltScale]="1.05"
+                [tiltMaxAngleX]="15" [tiltMaxAngleY]="15" class="group relative h-full"
+                [style.animation-delay]="(tIndex * 100 + mIndex * 50) + 'ms'" [ngClass]="'animate-fade-in-up'">
+
+                <!-- Card Container -->
+                <div
+                  class="bg-white/90 backdrop-blur-md rounded-2xl p-6 h-full border border-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.05)] overflow-hidden relative z-10 transform-style-3d transition-all duration-500 group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] group-hover:border-slate-300"
+                  [class.border-l-8]="true" [class.border-l-blue-500]="match.result === 'win'"
+                  [class.border-l-red-500]="match.result === 'loss'"
+                  [class.border-l-yellow-500]="match.result === 'draw'">
+
+                  <!-- Dynamic Background Glow -->
+                  <div
+                    class="absolute -top-20 -right-20 w-60 h-60 rounded-full opacity-10 blur-[60px] transition-all duration-700 group-hover:scale-150 group-hover:opacity-20"
+                    [class.bg-blue-500]="match.result === 'win'" [class.bg-red-500]="match.result === 'loss'"
+                    [class.bg-yellow-500]="match.result === 'draw'"></div>
+
+                  <!-- Content Layer -->
+                  <div class="relative z-10 transform-style-3d">
+                    <!-- Header -->
+                    <div class="flex justify-between items-start mb-8 transform-style-3d group-hover:translate-z-10">
+                      <span
+                        class="text-sm font-black text-slate-600 bg-slate-100 px-4 py-1.5 rounded-full shadow-sm border border-slate-200">
+                        {{ match.date }}
+                      </span>
+                      <span
+                        class="text-xs font-black px-4 py-1.5 rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.1)] transform transition-transform duration-300 group-hover:scale-110 tracking-widest"
+                        [class.text-white]="true" [class.bg-gradient-to-r]="true"
+                        [class.from-blue-500]="match.result === 'win'" [class.to-blue-400]="match.result === 'win'"
+                        [class.from-red-500]="match.result === 'loss'" [class.to-red-400]="match.result === 'loss'"
+                        [class.from-yellow-500]="match.result === 'draw'"
+                        [class.to-yellow-400]="match.result === 'draw'">
+                        {{ getResultText(match.result) }}
+                      </span>
+                    </div>
+
+                    <!-- Score Section -->
+                    <div
+                      class="flex items-center justify-between mb-6 transform-style-3d group-hover:translate-z-20 transition-transform duration-500">
+                      <div class="flex-1 text-center">
+                        <p class="text-[10px] text-slate-500 font-bold mb-2 tracking-[0.2em] uppercase">八戸西</p>
+                        <p class="text-6xl font-black drop-shadow-sm transform transition-transform duration-300 group-hover:scale-110"
+                          [class.text-blue-600]="match.result === 'win'"
+                          [class.text-slate-800]="match.result !== 'win'">{{ match.ourScore }}</p>
+                      </div>
+                      <div class="px-2 text-slate-300 text-5xl font-thin transform -skew-x-12">
+                        /
+                      </div>
+                      <div class="flex-1 text-center">
+                        <p class="text-[10px] text-slate-500 font-bold mb-2 tracking-[0.2em] uppercase truncate px-1"
+                          title="{{ match.opponent }}">対戦校</p>
+                        <p
+                          class="text-6xl font-black text-slate-700 drop-shadow-sm transform transition-transform duration-300 group-hover:scale-110">
+                          {{ match.opponentScore }}</p>
+                      </div>
+                    </div>
+
+                    <!-- Opponent Name -->
+                    <div class="text-center transform-style-3d group-hover:translate-z-10">
+                      <p class="text-xl font-bold text-slate-800 tracking-wider truncate" title="{{ match.opponent }}">
+                        {{ match.opponent }}</p>
+                    </div>
                   </div>
-                  <span
-                    class="px-3 py-1 rounded-full text-sm font-bold"
-                    [ngClass]="getResultClass(match.result)">
-                    {{ getResultText(match.result) }}
-                  </span>
                 </div>
               </div>
             </div>
