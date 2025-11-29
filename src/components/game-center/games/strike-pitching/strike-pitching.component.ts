@@ -40,6 +40,8 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
   private animationId: number = 0;
   private isBrowser: boolean;
   private powerInterval: any;
+  private resizeHandler?: () => void;
+  private resizeObserver?: ResizeObserver;
   
   private seoService = inject(SEOService);
   private gameScoreService = inject(GameScoreService);
@@ -51,8 +53,8 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
   // ゲーム状態
   gameState = signal<GameState>('ready');
   currentPitch = signal(0);
-  // 1ゲームで投げられる球数（デフォルト5→10球に増量）
-  totalPitches = 10;
+  // 1ゲームで投げられる球数
+  totalPitches = 6;
   score = signal(0);
   results = signal<PitchResult[]>([]);
   
@@ -121,10 +123,25 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     const canvas = this.canvasRef?.nativeElement;
     if (canvas) {
       this.ctx = canvas.getContext('2d')!;
-      this.resizeCanvas();
-      this.drawReadyScreen();
       
-      window.addEventListener('resize', () => this.resizeCanvas());
+      // 初期サイズ設定（少し遅延を入れて確実にコンテナサイズを取得）
+      setTimeout(() => {
+        this.resizeCanvas();
+        this.drawReadyScreen();
+      }, 0);
+      
+      // ウィンドウリサイズ監視
+      this.resizeHandler = () => this.resizeCanvas();
+      window.addEventListener('resize', this.resizeHandler);
+      
+      // ResizeObserverでコンテナのサイズ変更を監視
+      const container = canvas.parentElement;
+      if (container && typeof ResizeObserver !== 'undefined') {
+        this.resizeObserver = new ResizeObserver(() => {
+          this.resizeCanvas();
+        });
+        this.resizeObserver.observe(container);
+      }
     }
   }
 
@@ -134,6 +151,12 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     }
     if (this.powerInterval) {
       clearInterval(this.powerInterval);
+    }
+    if (this.isBrowser && this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+    }
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
     }
   }
 
@@ -145,10 +168,37 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
     const container = canvas.parentElement;
     if (container) {
-      canvas.width = container.clientWidth;
-      canvas.height = Math.min(container.clientWidth * 0.75, 500);
-      this.canvasWidth = canvas.width;
-      this.canvasHeight = canvas.height;
+      // コンテナの実際のサイズを取得
+      const containerWidth = container.clientWidth || container.offsetWidth;
+      const containerHeight = container.clientHeight || container.offsetHeight;
+      
+      // アスペクト比を維持しながらサイズを設定
+      const aspectRatio = 4 / 3; // aspect-[4/3]に合わせる
+      let width = containerWidth;
+      let height = width / aspectRatio;
+      
+      // コンテナの高さを超えないように調整
+      if (height > containerHeight) {
+        height = containerHeight;
+        width = height * aspectRatio;
+      }
+      
+      // 実際のピクセルサイズを設定（高DPIディスプレイ対応）
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      
+      // CSSサイズを設定
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      
+      // コンテキストのスケールをリセットしてから調整
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      this.ctx.scale(dpr, dpr);
+      
+      // 内部サイズを保存
+      this.canvasWidth = width;
+      this.canvasHeight = height;
 
       // レイアウト変更時に現在の状態に応じて静的画面のみ再描画する
       const state = this.gameState();
@@ -267,6 +317,68 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.gameState() === 'selecting') {
       this.hoveredZone.set(zone);
     }
+  }
+
+  onCanvasClick(event: MouseEvent): void {
+    if (this.gameState() !== 'selecting') return;
+    
+    const canvas = this.canvasRef?.nativeElement;
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    const zone = this.getZoneFromPosition(x, y);
+    if (zone > 0) {
+      this.selectZone(zone);
+    }
+  }
+
+  onCanvasTouch(event: TouchEvent): void {
+    if (this.gameState() !== 'selecting') return;
+    
+    event.preventDefault();
+    const canvas = this.canvasRef?.nativeElement;
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const touch = event.touches[0] || event.changedTouches[0];
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    
+    const zone = this.getZoneFromPosition(x, y);
+    if (zone > 0) {
+      this.selectZone(zone);
+    }
+  }
+
+  private getZoneFromPosition(x: number, y: number): number {
+    const w = this.canvasWidth;
+    const h = this.canvasHeight;
+    
+    const zoneWidth = w * 0.4;
+    const zoneHeight = h * 0.4;
+    const startX = w * 0.3;
+    const startY = h * 0.35;
+    
+    // ストライクゾーン内かチェック
+    if (x < startX || x > startX + zoneWidth || y < startY || y > startY + zoneHeight) {
+      return 0;
+    }
+    
+    const cellWidth = zoneWidth / 3;
+    const cellHeight = zoneHeight / 3;
+    
+    const col = Math.floor((x - startX) / cellWidth);
+    const row = Math.floor((y - startY) / cellHeight);
+    
+    // 範囲チェック
+    if (col < 0 || col >= 3 || row < 0 || row >= 3) {
+      return 0;
+    }
+    
+    return row * 3 + col + 1;
   }
 
   private startPowerGauge(): void {
@@ -643,9 +755,10 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
       }
     }
     
-    // ゾーン番号/ラベル
+    // ゾーン番号/ラベル（フォントサイズをcanvasサイズに応じて調整）
     if (this.gameState() === 'selecting') {
-      ctx.font = 'bold 14px Arial';
+      const zoneFontSize = Math.max(10, Math.min(w / 25, 14));
+      ctx.font = `bold ${zoneFontSize}px Arial`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       
@@ -663,10 +776,13 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     
     // ターゲット指示
     if (this.gameState() === 'selecting') {
+      const targetFontSize = Math.max(12, Math.min(w / 20, 16));
       ctx.fillStyle = '#FFD700';
-      ctx.font = 'bold 16px Arial';
+      ctx.font = `bold ${targetFontSize}px Arial`;
       ctx.textAlign = 'center';
-      ctx.fillText(`TARGET: ${this.getZoneLabel(this.targetZone())}`, w / 2, startY - 15);
+      ctx.textBaseline = 'bottom';
+      const targetOffset = Math.max(10, Math.min(h / 30, 15));
+      ctx.fillText(`TARGET: ${this.getZoneLabel(this.targetZone())}`, w / 2, startY - targetOffset);
     }
   }
 
@@ -823,12 +939,19 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     ctx.closePath();
     ctx.fill();
     
-    // ラベル
+    // ラベル（フォントサイズをcanvasサイズに応じて調整）
+    const powerLabelFontSize = Math.max(9, Math.min(w / 35, 12));
+    const powerValueFontSize = Math.max(9, Math.min(w / 35, 12));
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 12px Arial';
+    ctx.font = `bold ${powerLabelFontSize}px Arial`;
     ctx.textAlign = 'center';
-    ctx.fillText('POWER', gaugeX + gaugeWidth / 2, gaugeY - 10);
-    ctx.fillText(`${Math.round(this.power())}`, gaugeX + gaugeWidth / 2, gaugeY + gaugeHeight + 20);
+    ctx.textBaseline = 'bottom';
+    const labelOffset = Math.max(8, Math.min(h / 40, 10));
+    ctx.fillText('POWER', gaugeX + gaugeWidth / 2, gaugeY - labelOffset);
+    ctx.font = `bold ${powerValueFontSize}px Arial`;
+    ctx.textBaseline = 'top';
+    const valueOffset = Math.max(15, Math.min(h / 25, 20));
+    ctx.fillText(`${Math.round(this.power())}`, gaugeX + gaugeWidth / 2, gaugeY + gaugeHeight + valueOffset);
   }
 
   private drawReadyScreen(): void {
@@ -847,19 +970,26 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillRect(0, 0, w, h);
     
+    // フォントサイズをcanvasサイズに応じて調整
+    const baseFontSize = Math.min(w / 12, h / 8);
+    const titleFontSize = Math.max(20, Math.min(baseFontSize * 1.2, 32));
+    const subtitleFontSize = Math.max(12, Math.min(baseFontSize * 0.5, 16));
+    const instructionFontSize = Math.max(10, Math.min(baseFontSize * 0.4, 14));
+    
     // タイトル
     ctx.fillStyle = '#00BFFF';
-    ctx.font = 'bold 32px "Oswald", Arial';
+    ctx.font = `bold ${titleFontSize}px "Oswald", Arial`;
     ctx.textAlign = 'center';
-    ctx.fillText('🎯 STRIKE PITCHING 🎯', w / 2, h / 2 - 40);
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🎯 STRIKE PITCHING 🎯', w / 2, h / 2 - h * 0.15);
     
     ctx.fillStyle = '#ffffff';
-    ctx.font = '16px "Noto Sans JP", Arial';
+    ctx.font = `${subtitleFontSize}px "Noto Sans JP", Arial`;
     ctx.fillText('ターゲットのコースにボールを投げ込め！', w / 2, h / 2);
     
-    ctx.font = '14px Arial';
+    ctx.font = `${instructionFontSize}px Arial`;
     ctx.fillStyle = '#aaaaaa';
-    ctx.fillText('1. ゾーンを選択 → 2. パワーゲージを止める', w / 2, h / 2 + 35);
+    ctx.fillText('1. ゾーンを選択 → 2. パワーゲージを止める', w / 2, h / 2 + h * 0.15);
   }
 
   private endGame(): void {

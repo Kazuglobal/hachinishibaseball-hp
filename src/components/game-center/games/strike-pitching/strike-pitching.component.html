@@ -1,81 +1,101 @@
 <!-- ヘッダー -->
-<div class="bg-gradient-to-r from-[#1a1a2e] via-[#162e3e] to-[#1a1a2e] text-white py-3 px-4 shadow-lg sticky top-0 z-10 border-b border-blue-500/30">
+<div class="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white py-4 px-4 shadow-2xl sticky top-0 z-10 border-b-2 border-blue-500/50 backdrop-blur-sm">
   <div class="container mx-auto max-w-4xl flex items-center justify-between">
     <a 
       routerLink="/game" 
-      class="flex items-center gap-2 text-white/80 hover:text-blue-400 px-3 py-2 rounded-lg transition-all duration-300 group">
+      class="flex items-center gap-2 text-white/90 hover:text-blue-300 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 group border border-white/10 hover:border-blue-400/50">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
-      <span class="font-medium">戻る</span>
+      <span class="font-semibold">戻る</span>
     </a>
-    <h1 class="font-oswald text-xl md:text-2xl tracking-wider font-bold text-blue-400 drop-shadow-[0_0_10px_rgba(0,150,255,0.5)]">
-      STRIKE PITCHING
-    </h1>
-    <div class="text-right hidden sm:block">
-      <div class="text-xs text-blue-400/70">HI-SCORE</div>
-      <div class="font-oswald font-bold text-lg text-white">{{highScore() | number}}</div>
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/50">
+        <span class="text-xl">⚾</span>
+      </div>
+      <h1 class="font-oswald text-2xl md:text-3xl tracking-wider font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 drop-shadow-[0_0_20px_rgba(59,130,246,0.6)]">
+        STRIKE PITCHING
+      </h1>
+    </div>
+    <div class="text-right hidden sm:block bg-gradient-to-br from-yellow-500/20 to-orange-500/20 px-4 py-2 rounded-xl border border-yellow-500/30">
+      <div class="text-xs text-yellow-300/80 font-bold mb-0.5">HI-SCORE</div>
+      <div class="font-oswald font-black text-xl text-yellow-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">{{highScore() | number}}</div>
     </div>
   </div>
 </div>
 
 <!-- メインゲームエリア -->
-<main class="bg-[#0a0a0a] min-h-[calc(100vh-56px)] flex flex-col">
-  <div class="flex-1 flex flex-col container mx-auto max-w-4xl w-full p-4">
+<main class="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 min-h-[calc(100vh-72px)] flex flex-col overflow-hidden">
+  <div class="flex-1 flex flex-col container mx-auto max-w-4xl w-full p-3 sm:p-4">
     
     <!-- スコアパネル -->
-    <div class="flex justify-between items-stretch mb-4 gap-2 sm:gap-4">
+    <div class="flex justify-between items-stretch mb-3 gap-2 sm:gap-3">
       <!-- 投球数 -->
-      <div class="bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1e] rounded-xl px-4 py-3 flex-1 flex flex-col justify-center items-center border border-white/10 shadow-lg">
-        <span class="text-xs text-gray-500 mb-1 uppercase tracking-wider">PITCH</span>
-        <div class="flex items-baseline">
-          <span class="font-oswald text-3xl font-bold text-white">{{currentPitch()}}</span>
-          <span class="text-gray-600 text-sm ml-1">/{{totalPitches}}</span>
+      <div class="bg-gradient-to-br from-slate-800/90 to-slate-900/90 rounded-2xl px-4 py-3 flex-1 flex flex-col justify-center items-center border-2 border-slate-700/50 shadow-xl backdrop-blur-sm relative overflow-hidden group hover:border-blue-500/50 transition-all duration-300">
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-lg">🎯</span>
+          <span class="text-[11px] text-slate-400 font-bold uppercase tracking-widest relative z-10">PITCH</span>
+        </div>
+        <div class="flex items-baseline relative z-10">
+          <span class="font-oswald text-3xl font-black text-white drop-shadow-lg">{{currentPitch()}}</span>
+          <span class="text-slate-500 text-sm ml-1 font-semibold">/{{totalPitches}}</span>
         </div>
       </div>
       
       <!-- スコア -->
-      <div class="bg-gradient-to-b from-[#001a2a] to-[#001020] rounded-xl px-6 py-3 flex-[1.5] flex flex-col justify-center items-center border border-blue-500/30 shadow-lg shadow-blue-500/10 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-t from-blue-500/5 to-transparent"></div>
-        <span class="text-xs text-blue-500/70 mb-1 uppercase tracking-wider relative z-10">SCORE</span>
-        <span class="font-oswald text-4xl font-bold text-blue-400 tracking-wider relative z-10 drop-shadow-[0_0_10px_rgba(0,150,255,0.3)]">
+      <div class="bg-gradient-to-br from-blue-600/30 via-cyan-600/30 to-blue-700/30 rounded-2xl px-5 py-3 flex-[1.5] flex flex-col justify-center items-center border-2 border-blue-400/40 shadow-2xl shadow-blue-500/20 relative overflow-hidden backdrop-blur-sm">
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-cyan-500/10 animate-pulse"></div>
+        <div class="flex items-center gap-2 mb-1 relative z-10">
+          <span class="text-lg">⭐</span>
+          <span class="text-[11px] text-blue-300/90 font-black uppercase tracking-widest">SCORE</span>
+        </div>
+        <span class="font-oswald text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-cyan-300 to-blue-400 tracking-tight relative z-10 drop-shadow-[0_0_20px_rgba(59,130,246,0.6)]">
           {{score() | number}}
         </span>
       </div>
       
       <!-- ハイスコア（モバイル） -->
-      <div class="bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1e] rounded-xl px-4 py-3 flex-1 flex flex-col justify-center items-center border border-white/10 shadow-lg sm:hidden">
-        <span class="text-xs text-gray-500 mb-1 uppercase tracking-wider">HI-SCORE</span>
-        <span class="font-oswald text-xl font-bold text-white/70">{{highScore() | number}}</span>
+      <div class="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 rounded-2xl px-4 py-3 flex-1 flex flex-col justify-center items-center border-2 border-yellow-500/30 shadow-xl backdrop-blur-sm sm:hidden">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-lg">🏆</span>
+          <span class="text-[11px] text-yellow-300/80 font-bold uppercase tracking-widest">HI-SCORE</span>
+        </div>
+        <span class="font-oswald text-2xl font-black text-yellow-400 drop-shadow-lg">{{highScore() | number}}</span>
       </div>
     </div>
 
     <!-- ゲームキャンバス -->
-    <div class="relative bg-black rounded-2xl overflow-hidden shadow-2xl border-2 border-blue-500/20 aspect-[4/3] w-full flex-shrink-0">
+    <div class="relative bg-gradient-to-br from-slate-900 to-black rounded-3xl overflow-hidden shadow-2xl border-4 border-blue-500/30 aspect-[4/3] w-full flex-shrink-0 mb-3 ring-4 ring-blue-500/10">
+      <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-cyan-500/5 pointer-events-none"></div>
       <canvas 
         #gameCanvas 
-        class="w-full h-full">
+        class="w-full h-full cursor-pointer relative z-10"
+        (click)="onCanvasClick($event)"
+        (touchstart)="onCanvasTouch($event)">
       </canvas>
       <!-- 結果表示オーバーレイ -->
       @if (showResult() && currentResult()) {
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
           <div class="text-center animate-scale-in">
-            <p class="text-5xl md:text-7xl font-black {{getRatingColor(currentResult()!.rating)}} drop-shadow-[0_0_30px_currentColor]">
+            <p class="text-6xl md:text-8xl font-black {{getRatingColor(currentResult()!.rating)}} drop-shadow-[0_0_40px_currentColor] animate-pulse">
               {{getRatingText(currentResult()!.rating)}}
             </p>
-            <p class="text-white text-2xl mt-3 font-oswald">
-              +<span class="text-blue-400">{{currentResult()!.score | number}}</span>
+            <p class="text-white text-3xl mt-4 font-oswald font-bold">
+              +<span class="text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.6)]">{{currentResult()!.score | number}}</span>
             </p>
           </div>
         </div>
       }
-      
-      <!-- ゲームオーバー -->
-      @if (gameState() === 'gameover') {
-        <!-- fixed で全画面オーバーレイにし、親要素の overflow による切り取りを防ぐ -->
-        <div class="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in z-40">
-          <div class="bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1e] rounded-2xl p-8 mx-4 max-w-md w-full text-center border border-blue-500/30 shadow-2xl">
-            <h2 class="text-3xl font-bold font-oswald text-blue-400 mb-6 drop-shadow-[0_0_10px_rgba(0,150,255,0.5)]">
+    </div>
+    
+    <!-- ゲームオーバー -->
+    @if (gameState() === 'gameover') {
+      <!-- fixed で全画面オーバーレイにし、親要素の overflow による切り取りを防ぐ -->
+      <div class="fixed inset-0 bg-black/80 backdrop-blur-md animate-fade-in z-[9999] overflow-y-auto">
+        <div class="min-h-full flex items-start justify-center py-8 px-4 pt-16">
+          <div class="bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1e] rounded-2xl p-8 max-w-md w-full text-center border border-blue-500/30 shadow-2xl relative z-[10000]">
+            <h2 class="text-3xl font-bold font-oswald text-blue-400 mb-6 drop-shadow-[0_0_10px_rgba(0,150,255,0.5)] relative z-10">
               GAME OVER
             </h2>
             
@@ -136,48 +156,36 @@
             </div>
           </div>
         </div>
-      }
-    </div>
-
-    <!-- ゾーン選択グリッド（キャンバス下・通常フロー） -->
-    @if (gameState() === 'selecting') {
-      <div class="mt-4 flex justify-center">
-        <div class="bg-black/60 border border-blue-500/40 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-sm">
-          <div class="grid grid-cols-3 gap-1 w-full max-w-[220px] sm:max-w-[240px] mx-auto">
-            @for (zone of zones; track zone) {
-              <button 
-                (click)="selectZone(zone)"
-                (mouseenter)="hoverZone(zone)"
-                (mouseleave)="hoverZone(0)"
-                class="aspect-square min-w-[40px] min-h-[40px] rounded-md transition-all duration-200 flex items-center justify-center border border-white/10"
-                [class.bg-yellow-500/30]="zone === targetZone()"
-                [class.bg-transparent]="zone !== targetZone()"
-                [class.hover:bg-blue-500/30]="zone !== targetZone()">
-              </button>
-            }
-          </div>
-        </div>
       </div>
     }
 
     <!-- 操作エリア -->
-    <div class="mt-4 flex-1 flex flex-col justify-center min-h-[100px]">
+    <div class="mb-3 flex flex-col justify-center min-h-[70px]">
       @if (gameState() === 'ready') {
         <div class="text-center">
           <button 
             (click)="startGame()"
-            class="bg-gradient-to-b from-blue-400 to-blue-600 text-white text-2xl font-black py-5 px-16 rounded-full shadow-[0_8px_0_#1e40af,0_15px_30px_rgba(0,150,255,0.3)] hover:shadow-[0_4px_0_#1e40af,0_10px_20px_rgba(0,150,255,0.3)] hover:translate-y-[4px] active:shadow-none active:translate-y-[8px] transition-all duration-100 animate-pulse">
-            🎯 START GAME
+            class="group relative bg-gradient-to-br from-blue-500 via-blue-600 to-cyan-600 text-white text-xl font-black py-4 px-16 rounded-2xl shadow-[0_10px_0_#1e40af,0_20px_40px_rgba(59,130,246,0.4)] hover:shadow-[0_5px_0_#1e40af,0_15px_30px_rgba(59,130,246,0.5)] hover:translate-y-[5px] active:shadow-none active:translate-y-[10px] transition-all duration-150 overflow-hidden border-2 border-blue-400/50">
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+            <span class="relative z-10 flex items-center gap-3">
+              <span class="text-2xl">⚾</span>
+              <span>START GAME</span>
+              <span class="text-2xl">🎯</span>
+            </span>
           </button>
         </div>
       }
 
       @if (gameState() === 'selecting') {
-        <div class="text-center">
-          <p class="text-yellow-400 text-lg font-bold mb-2 animate-pulse">
-            ターゲット: {{getZoneLabel(targetZone())}}
-          </p>
-          <p class="text-white/60 text-sm">黄色のゾーンをタップ！</p>
+        <div class="text-center bg-gradient-to-r from-yellow-500/10 via-amber-500/10 to-yellow-500/10 rounded-2xl py-4 px-6 border-2 border-yellow-500/30 backdrop-blur-sm">
+          <div class="flex items-center justify-center gap-2 mb-2">
+            <span class="text-2xl animate-bounce">🎯</span>
+            <p class="text-yellow-300 text-lg font-black mb-0">
+              ターゲット: <span class="text-yellow-400 text-2xl font-black">{{getZoneLabel(targetZone())}}</span>
+            </p>
+            <span class="text-2xl animate-bounce">🎯</span>
+          </div>
+          <p class="text-yellow-200/80 text-sm font-semibold">黄色のゾーンをタップ！</p>
         </div>
       }
 
@@ -185,49 +193,68 @@
         <div class="text-center">
           <button 
             (click)="throwBall()"
-            class="w-full max-w-md bg-gradient-to-b from-red-500 to-red-700 text-white text-3xl font-black py-6 rounded-2xl shadow-[0_8px_0_#7f1d1d] active:shadow-none active:translate-y-[8px] transition-all duration-100 touch-manipulation animate-pulse">
-            THROW!
+            class="group relative w-full max-w-md bg-gradient-to-br from-red-500 via-red-600 to-orange-600 text-white text-2xl font-black py-5 rounded-2xl shadow-[0_10px_0_#7f1d1d,0_20px_40px_rgba(239,68,68,0.4)] active:shadow-none active:translate-y-[10px] transition-all duration-150 touch-manipulation border-2 border-red-400/50 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500"></div>
+            <span class="relative z-10 flex items-center justify-center gap-3">
+              <span class="text-3xl">⚾</span>
+              <span>THROW!</span>
+              <span class="text-3xl">⚾</span>
+            </span>
           </button>
-          <p class="text-white/40 text-sm mt-3 font-medium">緑のラインに合わせてタップ！</p>
+          <p class="text-green-300/90 text-sm mt-3 font-bold flex items-center justify-center gap-2">
+            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+            緑のラインに合わせてタップ！
+            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+          </p>
         </div>
       }
 
       @if (gameState() === 'throwing') {
-        <div class="text-center">
-          <p class="text-white/60 text-lg">投球中...</p>
+        <div class="text-center bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-2xl py-4 border-2 border-blue-500/30">
+          <div class="flex items-center justify-center gap-3">
+            <div class="w-3 h-3 bg-blue-400 rounded-full animate-ping"></div>
+            <p class="text-blue-300 text-base font-bold">投球中...</p>
+            <div class="w-3 h-3 bg-blue-400 rounded-full animate-ping" style="animation-delay: 0.2s"></div>
+          </div>
         </div>
       }
     </div>
 
     <!-- 結果履歴 -->
     @if (results().length > 0) {
-      <div class="mt-4 bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1e] rounded-xl p-4 border border-white/10">
-        <h3 class="text-white/50 text-xs font-bold mb-3 uppercase tracking-wider flex items-center gap-2">
-          <span class="w-1 h-3 bg-blue-500 rounded-full"></span>
-          RESULTS
+      <div class="mb-2 bg-gradient-to-br from-slate-800/90 to-slate-900/90 rounded-2xl p-3 border-2 border-slate-700/50 overflow-y-auto max-h-[90px] shadow-xl backdrop-blur-sm">
+        <h3 class="text-slate-300 text-xs font-black mb-2 uppercase tracking-widest flex items-center gap-2">
+          <div class="w-1 h-4 bg-gradient-to-b from-blue-400 to-cyan-400 rounded-full"></div>
+          <span>RESULTS</span>
+          <div class="flex-1 h-px bg-gradient-to-r from-slate-600 to-transparent"></div>
         </h3>
         <div class="flex flex-wrap gap-2">
           @for (result of results(); track $index) {
             <div 
-              class="px-3 py-2 rounded-lg flex flex-col items-center text-xs shadow-md border"
+              class="px-3 py-2 rounded-xl flex flex-col items-center text-xs shadow-lg border-2 backdrop-blur-sm transition-all duration-300 hover:scale-110"
               [class.bg-gradient-to-br]="true"
               [class.from-yellow-400]="result.rating === 'perfect'"
               [class.to-orange-500]="result.rating === 'perfect'"
               [class.border-yellow-300]="result.rating === 'perfect'"
+              [class.shadow-yellow-500/50]="result.rating === 'perfect'"
               [class.from-green-500]="result.rating === 'great'"
               [class.to-green-700]="result.rating === 'great'"
               [class.border-green-400]="result.rating === 'great'"
+              [class.shadow-green-500/50]="result.rating === 'great'"
               [class.from-blue-500]="result.rating === 'good'"
               [class.to-blue-700]="result.rating === 'good'"
               [class.border-blue-400]="result.rating === 'good'"
+              [class.shadow-blue-500/50]="result.rating === 'good'"
               [class.from-gray-500]="result.rating === 'ok'"
               [class.to-gray-700]="result.rating === 'ok'"
               [class.border-gray-400]="result.rating === 'ok'"
+              [class.shadow-gray-500/50]="result.rating === 'ok'"
               [class.from-red-500]="result.rating === 'miss'"
               [class.to-red-700]="result.rating === 'miss'"
-              [class.border-red-400]="result.rating === 'miss'">
-              <span class="text-white font-bold">{{getRatingText(result.rating)}}</span>
-              <span class="text-white/70 text-[10px]">+{{result.score}}</span>
+              [class.border-red-400]="result.rating === 'miss'"
+              [class.shadow-red-500/50]="result.rating === 'miss'">
+              <span class="text-white font-black text-sm drop-shadow-md">{{getRatingText(result.rating)}}</span>
+              <span class="text-white/90 text-[10px] font-bold mt-0.5">+{{result.score}}</span>
             </div>
           }
         </div>

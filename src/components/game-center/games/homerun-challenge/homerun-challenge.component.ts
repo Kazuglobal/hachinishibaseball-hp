@@ -43,6 +43,7 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   private animationId: number = 0;
   private isBrowser: boolean;
   private resizeHandler?: () => void;
+  private resizeObserver?: ResizeObserver;
   
   private seoService = inject(SEOService);
   private gameScoreService = inject(GameScoreService);
@@ -140,11 +141,25 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     const canvas = this.canvasRef?.nativeElement;
     if (canvas) {
       this.ctx = canvas.getContext('2d')!;
-      this.resizeCanvas();
-      this.drawReadyScreen();
       
+      // 初期サイズ設定（少し遅延を入れて確実にコンテナサイズを取得）
+      setTimeout(() => {
+        this.resizeCanvas();
+        this.drawReadyScreen();
+      }, 0);
+      
+      // ウィンドウリサイズ監視
       this.resizeHandler = () => this.resizeCanvas();
       window.addEventListener('resize', this.resizeHandler);
+      
+      // ResizeObserverでコンテナのサイズ変更を監視
+      const container = canvas.parentElement;
+      if (container && typeof ResizeObserver !== 'undefined') {
+        this.resizeObserver = new ResizeObserver(() => {
+          this.resizeCanvas();
+        });
+        this.resizeObserver.observe(container);
+      }
     }
   }
 
@@ -154,6 +169,9 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     }
     if (this.isBrowser && this.resizeHandler) {
       window.removeEventListener('resize', this.resizeHandler);
+    }
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
     }
     if (this.flyingTimeoutId !== null) {
       clearTimeout(this.flyingTimeoutId);
@@ -173,10 +191,45 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     
     const container = canvas.parentElement;
     if (container) {
-      canvas.width = container.clientWidth;
-      canvas.height = Math.min(container.clientWidth * 0.65, 450);
-      this.canvasWidth = canvas.width;
-      this.canvasHeight = canvas.height;
+      // コンテナの実際のサイズを取得
+      const containerWidth = container.clientWidth || container.offsetWidth;
+      const containerHeight = container.clientHeight || container.offsetHeight;
+      
+      // アスペクト比を維持しながらサイズを設定
+      const aspectRatio = 16 / 10; // aspect-[16/10]に合わせる
+      let width = containerWidth;
+      let height = width / aspectRatio;
+      
+      // コンテナの高さを超えないように調整
+      if (height > containerHeight) {
+        height = containerHeight;
+        width = height * aspectRatio;
+      }
+      
+      // 実際のピクセルサイズを設定（高DPIディスプレイ対応）
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      
+      // CSSサイズを設定
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      
+      // コンテキストのスケールをリセットしてから調整
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      this.ctx.scale(dpr, dpr);
+      
+      // 内部サイズを保存
+      this.canvasWidth = width;
+      this.canvasHeight = height;
+      
+      // ゲーム状態に応じて再描画
+      const state = this.gameState();
+      if (state === 'ready') {
+        this.drawReadyScreen();
+      } else if (state === 'pitching' || state === 'swing' || state === 'flying' || state === 'result' || state === 'gameover') {
+        // ゲーム中は次のフレームで再描画される
+      }
     }
   }
 
@@ -910,13 +963,16 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     
     ctx.fillRect(markerX - 2, barY, 4, barHeight);
     
-    // ラベル
+    // ラベル（フォントサイズをcanvasサイズに応じて調整）
+    const labelFontSize = Math.max(8, Math.min(w / 40, 10));
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 10px Arial';
+    ctx.font = `bold ${labelFontSize}px Arial`;
     ctx.textAlign = 'center';
-    ctx.fillText('EARLY', barX + barWidth * 0.15, barY - 12);
-    ctx.fillText('PERFECT', barX + barWidth * 0.55, barY - 12);
-    ctx.fillText('LATE', barX + barWidth * 0.85, barY - 12);
+    ctx.textBaseline = 'bottom';
+    const labelOffset = Math.max(8, Math.min(h / 20, 12));
+    ctx.fillText('EARLY', barX + barWidth * 0.15, barY - labelOffset);
+    ctx.fillText('PERFECT', barX + barWidth * 0.55, barY - labelOffset);
+    ctx.fillText('LATE', barX + barWidth * 0.85, barY - labelOffset);
   }
 
   private drawParticles(): void {
@@ -1000,18 +1056,25 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
     ctx.fillRect(0, 0, w, h);
     
+    // フォントサイズをcanvasサイズに応じて調整
+    const baseFontSize = Math.min(w / 12, h / 8);
+    const titleFontSize = Math.max(20, Math.min(baseFontSize * 1.2, 32));
+    const subtitleFontSize = Math.max(12, Math.min(baseFontSize * 0.5, 16));
+    const instructionFontSize = Math.max(10, Math.min(baseFontSize * 0.4, 14));
+    
     // タイトル
     ctx.fillStyle = '#FFD700';
-    ctx.font = 'bold 32px "Oswald", Arial';
+    ctx.font = `bold ${titleFontSize}px "Oswald", Arial`;
     ctx.textAlign = 'center';
-    ctx.fillText('⚾ HOMERUN CHALLENGE ⚾', w / 2, h / 2 - 30);
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⚾ HOMERUN CHALLENGE ⚾', w / 2, h / 2 - h * 0.15);
     
     ctx.fillStyle = '#ffffff';
-    ctx.font = '16px "Noto Sans JP", Arial';
-    ctx.fillText('タイミングよくスイングしてホームランを狙え！', w / 2, h / 2 + 10);
-    ctx.font = '14px Arial';
+    ctx.font = `${subtitleFontSize}px "Noto Sans JP", Arial`;
+    ctx.fillText('タイミングよくスイングしてホームランを狙え！', w / 2, h / 2);
+    ctx.font = `${instructionFontSize}px Arial`;
     ctx.fillStyle = '#aaaaaa';
-    ctx.fillText('画面タップ or スペースキー でスイング', w / 2, h / 2 + 40);
+    ctx.fillText('画面タップ or スペースキー でスイング', w / 2, h / 2 + h * 0.15);
   }
 
   private easeOutQuad(t: number): number {

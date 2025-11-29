@@ -54,6 +54,8 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
   private animationId: number = 0;
   private gameLoopId: any;
   private isBrowser: boolean;
+  private resizeHandler?: () => void;
+  private resizeObserver?: ResizeObserver;
   
   private seoService = inject(SEOService);
   private gameScoreService = inject(GameScoreService);
@@ -134,15 +136,36 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
     const canvas = this.canvasRef?.nativeElement;
     if (canvas) {
       this.ctx = canvas.getContext('2d')!;
-      this.resizeCanvas();
-      this.drawReadyScreen();
       
-      window.addEventListener('resize', () => this.resizeCanvas());
+      // 初期サイズ設定（少し遅延を入れて確実にコンテナサイズを取得）
+      setTimeout(() => {
+        this.resizeCanvas();
+        this.drawReadyScreen();
+      }, 0);
+      
+      // ウィンドウリサイズ監視
+      this.resizeHandler = () => this.resizeCanvas();
+      window.addEventListener('resize', this.resizeHandler);
+      
+      // ResizeObserverでコンテナのサイズ変更を監視
+      const container = canvas.parentElement;
+      if (container && typeof ResizeObserver !== 'undefined') {
+        this.resizeObserver = new ResizeObserver(() => {
+          this.resizeCanvas();
+        });
+        this.resizeObserver.observe(container);
+      }
     }
   }
 
   ngOnDestroy(): void {
     this.stopGame();
+    if (this.isBrowser && this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+    }
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -181,12 +204,47 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
     
     const container = canvas.parentElement;
     if (container) {
-      canvas.width = container.clientWidth;
-      canvas.height = Math.min(container.clientWidth * 0.7, 480);
-      this.canvasWidth = canvas.width;
-      this.canvasHeight = canvas.height;
+      // コンテナの実際のサイズを取得
+      const containerWidth = container.clientWidth || container.offsetWidth;
+      const containerHeight = container.clientHeight || container.offsetHeight;
+      
+      // アスペクト比を維持しながらサイズを設定
+      const aspectRatio = 16 / 11; // aspect-[16/11]に合わせる
+      let width = containerWidth;
+      let height = width / aspectRatio;
+      
+      // コンテナの高さを超えないように調整
+      if (height > containerHeight) {
+        height = containerHeight;
+        width = height * aspectRatio;
+      }
+      
+      // 実際のピクセルサイズを設定（高DPIディスプレイ対応）
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      
+      // CSSサイズを設定
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      
+      // コンテキストのスケールをリセットしてから調整
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      this.ctx.scale(dpr, dpr);
+      
+      // 内部サイズを保存
+      this.canvasWidth = width;
+      this.canvasHeight = height;
+      
+      // プレイヤー位置を調整
       this.playerX = this.canvasWidth / 2;
       this.playerY = this.canvasHeight - 50;
+      
+      // ゲーム状態に応じて再描画
+      const state = this.gameState();
+      if (state === 'ready') {
+        this.drawReadyScreen();
+      }
     }
   }
 
@@ -809,10 +867,12 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
     ctx.ellipse(0, -30, 25, 40, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // 背番号
+    // 背番号（フォントサイズをcanvasサイズに応じて調整）
+    const numberFontSize = Math.max(14, Math.min(this.canvasWidth / 20, 20));
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 20px Arial';
+    ctx.font = `bold ${numberFontSize}px Arial`;
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     ctx.fillText('7', 0, -25);
     
     // 頭
@@ -902,12 +962,15 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
       ctx.translate(effect.x, effect.y);
       ctx.scale(scale, scale);
       
+      // エフェクトテキストのフォントサイズをcanvasサイズに応じて調整
+      const effectFontSize = Math.max(16, Math.min(this.canvasWidth / 18, 22));
       ctx.fillStyle = effect.color;
       ctx.globalAlpha = alpha;
-      ctx.font = 'bold 22px Arial';
+      ctx.font = `bold ${effectFontSize}px Arial`;
       ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = Math.max(2, Math.min(this.canvasWidth / 150, 3));
       ctx.strokeText(effect.text, 0, 0);
       ctx.fillText(effect.text, 0, 0);
       
@@ -940,13 +1003,21 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
     ctx.fillStyle = meterGradient;
     ctx.fillRect(meterX, meterY + meterHeight - fillHeight, meterWidth, fillHeight);
     
-    // コンボ数
+    // コンボ数（フォントサイズをcanvasサイズに応じて調整）
+    const w = this.canvasWidth;
+    const h = this.canvasHeight;
+    const comboFontSize = Math.max(16, Math.min(w / 20, 24));
+    const comboLabelFontSize = Math.max(8, Math.min(w / 40, 10));
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 24px Arial';
+    ctx.font = `bold ${comboFontSize}px Arial`;
     ctx.textAlign = 'center';
-    ctx.fillText(`${combo}`, meterX + meterWidth / 2, meterY - 10);
-    ctx.font = 'bold 10px Arial';
-    ctx.fillText('COMBO', meterX + meterWidth / 2, meterY + meterHeight + 15);
+    ctx.textBaseline = 'bottom';
+    const comboOffset = Math.max(8, Math.min(h / 30, 10));
+    ctx.fillText(`${combo}`, meterX + meterWidth / 2, meterY - comboOffset);
+    ctx.font = `bold ${comboLabelFontSize}px Arial`;
+    ctx.textBaseline = 'top';
+    const labelOffset = Math.max(12, Math.min(h / 25, 15));
+    ctx.fillText('COMBO', meterX + meterWidth / 2, meterY + meterHeight + labelOffset);
   }
 
   private drawReadyScreen(): void {
@@ -963,20 +1034,27 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillRect(0, 0, w, h);
     
+    // フォントサイズをcanvasサイズに応じて調整
+    const baseFontSize = Math.min(w / 12, h / 8);
+    const titleFontSize = Math.max(20, Math.min(baseFontSize * 1.2, 32));
+    const subtitleFontSize = Math.max(12, Math.min(baseFontSize * 0.5, 16));
+    const instructionFontSize = Math.max(10, Math.min(baseFontSize * 0.4, 14));
+    
     // タイトル
     ctx.fillStyle = '#4ECDC4';
-    ctx.font = 'bold 32px "Oswald", Arial';
+    ctx.font = `bold ${titleFontSize}px "Oswald", Arial`;
     ctx.textAlign = 'center';
-    ctx.fillText('🧤 CATCH FLY 🧤', w / 2, h / 2 - 40);
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🧤 CATCH FLY 🧤', w / 2, h / 2 - h * 0.2);
     
     ctx.fillStyle = '#ffffff';
-    ctx.font = '16px "Noto Sans JP", Arial';
-    ctx.fillText('60秒間でフライボールをキャッチ！', w / 2, h / 2);
+    ctx.font = `${subtitleFontSize}px "Noto Sans JP", Arial`;
+    ctx.fillText('60秒間でフライボールをキャッチ！', w / 2, h / 2 - h * 0.05);
     
-    ctx.font = '14px Arial';
+    ctx.font = `${instructionFontSize}px Arial`;
     ctx.fillStyle = '#aaaaaa';
-    ctx.fillText('← → キーで移動 / スペースでダイビング', w / 2, h / 2 + 30);
-    ctx.fillText('スマホはタッチ＆スライドで操作', w / 2, h / 2 + 50);
+    ctx.fillText('← → キーで移動 / スペースでダイビング', w / 2, h / 2 + h * 0.1);
+    ctx.fillText('スマホはタッチ＆スライドで操作', w / 2, h / 2 + h * 0.2);
   }
 
   private stopGame(): void {
