@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit, AfterViewInit, inject, signal, computed, ChangeDetectorRef, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, AfterViewInit, inject, signal, computed, ChangeDetectorRef, PLATFORM_ID, Inject, effect } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -6,16 +6,7 @@ import { SectionTitleComponent } from '../shared/section-title/section-title.com
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { NgOptimizedImage } from '@angular/common';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
-
-interface AlumniVoice {
-  id: string;
-  image: string;
-  title: string;
-  family: string;
-  generation: string;
-  currentJob: string;
-  content: string;
-}
+import { AlumniVoiceService, AlumniVoice } from '../../services/alumni-voice.service';
 
 @Component({
   selector: 'app-alumni-voice-detail',
@@ -29,226 +20,46 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private sanitizer = inject(DomSanitizer);
+  private alumniVoiceService = inject(AlumniVoiceService);
   private isBrowser: boolean;
   isVisible = signal(false);
 
-  constructor(@Inject(PLATFORM_ID) platformId: object) {
-    this.isBrowser = isPlatformBrowser(platformId);
-  }
-
-  // ALUMNI VOICEデータ
-  private alumniVoices: AlumniVoice[] = [
-    {
-      id: 'hayashino-satoshi',
-      image: '/assets/images/hayashino.jpg',
-      title: '野球部での経験が、今の自分の礎です。',
-      family: '32期生 - 林野 智 様',
-      generation: '32期生',
-      currentJob: '宮城県警警察官（若林警察署 荒井交番勤務）',
-      content: `### 高校時代の挫折が、指導者への道を開いた
-
-「入ってすぐは、これはちょっと無理だなって思いました」
-
-32期生の林野智さんは、高校時代を振り返りながら率直に語る。当時、市内の上手い選手たちが集まる中で、自分の実力に限界を感じたという。最終的には選手としてではなく、データ分析などで貢献する道を選んだ。その甲斐もあり、32期の代は、春季大会で準優勝し東北大会に出場、夏はベスト4という好成績をおさめた。
-
-「自分としてはちょっと悔いがあって。下手なら下手なりに、もう少し本気で野球をしたかったなって、今さらながらずっと思っています」
-
-この後悔が、後の人生に大きな影響を与えることになる。
-
-### 10年間の指導者経験 ─ 中学生に野球の魅力を伝える
-
-高校卒業後、林野さんは大学では野球を続けなかったが、縁あって中学生の指導に携わることになった。
-
-「大学生の頃、野球が好きだったので、アルバイト先も元プロ野球選手の方が店長をやっている居酒屋で働いていました」
-
-そこで出会った常連客に連れられて行った寿司店の親方が、仙台育英で甲子園準優勝経験のある人物だった。その親方から「お前も手伝え」と誘われたのが、仙台宮城野リトルシニアでのコーチの始まりだった。
-
-[IMAGE:hayashino4.jpg:宮城野リトルシニアの選手たち]
-
-[IMAGE:hayashino3.jpg:コーチ時代の林野さん]
-
-[IMAGE:hayashino2.jpg:]
-
-「高校の時の後悔があったのも、指導を続ける大きな理由でしたね。約10年間、中学生たちに野球を教えていました」
-
-### 34歳での転職 ─ 新たな挑戦へ
-
-東北福祉大学で特別支援教育を学び、卒業後は障害福祉施設で働いていた林野さん。しかし、30代半ばにして大きな決断をする。
-
-「前の仕事が嫌だったわけではないんです。ただ、何かチャレンジしてみたくなってしまったんです」
-
-もともと警察24時などの番組が好きだった林野さんは、35歳まで警察官採用試験を受けられることを知り、「もう一回頑張ってみたい」と勉強を再開。見事合格を果たした。
-
-### 警察官として ─ 震災の被災地を守る
-
-現在は若林警察署の荒井交番に配属され、日々の勤務に励んでいる。管轄区域には、東日本大震災で多くの犠牲者を出した荒浜地区も含まれる。
-
-「大変なのは法律の勉強ですね。若い子たちとの記憶力の差を感じました。でも、落とし物から行方不明者の捜索まで、一つ一つ対応していって『良かった』と思える瞬間が、やりがいになっています」
-
-### プロフェッショナルを目指して
-
-警察官として、林野さんには明確な目標がある。
-
-「警察って本当にいろんな仕事があるんです。刑事、交通事故捜査、職務質問...。何か一つのプロフェッショナルになりたいですね」
-
-2歳半と1歳半の2人の子どもの父親でもある林野さん。仕事と家庭、両方で充実した日々を送っている。
-
-### 後輩たちへのメッセージ
-
-「毎年、西高野球部の結果は楽しみにしています。4年前に甲子園に行ったばかりなので、その伝統を絶やすことなく頑張ってほしい」
-
-そして最後に、野球部OBとしての思いを語った。
-
-「最近はホームページなどで野球部の活動を見る機会も増えました。先輩後輩の繋がりを大事にしたいですね。もう少し集まる機会が多くなれば面白いなと思います。みんなでまた集まりたいですね」
-
-高校時代の挫折と後悔。それが指導者としての10年間を生み、今は警察官として新たな道を歩む林野さん。野球部での経験は、確実に今の自分の礎となっている。`
-    },
-    {
-      id: 'nozaki-junsei',
-      image: 'https://picsum.photos/seed/nozaki-junsei/800/1000',
-      title: '「夢は二つでいい」— お笑い芸人×プロ野球選手、異色の二刀流で切り拓く道',
-      family: '34期生 - スレンダーパンダじゅんせい 様',
-      generation: '34期生',
-      currentJob: 'お笑い芸人（スレンダーパンダ）／元独立リーグ選手',
-      content: `### 西高野球部での日々
-
-― まず、西高野球部時代の成績について教えてください。
-
-自分たちの代では、春・秋、それからリーグ戦も含めてほぼほぼ負け続けていました。唯一、夏の大会だけベスト8まで進むことができました。
-
-― 当時のチームはどのような雰囲気でしたか？
-
-一つ上の代が、いわゆる「21世紀枠」の最終候補まで進んだ代で、すごく注目されていたんです。どうしてもそこに力が入っていて、僕らの代はその反動というか、ぽっかり抜けたような感じで、秋も春もコケてしまって。本当に「相性が悪かった代だったな」という印象です。
-
-それでも、2年生の力もあってなんとか夏は勝ち上がることができました。当時の部員数がそれほど多くなくて、同級生は13人くらいの代だったので、横のつながりがすごく強くて、結束力のある代だったなと思います。
-
-― 忘れられない思い出はありますか？
-
-最後、ベスト4をかけた試合でテレビ中継が入っていたんですけど、そこで敗退してしまって。その試合後、みんなが涙を流しながらベンチを後にする映像の中で、僕だけ鼻血を出していて、顔が真っ赤になっていたんです（笑）。そのシーンを今でもいろんな人にいじられますね。
-
-### 西高で学んだこと
-
-― 野球部での3年間で学んだことは何ですか？
-
-高校時代でいうと、野球部の3年間は、ずっと同じメンバーで同じクラスにいるような感覚でした。「組織としてのつながりの大切さ」を学んだなと思います。
-
-上下関係に関しても、そこまで理不尽に厳しいというわけではなかったんですが、先輩後輩の関係性がうまくいかないと、限られた2年半〜3年の中でチームとして戦えないので、「先輩を立てる」「後輩を気遣う」という意識は自然と身につきました。そのあたりの感覚は、今でもすごく生きていると思います。
-
-### 大学野球での4年間
-
-― 流通経済大学に進学された理由を教えてください。
-
-一番のきっかけは先輩からの声かけでした。西高の先輩に田沢さんという方がいて、その田沢さんが流経大でプレーしていたんです。その田沢さんから「受けてみろよ」と声をかけていただいたのが最初でした。
-
-体育の教員免許が取れたり、もともとトレーナーにも興味があったので、「野球を続けながら資格も取れるならいいな」と思って入学を決めました。
-
-― 大学野球はいかがでしたか？
-
-なめていたつもりはまったくなかったんですけど、高校の時は「大学野球って少し自由で、伸び伸びやれるのかな」というイメージがあったんです。でも実際は、高校野球以上に厳しい環境でした。
-
-今、お笑いの話をするときには、当時の流経大野球部のことを「インペルダウンレベル6」っていうくらい（笑）、がっつり鍛えられる環境でした。その4年間で、性格も、人生観も大きく変わったと思います。いくら積まれても戻りたくない4年間でした。
-
-### 相方が実家に来た日 — お笑いへの決断
-
-― 大学卒業後は八戸に戻られたそうですね。
-
-はい、市役所で働いていました。お笑い自体はもともと好きでしたが、人前に立つのは本当に苦手で、人前で話すのもすごく緊張するタイプだったので、「芸人を目指そう」と思ったことは一度もなかったです。
-
-― そこからどうしてお笑いの道へ？
-
-本当に相方の木谷カレーさんが実家まで来て、うちの親を直接説得してくれたんです。その行動力を目の当たりにして、「ここまで本気なやつとだったら、一緒に売れていけるかもしれない」とイメージできたというか。
-
-もちろん人前は苦手なんですけど、「人生一回だし、好きなお笑いで東京で勝負してみようかな」と、真剣に考えるようになりました。両親も「こんなに本気な子がいるんだから、あんたもちゃんと考えなさい」と、背中を押してくれました。
-
-2016年10月、共にサンドウィッチマンに憧れた二人でコンビ「スレンダーパンダ」を結成しました。
-
-### 西高の選抜出場が繋いだ縁 — 独立リーグへの挑戦
-
-― 独立リーグ挑戦のきっかけは？
-
-芸人になってからも、草野球は続けています。事務所ごとに芸人リーグみたいなものがあって、伊集院光さんのチームや、おばたのお兄さんのチーム、島谷ひとみさんのチームに現在もお世話になっています。全て相方と一緒で、コンビで3チームお世話になっています。
-
-29〜31歳くらいの時期に体のキレがすごくよくなってきて、「もしかしたらもう一度真剣に野球を目指せるかもしれない」と思い始めていたんです。
-
-― 独立リーグに挑戦しようと思ったきっかけは？
-
-西高が選抜に出場したときに、「選抜のチケットを取れる人がいるよ」と別の同級生から誘われて、飲み会に顔を出したのがきっかけです。その方が独立リーグで堺シュライクスに関わっていて、「仕事としてYouTubeの生配信をやってみないか」と、まずは芸人としての仕事をいただいたんです。
-
-そこから大阪に行って、生配信をしながらリーグ戦を間近で見るようになって、自分の今の状態とリーグのレベルを比較したときに、「ここなら挑戦できるかもしれない」と感じました。「誰の力も借りずに、トライアウトを受けてみよう」と決めてチャレンジしました。
-
-― トライアウトで指名を受けた瞬間の気持ちは？
-
-受ける前は、「受かるか落ちるか、それだけだ」と思っていました。でもいざトライアウトの日になると、その場にいた誰よりも僕が一番楽しんでいたと思います。声も一番出ていましたし、その中でもしっかり動けていたことを評価していただいて、指名をいただけたのかなと。
-
-じつはご縁もあって、「堺シュライクスから指名が来たら行く」と決めていたので、他のチームから「1巡目・2巡目で指名したい」と言っていただいたんですが、お断りしていたんです。最終的には6巡目という形でしたが、「指名するかしないか」というギリギリのところで名前を呼んでもらえたのは、本当にありがたかったです。
-
-### 夜行バスで繋ぐ「二刀流」の日々
-
-― 東京と大阪を往復する生活は大変だったのでは？
-
-やると決めた以上は、どっちにも本気で向き合いたかったんです。野球にも本気で取り組むし、その経験をお笑いに生かせる部分もきっとあると思っていました。
-
-今振り返ると、「なんであんな生活ができていたんだろう」と思うくらいですけど（笑）、どちらにも本気で向き合えたからこそ続けられたし、あの環境でも頑張れたんだと思います。
-
-― 西高や流経大での経験が活きた？
-
-そこは本当に大きかったと思います。高校時代は、下の代からレギュラーで出ている後輩も多くて、先輩として後輩とのバランスを取ることを学びました。大学時代は、とにかく厳しい環境の中で「どんな状況でも楽しみを見つけなきゃやっていけない」という感覚を叩き込まれました。
-
-独立リーグについても、僕が挑戦してみることで、西高や流経大の後輩たちが「独立ってどんな世界なんだろう」と興味を持ってくれるかもしれない。自分が経験しておけば、相談に乗ることもできる。そういう「後輩たちのためになるかもしれない」という思いもありました。
-
-### 地元・八戸への想い
-
-― 八戸への「恩返し」の気持ちは？
-
-そこは強くあります。もともと大学卒業後に八戸に戻って市役所で働いたのも、「やっぱり地元が好きだな」と、東京や大学生活を通してあらためて感じたからなんです。
-
-今も、「八戸や青森に貢献できるタイミングはないかな」とずっと考えていて、自分でイベントを企画するきっかけもありました。その流れで小川監督と久しぶりに再会できたり、テレビの生放送に出演させていただいたりと、ありがたい広がりも生まれました。だからこそ、今後も地元への恩返しは続けていきたいと思っています。
-
-### 目標はM-1決勝進出
-
-― 芸人として、今どんな目標を掲げていますか？
-
-やっぱり「テレビに出てなんぼ」という意識は、八戸にいた頃からずっとあります。いろいろコンプライアンスの問題などもあって、昔より難しい時代にはなっていますけど、それでもやっぱりテレビスターになりたいという思いは変わりません。
-
-具体的には、M-1で決勝に進出すること。そして、自分の武器であるスポーツや運動神経を生かしてお仕事をいただくこと。この二つが、直近の大きな目標です。
-
-### 後輩たちへのメッセージ
-
-― 「普通じゃない道」を選ぶことについて、どんなことを伝えたいですか？
-
-自分自身、プロ野球を目指したときも芸人になったときも、共通しているのは「楽しんでいたら結果がついてきた」という感覚です。
-
-環境は人それぞれ違いますけど、まずは目の前のことを楽しんでほしいなと思います。楽しんでいれば自然と結果もついてきますし、「文句を言っている暇があったら、どうやったら前向きにできるかを考えた方がいい」と、僕は思っています。自分でプラスに転換していけば、環境は必ず変えられるし、良くなっていくはずです。
-
-指導するときも、まず「楽しむことが一番大事だよ」というのは、必ず伝えるようにしています。
-
-― 最後にメッセージを。
-
-やっぱり今こうして芸人として活動させてもらっているので、YouTubeやラジオ、テレビなど、できればいろいろ見てもらえたらうれしいです。
-
-そして、将来みんなが偉くなったら、「ぜひお仕事ください！」という感じですね（笑）。
-
-「楽しむことが一番大事」— その言葉通り、どんな困難な状況でも前向きに、そして全力で楽しむじゅんせいさんの姿勢は、後輩たちだけでなく、すべての人に勇気を与えてくれます。`
-    },
-  ];
-
+  // データはサービスから取得
   alumniVoice = signal<AlumniVoice | null>(null);
   currentVoiceIndex = signal<number>(-1);
-  sortedVoices = signal<AlumniVoice[]>([]);
+  sortedVoices = computed(() => this.alumniVoiceService.getAllVoices()());
+
+  constructor(@Inject(PLATFORM_ID) platformId: object) {
+    this.isBrowser = isPlatformBrowser(platformId);
+
+    // データロード完了後にルートパラメータを処理
+    effect(() => {
+      if (this.alumniVoiceService.isDataLoaded()()) {
+        this.loadVoiceFromRoute();
+      }
+    });
+  }
 
   ngOnInit() {
     this.isVisible.set(true);
-    
-    // ID順にソート
-    const sorted = [...this.alumniVoices];
-    this.sortedVoices.set(sorted);
-    
+
+    // データがすでにロードされている場合は即座に処理
+    if (this.alumniVoiceService.isDataLoaded()()) {
+      this.loadVoiceFromRoute();
+    }
+  }
+
+  /**
+   * ルートパラメータから記事を読み込む
+   */
+  private loadVoiceFromRoute() {
     this.route.params.subscribe(params => {
       const id = params['id'];
-      const foundVoice = this.alumniVoices.find(v => v.id === id);
-      
+      const foundVoice = this.alumniVoiceService.getVoiceById(id);
+
       if (foundVoice) {
         this.alumniVoice.set(foundVoice);
+        const sorted = this.sortedVoices();
         const index = sorted.findIndex(v => v.id === id);
         this.currentVoiceIndex.set(index);
       } else {
@@ -268,10 +79,13 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
     return null;
   });
 
-  // マークダウン形式のテキストをHTMLに変換
+  /**
+   * マークダウン形式のテキストをHTMLに変換
+   * 画像マーカー [IMAGE:filename.jpg:caption] と見出しを処理
+   */
   formatContent(content: string): SafeHtml {
     if (!content) return this.sanitizer.bypassSecurityTrustHtml('');
-    
+
     let html = content
       // 画像マーカーを処理 [IMAGE:filename.jpg:caption]
       .replace(/\[IMAGE:([^:]+):([^\]]*)\]/g, (match, filename, caption) => {
@@ -280,11 +94,11 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
         if (captionText) {
           return `<figure class="my-8 md:my-12 -mx-4 sm:mx-0">
             <div class="relative overflow-hidden bg-gray-100">
-              <img 
-                src="${imagePath}" 
-                width="800" 
-                height="600" 
-                alt="${captionText}" 
+              <img
+                src="${imagePath}"
+                width="800"
+                height="600"
+                alt="${captionText}"
                 loading="lazy"
                 decoding="async"
                 class="w-full h-auto max-h-[350px] sm:max-h-[450px] md:max-h-[500px] lg:max-h-[600px] object-cover">
@@ -296,11 +110,11 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
         } else {
           return `<figure class="my-8 md:my-12 -mx-4 sm:mx-0">
             <div class="relative overflow-hidden bg-gray-100">
-              <img 
-                src="${imagePath}" 
-                width="800" 
-                height="600" 
-                alt="" 
+              <img
+                src="${imagePath}"
+                width="800"
+                height="600"
+                alt=""
                 loading="lazy"
                 decoding="async"
                 class="w-full h-auto max-h-[350px] sm:max-h-[450px] md:max-h-[500px] lg:max-h-[600px] object-cover">
@@ -325,7 +139,7 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
       })
       .filter(p => p !== '')
       .join('');
-    
+
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
@@ -347,4 +161,3 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
     }
   }
 }
-
