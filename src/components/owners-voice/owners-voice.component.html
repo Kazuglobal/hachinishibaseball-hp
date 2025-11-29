@@ -13,7 +13,7 @@
         <div class="flex transition-transform duration-700 ease-in-out" [style.transform]="carouselTransform()">
           @for (voice of voices; track voice.title; let i = $index) {
             <div class="flex-shrink-0 px-2 sm:px-4" [style.width]="cardWidth()">
-              @if (voice.id === 'hayashino-satoshi') {
+              @if (voice.id === 'hayashino-satoshi' || voice.id === 'nozaki-junsei') {
                 <a [routerLink]="['/alumni-voice', voice.id]" class="block relative group h-full max-w-[280px] sm:max-w-sm md:max-w-none mx-auto cursor-pointer hover:opacity-90 transition-opacity duration-300">
                   <img 
                     ngSrc="{{voice.image}}" 

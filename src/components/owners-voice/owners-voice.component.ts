@@ -23,10 +23,10 @@ export class OwnersVoiceComponent implements OnInit, OnDestroy {
       family: '32期生 - 林野 智 様',
     },
     {
-      id: 'coming-soon-2',
-      image: 'https://picsum.photos/seed/alumni2/800/1000',
-      title: '準備中',
-      family: '準備中',
+      id: 'nozaki-junsei',
+      image: 'https://picsum.photos/seed/nozaki-junsei/800/1000',
+      title: '「夢は二つでいい」— お笑い芸人×プロ野球選手、異色の二刀流で切り拓く道',
+      family: '34期生 - 野崎 純世 様',
     },
     {
       id: 'coming-soon-3',
