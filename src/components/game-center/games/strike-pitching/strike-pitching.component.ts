@@ -35,14 +35,14 @@ interface Particle {
 })
 export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('gameCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
-  
+
   private ctx!: CanvasRenderingContext2D;
   private animationId: number = 0;
   private isBrowser: boolean;
   private powerInterval: any;
   private resizeHandler?: () => void;
   private resizeObserver?: ResizeObserver;
-  
+
   private seoService = inject(SEOService);
   private gameScoreService = inject(GameScoreService);
 
@@ -57,17 +57,17 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
   totalPitches = 6;
   score = signal(0);
   results = signal<PitchResult[]>([]);
-  
+
   // ターゲットとプレイヤー選択
   targetZone = signal(0);
   selectedZone = signal(0);
   hoveredZone = signal(0);
-  
+
   // パワーゲージ
   power = signal(0);
   powerDirection = 1;
   optimalPower = signal(0);
-  
+
   // 投球アニメーション
   private ballX = 0;
   private ballY = 0;
@@ -75,19 +75,19 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
   private ballTargetX = 0;
   private ballTargetY = 0;
   private throwProgress = 0;
-  
+
   // パーティクル
   private particles: Particle[] = [];
-  
+
   // 投球結果
   hitZone = signal(0);
   showResult = signal(false);
   currentResult = signal<PitchResult | null>(null);
-  
+
   // アニメーション
   private frameCount = 0;
   private gloveShake = 0;
-  
+
   // ゲームオーバー
   nickname = '';
   savedRank = signal(0);
@@ -100,8 +100,39 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
   zones = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
+  // 画像アセット
+  private stadiumImage = new Image();
+  private mittImage = new Image();
+  private ballImage = new Image();
+  private imagesLoaded = false;
+
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
+    if (this.isBrowser) {
+      this.loadImages();
+    }
+  }
+
+  private loadImages(): void {
+    let loadedCount = 0;
+    const onLoad = () => {
+      loadedCount++;
+      if (loadedCount >= 3) {
+        this.imagesLoaded = true;
+        if (this.gameState() === 'ready') {
+          this.drawReadyScreen();
+        }
+      }
+    };
+
+    this.stadiumImage.src = 'assets/images/stadium_background.png';
+    this.stadiumImage.onload = onLoad;
+
+    this.mittImage.src = 'assets/images/catcher_mitt.png';
+    this.mittImage.onload = onLoad;
+
+    this.ballImage.src = 'assets/images/baseball-ball.png';
+    this.ballImage.onload = onLoad;
   }
 
   ngOnInit(): void {
@@ -119,21 +150,21 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
   ngAfterViewInit(): void {
     if (!this.isBrowser) return;
-    
+
     const canvas = this.canvasRef?.nativeElement;
     if (canvas) {
       this.ctx = canvas.getContext('2d')!;
-      
+
       // 初期サイズ設定（少し遅延を入れて確実にコンテナサイズを取得）
       setTimeout(() => {
         this.resizeCanvas();
         this.drawReadyScreen();
       }, 0);
-      
+
       // ウィンドウリサイズ監視
       this.resizeHandler = () => this.resizeCanvas();
       window.addEventListener('resize', this.resizeHandler);
-      
+
       // ResizeObserverでコンテナのサイズ変更を監視
       const container = canvas.parentElement;
       if (container && typeof ResizeObserver !== 'undefined') {
@@ -162,7 +193,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
   private resizeCanvas(): void {
     if (!this.isBrowser) return;
-    
+
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas) return;
 
@@ -171,31 +202,31 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
       // コンテナの実際のサイズを取得
       const containerWidth = container.clientWidth || container.offsetWidth;
       const containerHeight = container.clientHeight || container.offsetHeight;
-      
+
       // アスペクト比を維持しながらサイズを設定
       const aspectRatio = 4 / 3; // aspect-[4/3]に合わせる
       let width = containerWidth;
       let height = width / aspectRatio;
-      
+
       // コンテナの高さを超えないように調整
       if (height > containerHeight) {
         height = containerHeight;
         width = height * aspectRatio;
       }
-      
+
       // 実際のピクセルサイズを設定（高DPIディスプレイ対応）
       const dpr = window.devicePixelRatio || 1;
       canvas.width = width * dpr;
       canvas.height = height * dpr;
-      
+
       // CSSサイズを設定
       canvas.style.width = width + 'px';
       canvas.style.height = height + 'px';
-      
+
       // コンテキストのスケールをリセットしてから調整
       this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       this.ctx.scale(dpr, dpr);
-      
+
       // 内部サイズを保存
       this.canvasWidth = width;
       this.canvasHeight = height;
@@ -234,47 +265,47 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     this.power.set(0);
     this.hitZone.set(0);
     this.particles = [];
-    
+
     // ランダムなターゲットゾーン
     this.targetZone.set(Math.floor(Math.random() * 9) + 1);
-    
+
     // 最適パワー
     this.optimalPower.set(60 + Math.floor(Math.random() * 25));
-    
+
     this.gameState.set('selecting');
     this.animateGame();
   }
 
   private animateGame(): void {
     this.frameCount++;
-    
+
     const state = this.gameState();
     if (state === 'gameover' || state === 'ready') return;
-    
+
     if (state === 'throwing') {
       this.updateThrowing();
     }
-    
+
     this.updateParticles();
     this.drawGame();
-    
+
     this.animationId = requestAnimationFrame(() => this.animateGame());
   }
 
   private updateThrowing(): void {
     this.throwProgress += 0.04;
-    
+
     // ボール位置更新（放物線）
     const t = this.throwProgress;
     this.ballZ = t * 1000;
-    
+
     // 始点から終点への補間
     const startX = this.canvasWidth / 2;
     const startY = this.canvasHeight * 0.1;
-    
+
     this.ballX = startX + (this.ballTargetX - startX) * t;
     this.ballY = startY + (this.ballTargetY - startY) * t - Math.sin(t * Math.PI) * 50;
-    
+
     // ボールの軌跡パーティクル
     if (this.frameCount % 2 === 0) {
       this.particles.push({
@@ -288,10 +319,11 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
         size: 5
       });
     }
-    
+
     // 投球完了
     if (this.throwProgress >= 1) {
-      cancelAnimationFrame(this.animationId);
+      // アニメーションループでの再呼び出しを防ぐため、即座に状態を変更
+      this.gameState.set('result');
       this.onThrowComplete();
     }
   }
@@ -307,7 +339,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
   selectZone(zone: number): void {
     if (this.gameState() !== 'selecting') return;
-    
+
     this.selectedZone.set(zone);
     this.gameState.set('power');
     this.startPowerGauge();
@@ -321,14 +353,14 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
   onCanvasClick(event: MouseEvent): void {
     if (this.gameState() !== 'selecting') return;
-    
+
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas) return;
-    
+
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
+
     const zone = this.getZoneFromPosition(x, y);
     if (zone > 0) {
       this.selectZone(zone);
@@ -337,16 +369,16 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
   onCanvasTouch(event: TouchEvent): void {
     if (this.gameState() !== 'selecting') return;
-    
+
     event.preventDefault();
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas) return;
-    
+
     const rect = canvas.getBoundingClientRect();
     const touch = event.touches[0] || event.changedTouches[0];
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;
-    
+
     const zone = this.getZoneFromPosition(x, y);
     if (zone > 0) {
       this.selectZone(zone);
@@ -356,37 +388,37 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
   private getZoneFromPosition(x: number, y: number): number {
     const w = this.canvasWidth;
     const h = this.canvasHeight;
-    
+
     const zoneWidth = w * 0.4;
     const zoneHeight = h * 0.4;
     const startX = w * 0.3;
     const startY = h * 0.35;
-    
+
     // ストライクゾーン内かチェック
     if (x < startX || x > startX + zoneWidth || y < startY || y > startY + zoneHeight) {
       return 0;
     }
-    
+
     const cellWidth = zoneWidth / 3;
     const cellHeight = zoneHeight / 3;
-    
+
     const col = Math.floor((x - startX) / cellWidth);
     const row = Math.floor((y - startY) / cellHeight);
-    
+
     // 範囲チェック
     if (col < 0 || col >= 3 || row < 0 || row >= 3) {
       return 0;
     }
-    
+
     return row * 3 + col + 1;
   }
 
   private startPowerGauge(): void {
     if (!this.isBrowser) return;
-    
+
     this.power.set(0);
     this.powerDirection = 1;
-    
+
     this.powerInterval = setInterval(() => {
       this.power.update(p => {
         const newPower = p + this.powerDirection * 2.5;
@@ -405,32 +437,32 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
   throwBall(): void {
     if (this.gameState() !== 'power') return;
-    
+
     clearInterval(this.powerInterval);
     this.gameState.set('throwing');
     this.playSound(this.throwSound);
-    
+
     // パワーによる精度計算
     const powerDiff = Math.abs(this.power() - this.optimalPower());
     const powerAccuracy = Math.max(0, 100 - powerDiff * 2);
-    
+
     // 着弾位置計算
     let finalZone = this.selectedZone();
-    
+
     if (powerAccuracy < 50) {
       const offset = Math.random() > 0.5 ? 1 : -1;
       const row = Math.floor((this.selectedZone() - 1) / 3);
       const col = (this.selectedZone() - 1) % 3;
-      
+
       if (Math.random() > 0.5 && col + offset >= 0 && col + offset <= 2) {
         finalZone = row * 3 + (col + offset) + 1;
       } else if (row + offset >= 0 && row + offset <= 2) {
         finalZone = (row + offset) * 3 + col + 1;
       }
     }
-    
+
     this.hitZone.set(finalZone);
-    
+
     // ボールの目標位置設定
     const zonePos = this.getZonePosition(finalZone);
     this.ballTargetX = zonePos.x;
@@ -444,12 +476,12 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
   private getZonePosition(zone: number): { x: number, y: number } {
     const row = Math.floor((zone - 1) / 3);
     const col = (zone - 1) % 3;
-    
+
     const zoneWidth = this.canvasWidth * 0.4 / 3;
     const zoneHeight = this.canvasHeight * 0.4 / 3;
     const startX = this.canvasWidth * 0.3 + zoneWidth / 2;
     const startY = this.canvasHeight * 0.35 + zoneHeight / 2;
-    
+
     return {
       x: startX + col * zoneWidth,
       y: startY + row * zoneHeight
@@ -460,11 +492,11 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     const hitZoneDiff = this.calculateZoneDiff(this.hitZone(), this.targetZone());
     const powerDiff = Math.abs(this.power() - this.optimalPower());
     const powerAccuracy = Math.max(0, 100 - powerDiff * 2);
-    
+
     let accuracy = 0;
     let pitchScore = 0;
     let rating: PitchResult['rating'] = 'miss';
-    
+
     if (hitZoneDiff === 0) {
       accuracy = 100;
       pitchScore = 1000 + Math.floor(powerAccuracy * 5);
@@ -482,7 +514,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
       pitchScore = 50;
       rating = 'miss';
     }
-    
+
     const result: PitchResult = {
       targetZone: this.targetZone(),
       hitZone: this.hitZone(),
@@ -497,19 +529,19 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     } else if (rating === 'miss') {
       this.playSound(this.missSound);
     }
-    
+
     this.currentResult.set(result);
     this.results.update(r => [...r, result]);
     this.score.update(s => s + pitchScore);
-    
+
     // エフェクト
     this.addResultParticles(rating);
     this.gloveShake = 10;
-    
+
     setTimeout(() => {
       this.showResult.set(true);
-      this.gameState.set('result');
-      
+      // this.gameState.set('result'); // 既にupdateThrowingで変更済み
+
       setTimeout(() => {
         this.nextPitch();
       }, 2000);
@@ -524,15 +556,15 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
       ok: ['#888888'],
       miss: ['#FF0000']
     };
-    
+
     const particleCount = rating === 'perfect' ? 30 : rating === 'great' ? 20 : 10;
     const targetPos = this.getZonePosition(this.hitZone());
-    
+
     for (let i = 0; i < particleCount; i++) {
       const angle = (Math.PI * 2 / particleCount) * i;
       const speed = 3 + Math.random() * 5;
       const colorSet = colors[rating];
-      
+
       this.particles.push({
         x: targetPos.x,
         y: targetPos.y,
@@ -551,34 +583,34 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     const col1 = (zone1 - 1) % 3;
     const row2 = Math.floor((zone2 - 1) / 3);
     const col2 = (zone2 - 1) % 3;
-    
+
     return Math.abs(row1 - row2) + Math.abs(col1 - col2);
   }
 
   private drawGame(): void {
     if (!this.ctx) return;
-    
+
     const ctx = this.ctx;
     const w = this.canvasWidth;
     const h = this.canvasHeight;
-    
+
     // 背景（キャッチャー視点の球場）
     this.drawStadiumBackground();
-    
+
     // ストライクゾーン
     this.drawStrikeZone();
-    
+
     // キャッチャーミット
     this.drawCatcherMitt();
-    
+
     // ボール（投球中）
     if (this.gameState() === 'throwing' && this.throwProgress < 1) {
       this.drawBall();
     }
-    
+
     // パーティクル
     this.drawParticles();
-    
+
     // パワーゲージ
     if (this.gameState() === 'power') {
       this.drawPowerGauge();
@@ -589,135 +621,96 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     const ctx = this.ctx;
     const w = this.canvasWidth;
     const h = this.canvasHeight;
-    
-    // 夜空
-    const skyGradient = ctx.createLinearGradient(0, 0, 0, h * 0.3);
-    skyGradient.addColorStop(0, '#0a0a1a');
-    skyGradient.addColorStop(1, '#1a1a3a');
-    ctx.fillStyle = skyGradient;
-    ctx.fillRect(0, 0, w, h * 0.3);
-    
-    // 星
-    ctx.fillStyle = '#ffffff';
-    for (let i = 0; i < 30; i++) {
-      const x = (i * 137.5) % w;
-      const y = (i * 89.3) % (h * 0.25);
-      const twinkle = Math.sin(this.frameCount * 0.05 + i) * 0.3 + 0.7;
-      ctx.globalAlpha = twinkle * 0.8;
-      ctx.beginPath();
-      ctx.arc(x, y, 1, 0, Math.PI * 2);
-      ctx.fill();
+
+    if (this.imagesLoaded && this.stadiumImage.complete) {
+      // 画像を描画（アスペクト比を維持してカバーするように描画）
+      const imgRatio = this.stadiumImage.width / this.stadiumImage.height;
+      const canvasRatio = w / h;
+
+      let drawW, drawH, offsetX, offsetY;
+
+      if (canvasRatio > imgRatio) {
+        drawW = w;
+        drawH = w / imgRatio;
+        offsetX = 0;
+        offsetY = (h - drawH) / 2; // 中央配置
+      } else {
+        drawH = h;
+        drawW = h * imgRatio;
+        offsetX = (w - drawW) / 2; // 中央配置
+        offsetY = 0;
+      }
+
+      // 少し暗くするフィルター
+      ctx.filter = 'brightness(0.7) contrast(1.1)';
+      ctx.drawImage(this.stadiumImage, offsetX, offsetY, drawW, drawH);
+      ctx.filter = 'none';
+
+    } else {
+      // フォールバック：夜空
+      const skyGradient = ctx.createLinearGradient(0, 0, 0, h * 0.3);
+      skyGradient.addColorStop(0, '#0a0a1a');
+      skyGradient.addColorStop(1, '#1a1a3a');
+      ctx.fillStyle = skyGradient;
+      ctx.fillRect(0, 0, w, h * 0.3);
+
+      // 地面
+      const groundGradient = ctx.createLinearGradient(0, h * 0.35, 0, h);
+      groundGradient.addColorStop(0, '#8B4513');
+      groundGradient.addColorStop(0.2, '#A0522D');
+      groundGradient.addColorStop(1, '#654321');
+      ctx.fillStyle = groundGradient;
+      ctx.fillRect(0, h * 0.75, w, h * 0.25);
     }
-    ctx.globalAlpha = 1;
-    
-    // 照明
-    for (let i = 0; i < 4; i++) {
-      const lx = w * 0.15 + i * (w * 0.23);
-      const ly = h * 0.05;
-      
-      ctx.fillStyle = '#ffff88';
-      ctx.beginPath();
-      ctx.arc(lx, ly, 8, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // 光の筋
-      const lightGradient = ctx.createRadialGradient(lx, ly, 0, lx, h * 0.4, h * 0.5);
-      lightGradient.addColorStop(0, 'rgba(255,255,200,0.15)');
-      lightGradient.addColorStop(1, 'rgba(255,255,200,0)');
-      ctx.fillStyle = lightGradient;
-      ctx.beginPath();
-      ctx.moveTo(lx, ly);
-      ctx.lineTo(lx - w * 0.15, h * 0.5);
-      ctx.lineTo(lx + w * 0.15, h * 0.5);
-      ctx.closePath();
-      ctx.fill();
-    }
-    
-    // 観客席
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, h * 0.2, w, h * 0.15);
-    
-    // 観客のシルエット
-    for (let i = 0; i < 40; i++) {
-      const x = (i * 30) % w;
-      const y = h * 0.28 + Math.sin(i) * 3;
-      ctx.fillStyle = '#2a2a2a';
-      ctx.beginPath();
-      ctx.arc(x, y, 8, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    
-    // ピッチャーマウンド（遠景）
-    ctx.fillStyle = '#c4a484';
-    ctx.beginPath();
-    ctx.ellipse(w / 2, h * 0.15, 40, 8, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // ピッチャー（シルエット）
-    ctx.fillStyle = '#1a1a1a';
-    ctx.beginPath();
-    ctx.ellipse(w / 2, h * 0.12, 15, 25, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(w / 2, h * 0.08, 10, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // 地面
-    const groundGradient = ctx.createLinearGradient(0, h * 0.35, 0, h);
-    groundGradient.addColorStop(0, '#8B4513');
-    groundGradient.addColorStop(0.2, '#A0522D');
-    groundGradient.addColorStop(1, '#654321');
-    ctx.fillStyle = groundGradient;
-    ctx.fillRect(0, h * 0.75, w, h * 0.25);
   }
 
   private drawStrikeZone(): void {
     const ctx = this.ctx;
     const w = this.canvasWidth;
     const h = this.canvasHeight;
-    
+
     const zoneWidth = w * 0.4;
     const zoneHeight = h * 0.4;
     const startX = w * 0.3;
     const startY = h * 0.35;
-    
+
     // ストライクゾーン背景（半透明）
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
     ctx.fillRect(startX, startY, zoneWidth, zoneHeight);
-    
+
     // 外枠
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 3;
     ctx.strokeRect(startX, startY, zoneWidth, zoneHeight);
-    
+
     // 9分割グリッド
     const cellWidth = zoneWidth / 3;
     const cellHeight = zoneHeight / 3;
-    
+
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
         const zone = row * 3 + col + 1;
         const x = startX + col * cellWidth;
         const y = startY + row * cellHeight;
-        
+
         // ターゲットゾーンのハイライト
         if (zone === this.targetZone()) {
           ctx.fillStyle = 'rgba(255,215,0,0.4)';
           ctx.fillRect(x, y, cellWidth, cellHeight);
-          
+
           // パルスエフェクト
           const pulse = Math.sin(this.frameCount * 0.1) * 0.2 + 0.8;
           ctx.strokeStyle = `rgba(255,215,0,${pulse})`;
           ctx.lineWidth = 4;
           ctx.strokeRect(x + 2, y + 2, cellWidth - 4, cellHeight - 4);
         }
-        
+
         // ホバーゾーン
         if (zone === this.hoveredZone() && this.gameState() === 'selecting') {
           ctx.fillStyle = 'rgba(100,150,255,0.3)';
           ctx.fillRect(x, y, cellWidth, cellHeight);
         }
-        
+
         // 選択ゾーン
         if (zone === this.selectedZone()) {
           ctx.fillStyle = 'rgba(0,200,255,0.4)';
@@ -726,54 +719,54 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
           ctx.lineWidth = 3;
           ctx.strokeRect(x + 2, y + 2, cellWidth - 4, cellHeight - 4);
         }
-        
+
         // 着弾位置
         if (zone === this.hitZone() && this.throwProgress >= 1) {
           const result = this.currentResult();
           const isHit = result && result.hitZone === result.targetZone;
-          
+
           ctx.fillStyle = isHit ? 'rgba(0,255,0,0.5)' : 'rgba(255,100,100,0.5)';
           ctx.fillRect(x, y, cellWidth, cellHeight);
-          
+
           // ボールマーク
           ctx.fillStyle = '#ffffff';
           ctx.beginPath();
           ctx.arc(x + cellWidth / 2, y + cellHeight / 2, 12, 0, Math.PI * 2);
           ctx.fill();
-          
+
           ctx.strokeStyle = '#C41E3A';
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.arc(x + cellWidth / 2 - 3, y + cellHeight / 2, 5, 0.5, 2.5);
           ctx.stroke();
         }
-        
+
         // グリッド線
         ctx.strokeStyle = 'rgba(255,255,255,0.3)';
         ctx.lineWidth = 1;
         ctx.strokeRect(x, y, cellWidth, cellHeight);
       }
     }
-    
+
     // ゾーン番号/ラベル（フォントサイズをcanvasサイズに応じて調整）
     if (this.gameState() === 'selecting') {
       const zoneFontSize = Math.max(10, Math.min(w / 25, 14));
       ctx.font = `bold ${zoneFontSize}px Arial`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      
+
       for (let row = 0; row < 3; row++) {
         for (let col = 0; col < 3; col++) {
           const zone = row * 3 + col + 1;
           const x = startX + col * cellWidth + cellWidth / 2;
           const y = startY + row * cellHeight + cellHeight / 2;
-          
+
           ctx.fillStyle = zone === this.targetZone() ? '#FFD700' : 'rgba(255,255,255,0.6)';
           ctx.fillText(this.getZoneLabel(zone), x, y);
         }
       }
     }
-    
+
     // ターゲット指示
     if (this.gameState() === 'selecting') {
       const targetFontSize = Math.max(12, Math.min(w / 20, 16));
@@ -790,95 +783,84 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     const ctx = this.ctx;
     const w = this.canvasWidth;
     const h = this.canvasHeight;
-    
+
     const mittX = w / 2 + this.gloveShake * (Math.random() - 0.5);
     const mittY = h * 0.85 + this.gloveShake * (Math.random() - 0.5);
-    
+
     if (this.gloveShake > 0) {
       this.gloveShake *= 0.9;
     }
-    
-    // ミットの影
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.ellipse(mittX + 5, mittY + 5, 80, 60, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // ミット本体
-    const mittGradient = ctx.createRadialGradient(mittX - 20, mittY - 20, 0, mittX, mittY, 80);
-    mittGradient.addColorStop(0, '#D2691E');
-    mittGradient.addColorStop(0.5, '#8B4513');
-    mittGradient.addColorStop(1, '#654321');
-    ctx.fillStyle = mittGradient;
-    ctx.beginPath();
-    ctx.ellipse(mittX, mittY, 75, 55, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // ミットのポケット
-    ctx.fillStyle = '#4a3728';
-    ctx.beginPath();
-    ctx.ellipse(mittX, mittY + 5, 50, 35, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // ポケット内側
-    ctx.fillStyle = '#3a2718';
-    ctx.beginPath();
-    ctx.ellipse(mittX, mittY + 8, 35, 25, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // 縫い目
-    ctx.strokeStyle = '#1a1a1a';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(mittX, mittY - 15, 60, 0.8, 2.4);
-    ctx.stroke();
-  }
 
+    if (this.imagesLoaded && this.mittImage.complete) {
+      const size = w * 0.15; // 画面幅の15%
+      ctx.drawImage(this.mittImage, mittX - size / 2, mittY - size / 2, size, size);
+    } else {
+      // フォールバック
+      ctx.fillStyle = '#8B4513';
+      ctx.beginPath();
+      ctx.arc(mittX, mittY, w * 0.05, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#4A2511';
+      ctx.beginPath();
+      ctx.arc(mittX, mittY, w * 0.03, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
   private drawBall(): void {
     const ctx = this.ctx;
-    
+
     // 遠近法でサイズ調整
     const perspective = 0.3 + (this.ballZ / 1000) * 0.7;
     const size = 8 + perspective * 18;
-    
+
     // ボールの影
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
     ctx.beginPath();
     ctx.ellipse(this.ballX + 3, this.ballY + 3, size, size * 0.8, 0, 0, Math.PI * 2);
     ctx.fill();
-    
+
     // ボール本体
-    const ballGradient = ctx.createRadialGradient(
-      this.ballX - size * 0.3, this.ballY - size * 0.3, 0,
-      this.ballX, this.ballY, size
-    );
-    ballGradient.addColorStop(0, '#ffffff');
-    ballGradient.addColorStop(0.8, '#e0e0e0');
-    ballGradient.addColorStop(1, '#cccccc');
-    ctx.fillStyle = ballGradient;
-    ctx.beginPath();
-    ctx.arc(this.ballX, this.ballY, size, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // 縫い目
-    ctx.strokeStyle = '#C41E3A';
-    ctx.lineWidth = Math.max(1.5, size * 0.12);
-    const rotation = this.frameCount * 0.5;
-    
-    ctx.beginPath();
-    ctx.arc(this.ballX - size * 0.25, this.ballY, size * 0.5, rotation + 0.5, rotation + 2.5);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(this.ballX + size * 0.25, this.ballY, size * 0.5, rotation + 3.5, rotation + 5.5);
-    ctx.stroke();
+    if (this.imagesLoaded && this.ballImage.complete) {
+      ctx.save();
+      ctx.translate(this.ballX, this.ballY);
+      // 回転アニメーション
+      ctx.rotate(this.throwProgress * 20);
+      ctx.drawImage(this.ballImage, -size, -size, size * 2, size * 2);
+      ctx.restore();
+    } else {
+      const ballGradient = ctx.createRadialGradient(
+        this.ballX - size * 0.3, this.ballY - size * 0.3, 0,
+        this.ballX, this.ballY, size
+      );
+      ballGradient.addColorStop(0, '#ffffff');
+      ballGradient.addColorStop(0.8, '#e0e0e0');
+      ballGradient.addColorStop(1, '#cccccc');
+      ctx.fillStyle = ballGradient;
+      ctx.beginPath();
+      ctx.arc(this.ballX, this.ballY, size, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 縫い目
+      ctx.strokeStyle = '#C41E3A';
+      ctx.lineWidth = Math.max(1.5, size * 0.12);
+      const rotation = this.frameCount * 0.5;
+
+      ctx.beginPath();
+      ctx.arc(this.ballX - size * 0.25, this.ballY, size * 0.5, rotation + 0.5, rotation + 2.5);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(this.ballX + size * 0.25, this.ballY, size * 0.5, rotation + 3.5, rotation + 5.5);
+      ctx.stroke();
+    }
   }
 
   private drawParticles(): void {
     const ctx = this.ctx;
-    
+
     for (const p of this.particles) {
       const alpha = p.life / p.maxLife;
-      ctx.fillStyle = typeof p.color === 'string' && p.color.startsWith('rgba') 
+      ctx.fillStyle = typeof p.color === 'string' && p.color.startsWith('rgba')
         ? p.color.replace(/[\d.]+\)$/, `${alpha})`)
         : p.color;
       ctx.globalAlpha = alpha;
@@ -893,43 +875,43 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     const ctx = this.ctx;
     const w = this.canvasWidth;
     const h = this.canvasHeight;
-    
+
     const gaugeWidth = 30;
     const gaugeHeight = h * 0.5;
     const gaugeX = w - 60;
     const gaugeY = (h - gaugeHeight) / 2;
-    
+
     // 背景
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillRect(gaugeX - 5, gaugeY - 30, gaugeWidth + 10, gaugeHeight + 60);
-    
+
     // ゲージ背景
     ctx.fillStyle = '#333333';
     ctx.fillRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight);
-    
+
     // 最適ゾーンマーカー
     const optimalY = gaugeY + gaugeHeight - (this.optimalPower() / 100) * gaugeHeight;
     ctx.fillStyle = 'rgba(0,255,0,0.3)';
     ctx.fillRect(gaugeX, optimalY - 15, gaugeWidth, 30);
-    
+
     ctx.strokeStyle = '#00FF00';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(gaugeX - 5, optimalY);
     ctx.lineTo(gaugeX + gaugeWidth + 5, optimalY);
     ctx.stroke();
-    
+
     // パワーバー
     const powerHeight = (this.power() / 100) * gaugeHeight;
     const powerY = gaugeY + gaugeHeight - powerHeight;
-    
+
     const powerGradient = ctx.createLinearGradient(gaugeX, gaugeY + gaugeHeight, gaugeX, gaugeY);
     powerGradient.addColorStop(0, '#00FF00');
     powerGradient.addColorStop(0.5, '#FFFF00');
     powerGradient.addColorStop(1, '#FF0000');
     ctx.fillStyle = powerGradient;
     ctx.fillRect(gaugeX, powerY, gaugeWidth, powerHeight);
-    
+
     // 現在位置インジケーター
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
@@ -938,7 +920,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     ctx.lineTo(gaugeX, powerY + 8);
     ctx.closePath();
     ctx.fill();
-    
+
     // ラベル（フォントサイズをcanvasサイズに応じて調整）
     const powerLabelFontSize = Math.max(9, Math.min(w / 35, 12));
     const powerValueFontSize = Math.max(9, Math.min(w / 35, 12));
@@ -956,37 +938,37 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
   private drawReadyScreen(): void {
     if (!this.ctx) return;
-    
+
     const ctx = this.ctx;
     const w = this.canvasWidth;
     const h = this.canvasHeight;
-    
+
     // 背景
     this.drawStadiumBackground();
     this.drawStrikeZone();
     this.drawCatcherMitt();
-    
+
     // オーバーレイ
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillRect(0, 0, w, h);
-    
+
     // フォントサイズをcanvasサイズに応じて調整
     const baseFontSize = Math.min(w / 12, h / 8);
     const titleFontSize = Math.max(20, Math.min(baseFontSize * 1.2, 32));
     const subtitleFontSize = Math.max(12, Math.min(baseFontSize * 0.5, 16));
     const instructionFontSize = Math.max(10, Math.min(baseFontSize * 0.4, 14));
-    
+
     // タイトル
     ctx.fillStyle = '#00BFFF';
     ctx.font = `bold ${titleFontSize}px "Oswald", Arial`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('🎯 STRIKE PITCHING 🎯', w / 2, h / 2 - h * 0.15);
-    
+
     ctx.fillStyle = '#ffffff';
     ctx.font = `${subtitleFontSize}px "Noto Sans JP", Arial`;
     ctx.fillText('ターゲットのコースにボールを投げ込め！', w / 2, h / 2);
-    
+
     ctx.font = `${instructionFontSize}px Arial`;
     ctx.fillStyle = '#aaaaaa';
     ctx.fillText('1. ゾーンを選択 → 2. パワーゲージを止める', w / 2, h / 2 + h * 0.15);
@@ -1042,7 +1024,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     const power = this.power();
     const optimal = this.optimalPower();
     const diff = Math.abs(power - optimal);
-    
+
     if (diff <= 10) return 'bg-green-500';
     if (diff <= 25) return 'bg-yellow-500';
     return 'bg-red-500';
