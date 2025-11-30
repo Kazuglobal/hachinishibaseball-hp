@@ -8,7 +8,7 @@
         fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
-      <span class="font-bold tracking-wide">BACK</span>
+      <span class="font-bold tracking-wide">戻る</span>
     </a>
     <div class="flex items-center gap-3">
       <div
@@ -22,7 +22,7 @@
     </div>
     <div
       class="text-right hidden sm:block bg-gradient-to-br from-slate-800/50 to-slate-900/50 px-4 py-2 rounded-xl border border-white/10 backdrop-blur-sm">
-      <div class="text-[10px] text-cyan-400/80 font-bold mb-0.5 tracking-widest">HI-SCORE</div>
+      <div class="text-[10px] text-cyan-400/80 font-bold mb-0.5 tracking-widest">ハイスコア</div>
       <div class="font-oswald font-black text-xl text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">{{highScore()
         | number}}</div>
     </div>
@@ -46,7 +46,7 @@
         </div>
         <div class="flex items-center gap-2 mb-1">
           <span class="text-cyan-400 text-lg">●</span>
-          <span class="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] relative z-10">PITCH</span>
+          <span class="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] relative z-10">球数</span>
         </div>
         <div class="flex items-baseline relative z-10">
           <span class="font-oswald text-4xl font-black text-white drop-shadow-lg">{{currentPitch()}}</span>
@@ -62,7 +62,7 @@
         </div>
         <div class="flex items-center gap-2 mb-1 relative z-10">
           <span class="text-yellow-400 text-lg">★</span>
-          <span class="text-[10px] text-cyan-300 font-black uppercase tracking-[0.2em]">SCORE</span>
+          <span class="text-[10px] text-cyan-300 font-black uppercase tracking-[0.2em]">スコア</span>
         </div>
         <span
           class="font-oswald text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-cyan-100 to-cyan-300 tracking-tight relative z-10 drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]">
@@ -75,7 +75,7 @@
         class="bg-slate-900/80 rounded-2xl px-4 py-3 flex-1 flex flex-col justify-center items-center border border-white/10 shadow-lg backdrop-blur-md sm:hidden">
         <div class="flex items-center gap-2 mb-1">
           <span class="text-yellow-500 text-sm">🏆</span>
-          <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest">BEST</span>
+          <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest">自己ベスト</span>
         </div>
         <span class="font-oswald text-2xl font-black text-white/90">{{highScore() | number}}</span>
       </div>
@@ -129,7 +129,7 @@
             <div
               class="absolute inset-0 bg-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
             </div>
-            <p class="text-cyan-400 text-xs font-bold tracking-[0.3em] mb-2 uppercase">Total Score</p>
+            <p class="text-cyan-400 text-xs font-bold tracking-[0.3em] mb-2 uppercase">トータルスコア</p>
             <p class="text-6xl font-oswald font-black text-white tracking-tight drop-shadow-2xl">
               {{score() | number}}
             </p>
@@ -138,11 +138,11 @@
           <!-- 統計 -->
           <div class="grid grid-cols-2 gap-4 mb-8">
             <div class="bg-slate-800/50 rounded-xl p-4 border border-white/5">
-              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Perfect / Great</p>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">パーフェクト / グレート</p>
               <p class="text-3xl font-oswald font-bold text-yellow-400">{{getPerfectPitchCount()}}</p>
             </div>
             <div class="bg-slate-800/50 rounded-xl p-4 border border-white/5">
-              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Accuracy</p>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">制球率</p>
               <p class="text-3xl font-oswald font-bold text-green-400">{{getAverageAccuracy()}}%</p>
             </div>
           </div>
@@ -150,13 +150,13 @@
           <!-- ニックネーム入力 -->
           @if (savedRank() === 0) {
           <div class="mb-8">
-            <label class="block text-xs text-slate-400 font-bold mb-3 uppercase tracking-wider">Enter Name</label>
+            <label class="block text-xs text-slate-400 font-bold mb-3 uppercase tracking-wider">名前を入力</label>
             <div class="flex gap-2">
-              <input type="text" [(ngModel)]="nickname" placeholder="PLAYER NAME" maxlength="10"
+              <input type="text" [(ngModel)]="nickname" placeholder="選手名" maxlength="10"
                 class="flex-1 px-5 py-3 bg-slate-950 border border-white/10 rounded-xl text-white placeholder-slate-600 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all font-bold text-center uppercase tracking-wider">
               <button (click)="saveScore()"
                 class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-6 py-3 rounded-xl font-black transition-all shadow-lg shadow-cyan-500/20 active:scale-95">
-                SAVE
+                保存
               </button>
             </div>
           </div>
@@ -165,7 +165,7 @@
             class="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-xl p-4 mb-8">
             <p class="text-yellow-400 font-bold flex items-center justify-center gap-2">
               <span class="text-xl">🏆</span>
-              RANKING: <span class="text-2xl font-oswald">{{savedRank()}}</span>
+              ランキング: <span class="text-2xl font-oswald">{{savedRank()}}</span>位
             </p>
           </div>
           }
@@ -174,11 +174,11 @@
           <div class="flex gap-3">
             <button (click)="startGame()"
               class="flex-1 bg-white text-slate-950 py-4 rounded-xl font-black hover:bg-slate-200 transition-all shadow-lg active:scale-95 tracking-wider">
-              RETRY
+              もう一度
             </button>
             <a routerLink="/game"
               class="flex-1 bg-white/5 text-white py-4 rounded-xl font-bold hover:bg-white/10 transition-all text-center border border-white/10 active:scale-95 tracking-wider">
-              EXIT
+              終了
             </a>
           </div>
         </div>
@@ -196,7 +196,7 @@
             class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out">
           </div>
           <span class="relative z-10 flex items-center gap-4 tracking-widest">
-            PLAY BALL
+            プレイボール
           </span>
         </button>
       </div>
@@ -208,10 +208,10 @@
           class="inline-flex items-center justify-center gap-4 bg-slate-900/80 px-8 py-3 rounded-full border border-yellow-500/30 shadow-lg backdrop-blur-md animate-pulse-slow">
           <span class="text-2xl text-yellow-400">🎯</span>
           <p class="text-white text-lg font-bold tracking-wider">
-            TARGET: <span class="text-yellow-400 text-2xl font-black ml-2">{{getZoneLabel(targetZone())}}</span>
+            ターゲット: <span class="text-yellow-400 text-2xl font-black ml-2">{{getZoneLabel(targetZone())}}</span>
           </p>
         </div>
-        <p class="text-slate-400 text-xs font-bold mt-2 tracking-widest uppercase">Tap the yellow zone</p>
+        <p class="text-slate-400 text-xs font-bold mt-2 tracking-widest uppercase">黄色のゾーンをタップ</p>
       </div>
       }
 
@@ -221,13 +221,13 @@
           class="group relative w-full max-w-md bg-gradient-to-r from-rose-600 to-red-600 text-white text-3xl font-black py-6 rounded-2xl shadow-[0_0_40px_rgba(225,29,72,0.4)] active:scale-95 transition-all duration-150 touch-manipulation border border-white/20 overflow-hidden">
           <div class="absolute inset-0 bg-[url('/assets/patterns/noise.png')] opacity-20"></div>
           <span class="relative z-10 flex items-center justify-center gap-3 tracking-[0.2em]">
-            THROW!
+            投げろ！
           </span>
         </button>
         <p
           class="text-green-400 text-xs mt-3 font-bold flex items-center justify-center gap-2 uppercase tracking-wider">
           <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-ping"></span>
-          Stop at Green Zone
+          緑のゾーンで止めろ
           <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-ping"></span>
         </p>
       </div>
@@ -242,7 +242,7 @@
             <div class="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
             <div class="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
           </div>
-          <p class="text-cyan-300 text-sm font-bold tracking-widest uppercase">Pitching...</p>
+          <p class="text-cyan-300 text-sm font-bold tracking-widest uppercase">投球中...</p>
         </div>
       </div>
       }
@@ -252,14 +252,13 @@
     @if (results().length > 0) {
     <div class="mt-auto bg-slate-900/80 rounded-2xl p-4 border border-white/5 backdrop-blur-md">
       <h3 class="text-slate-500 text-[10px] font-black mb-3 uppercase tracking-[0.2em] flex items-center gap-3">
-        <span>Pitch History</span>
+        <span>投球履歴</span>
         <div class="flex-1 h-px bg-slate-800"></div>
       </h3>
-      <div class="flex flex-wrap gap-2">
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         @for (result of results(); track $index) {
-        <div
-          class="px-3 py-1.5 rounded-lg flex flex-col items-center justify-center min-w-[60px] border transition-all duration-300 hover:scale-105"
-          [class.bg-yellow-500/20]="result.rating === 'perfect'"
+        <div class="flex flex-col items-center justify-center p-2 rounded-xl border-2 
+              transition-all duration-300 hover:scale-105" [class.bg-yellow-500/20]="result.rating === 'perfect'"
           [class.border-yellow-500/50]="result.rating === 'perfect'"
           [class.text-yellow-400]="result.rating === 'perfect'" [class.bg-green-500/20]="result.rating === 'great'"
           [class.border-green-500/50]="result.rating === 'great'" [class.text-green-400]="result.rating === 'great'"

@@ -1042,11 +1042,11 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
   getRatingText(rating: string): string {
     switch (rating) {
-      case 'perfect': return 'PERFECT!';
-      case 'great': return 'GREAT!';
-      case 'good': return 'GOOD';
-      case 'ok': return 'OK';
-      default: return 'MISS';
+      case 'perfect': return '完璧！';
+      case 'great': return 'すごい！';
+      case 'good': return '良い';
+      case 'ok': return '普通';
+      default: return '失敗';
     }
   }
 }
