@@ -112,6 +112,7 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
   private catchSound?: HTMLAudioElement;
   private missSound?: HTMLAudioElement;
   private timeupSound?: HTMLAudioElement;
+  private bgm?: HTMLAudioElement;
 
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -166,6 +167,7 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+    this.stopBgm();
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -325,6 +327,7 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
     this.playerX = this.canvasWidth / 2;
     this.isDiving = false;
     
+    this.playBgm();
     this.startGameLoop();
     this.startSpawning();
     this.startTimer();
@@ -1071,6 +1074,7 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private endGame(): void {
     this.stopGame();
+    this.stopBgm();
     this.playSound(this.timeupSound);
     this.gameState.set('gameover');
   }
@@ -1084,6 +1088,20 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.timeupSound = new Audio('assets/sounds/timeup.mp3');
     this.timeupSound.volume = 0.8;
+
+    // BGM
+    try {
+      this.bgm = new Audio('assets/sounds/background-music.mp3');
+      this.bgm.loop = true;
+      this.bgm.volume = 0.4;
+      this.bgm.addEventListener('error', () => {
+        // ファイルが見つからない場合はBGMを無効化
+        this.bgm = undefined;
+      });
+    } catch {
+      // 初期化エラーは無視
+      this.bgm = undefined;
+    }
   }
 
   private playSound(sound?: HTMLAudioElement): void {
@@ -1094,6 +1112,21 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
     } catch {
       // 再生できない場合は無視
     }
+  }
+
+  private playBgm(): void {
+    if (!this.isBrowser || !this.bgm) return;
+    try {
+      void this.bgm.play();
+    } catch {
+      // 再生できない場合は無視
+    }
+  }
+
+  private stopBgm(): void {
+    if (!this.bgm) return;
+    this.bgm.pause();
+    this.bgm.currentTime = 0;
   }
 
   saveScore(): void {

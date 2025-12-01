@@ -97,6 +97,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
   private throwSound?: HTMLAudioElement;
   private perfectSound?: HTMLAudioElement;
   private missSound?: HTMLAudioElement;
+  private bgm?: HTMLAudioElement;
 
   zones = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -189,6 +190,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+    this.stopBgm();
   }
 
   private resizeCanvas(): void {
@@ -248,6 +250,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     this.score.set(0);
     this.results.set([]);
     this.savedRank.set(0);
+    this.playBgm();
     this.nextPitch();
   }
 
@@ -976,6 +979,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
   private endGame(): void {
     this.gameState.set('gameover');
+    this.stopBgm();
   }
 
   private initSounds(): void {
@@ -987,6 +991,20 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
     this.missSound = new Audio('assets/sounds/pitch-miss.mp3');
     this.missSound.volume = 0.7;
+
+    // BGM
+    try {
+      this.bgm = new Audio('assets/sounds/background-music.mp3');
+      this.bgm.loop = true;
+      this.bgm.volume = 0.4;
+      this.bgm.addEventListener('error', () => {
+        // ファイルが見つからない場合はBGMを無効化
+        this.bgm = undefined;
+      });
+    } catch {
+      // 初期化エラーは無視
+      this.bgm = undefined;
+    }
   }
 
   private playSound(sound?: HTMLAudioElement): void {
@@ -997,6 +1015,21 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     } catch {
       // 再生できない場合は無視
     }
+  }
+
+  private playBgm(): void {
+    if (!this.isBrowser || !this.bgm) return;
+    try {
+      void this.bgm.play();
+    } catch {
+      // 再生できない場合は無視
+    }
+  }
+
+  private stopBgm(): void {
+    if (!this.bgm) return;
+    this.bgm.pause();
+    this.bgm.currentTime = 0;
   }
 
   saveScore(): void {

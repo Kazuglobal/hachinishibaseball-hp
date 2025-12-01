@@ -103,6 +103,7 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   private hitSound?: HTMLAudioElement;
   private foulSound?: HTMLAudioElement;
   private missSound?: HTMLAudioElement;
+  private bgm?: HTMLAudioElement;
   // アニメーション用
   private frameCount = 0;
   private slowMotion = false;
@@ -181,6 +182,7 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
       clearTimeout(this.resultTimeoutId);
       this.resultTimeoutId = null;
     }
+    this.stopBgm();
   }
 
   private resizeCanvas(): void {
@@ -239,6 +241,7 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     this.score.set(0);
     this.results.set([]);
     this.savedRank.set(0);
+    this.playBgm();
     this.nextPitch();
   }
 
@@ -529,6 +532,20 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
 
     this.missSound = new Audio('assets/sounds/miss.mp3');
     this.missSound.volume = 0.6;
+
+    // BGM
+    try {
+      this.bgm = new Audio('assets/sounds/background-music.mp3');
+      this.bgm.loop = true;
+      this.bgm.volume = 0.4;
+      this.bgm.addEventListener('error', () => {
+        // ファイルが見つからない場合はBGMを無効化
+        this.bgm = undefined;
+      });
+    } catch {
+      // 初期化エラーは無視
+      this.bgm = undefined;
+    }
   }
 
   private playSound(sound?: HTMLAudioElement): void {
@@ -539,6 +556,21 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     } catch {
       // 自動再生ブロックなどは無視
     }
+  }
+
+  private playBgm(): void {
+    if (!this.isBrowser || !this.bgm) return;
+    try {
+      void this.bgm.play();
+    } catch {
+      // 自動再生ブロックなどは無視
+    }
+  }
+
+  private stopBgm(): void {
+    if (!this.bgm) return;
+    this.bgm.pause();
+    this.bgm.currentTime = 0;
   }
 
   private startBallFlight(type: BallResult['type'], distance: number): void {
@@ -1083,6 +1115,7 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
 
   private endGame(): void {
     this.gameState.set('gameover');
+    this.stopBgm();
   }
 
   saveScore(): void {
