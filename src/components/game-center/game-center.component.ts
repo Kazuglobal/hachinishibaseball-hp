@@ -12,6 +12,7 @@ interface GameInfo {
   subtitle: string;
   description: string;
   icon: string;
+  thumbnail: string;
   route: string;
   color: string;
 }
@@ -37,6 +38,7 @@ export class GameCenterComponent implements OnInit {
       subtitle: 'HOMERUN CHALLENGE',
       description: 'タイミングを合わせてボールを打ち返せ！10球中何本ホームランを打てるかチャレンジ！',
       icon: '⚾',
+      thumbnail: 'assets/images/homerun.png',
       route: '/game/homerun',
       color: 'from-red-600 to-red-800'
     },
@@ -47,6 +49,7 @@ export class GameCenterComponent implements OnInit {
       subtitle: 'STRIKE PITCHING',
       description: '指定されたコースに投げ分けろ！精密なコントロールで高得点を狙え！',
       icon: '🎯',
+      thumbnail: 'assets/images/piching.png',
       route: '/game/pitching',
       color: 'from-blue-800 to-blue-950'
     },
@@ -57,6 +60,7 @@ export class GameCenterComponent implements OnInit {
       subtitle: 'CATCH FLY',
       description: '60秒間でフライボールをキャッチ！連続キャッチでコンボボーナス獲得！',
       icon: '🧤',
+      thumbnail: 'assets/images/catch.png',
       route: '/game/catch',
       color: 'from-green-600 to-green-800'
     }
