@@ -101,7 +101,7 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
                 alt="${captionText}"
                 loading="lazy"
                 decoding="async"
-                class="w-full h-auto max-h-[350px] sm:max-h-[450px] md:max-h-[500px] lg:max-h-[600px] object-cover">
+                class="w-full h-auto object-contain">
             </div>
             <figcaption class="mt-3 px-4 sm:px-0 text-center text-xs sm:text-sm text-gray-600 italic">
               ${captionText}
@@ -117,7 +117,7 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
                 alt=""
                 loading="lazy"
                 decoding="async"
-                class="w-full h-auto max-h-[350px] sm:max-h-[450px] md:max-h-[500px] lg:max-h-[600px] object-cover">
+                class="w-full h-auto object-contain">
             </div>
           </figure>`;
         }
