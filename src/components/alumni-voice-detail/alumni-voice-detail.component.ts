@@ -93,7 +93,7 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
         const captionText = caption.trim();
         if (captionText) {
           return `<figure class="my-8 md:my-12 -mx-4 sm:mx-0">
-            <div class="relative overflow-hidden bg-gray-100">
+            <div class="relative overflow-hidden bg-gray-100 max-h-[400px] sm:max-h-[500px] md:max-h-[600px] flex items-center justify-center">
               <img
                 src="${imagePath}"
                 width="800"
@@ -101,7 +101,7 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
                 alt="${captionText}"
                 loading="lazy"
                 decoding="async"
-                class="w-full h-auto object-contain">
+                class="w-full h-full object-contain">
             </div>
             <figcaption class="mt-3 px-4 sm:px-0 text-center text-xs sm:text-sm text-gray-600 italic">
               ${captionText}
@@ -109,7 +109,7 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
           </figure>`;
         } else {
           return `<figure class="my-8 md:my-12 -mx-4 sm:mx-0">
-            <div class="relative overflow-hidden bg-gray-100">
+            <div class="relative overflow-hidden bg-gray-100 max-h-[400px] sm:max-h-[500px] md:max-h-[600px] flex items-center justify-center">
               <img
                 src="${imagePath}"
                 width="800"
@@ -117,7 +117,7 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
                 alt=""
                 loading="lazy"
                 decoding="async"
-                class="w-full h-auto object-contain">
+                class="w-full h-full object-contain">
             </div>
           </figure>`;
         }
