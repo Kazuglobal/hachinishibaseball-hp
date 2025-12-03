@@ -278,9 +278,9 @@
         <div class="flex transition-transform duration-700 ease-in-out" [style.transform]="carouselTransform()">
           @for(card of alumniCards; track card.name + card.period; let i = $index) {
             <div class="flex-shrink-0 px-2" [style.width]="cardWidth()">
-              <div class="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100">
+              <div class="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 h-full flex flex-col">
                 <!-- カード画像（横長） -->
-                <div class="relative overflow-hidden aspect-[4/3] bg-gradient-to-br from-[#002D62]/10 to-gray-100">
+                <div class="relative overflow-hidden aspect-[4/3] bg-gradient-to-br from-[#002D62]/10 to-gray-100 flex-shrink-0 flex items-center justify-center">
                   <img 
                     ngSrc="{{card.image}}" 
                     width="800" 
@@ -289,7 +289,7 @@
                     [priority]="i === 0"
                     [loading]="i === 0 ? null : 'lazy'"
                     [disableOptimizedSrcset]="true"
-                    class="w-full h-full object-contain transition-transform duration-500 group-active:scale-105">
+                    class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-active:scale-105">
                   <!-- 卒期バッジ -->
                   <div class="absolute top-2 left-2 px-2 py-0.5 bg-[#002D62]/95 text-white text-[9px] font-bold rounded backdrop-blur-sm">
                     {{card.period}}
@@ -297,7 +297,7 @@
                 </div>
                 
                 <!-- カード情報 -->
-                <div class="p-3">
+                <div class="p-3 flex-1 flex flex-col min-h-[120px]">
                   <h3 class="font-serif-jp text-sm font-bold text-gray-800 mb-1 line-clamp-1">
                     {{card.name}}
                   </h3>
@@ -316,6 +316,19 @@
                       {{card.achievement}}
                     </a>
                   }
+                  @if(card.links && card.links.length > 0) {
+                    <div class="mt-1.5 space-y-0.5">
+                      @for(link of card.links; track link.url) {
+                        <a 
+                          [href]="link.url" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          class="text-[8px] text-[#002D62] hover:underline block line-clamp-1">
+                          {{link.label}}
+                        </a>
+                      }
+                    </div>
+                  }
                 </div>
               </div>
             </div>
@@ -328,10 +341,10 @@
         @for(card of alumniCards; track card.name + card.period; let i = $index) {
           <div 
             [class.is-visible]="isVisible()"
-            class="fade-in-up group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100"
+            class="fade-in-up group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 h-full flex flex-col"
             [style.animation-delay]="(i * 50) + 'ms'">
             <!-- カード画像 -->
-            <div class="relative overflow-hidden aspect-[4/3] bg-gradient-to-br from-[#002D62]/10 to-gray-100">
+            <div class="relative overflow-hidden aspect-[4/3] bg-gradient-to-br from-[#002D62]/10 to-gray-100 flex-shrink-0 flex items-center justify-center">
               <img 
                 ngSrc="{{card.image}}" 
                 width="800" 
@@ -340,7 +353,7 @@
                 [priority]="i < 4"
                 [loading]="i < 4 ? null : 'lazy'"
                 [disableOptimizedSrcset]="true"
-                class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110">
+                class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-110">
               <!-- 卒期バッジ -->
               <div class="absolute top-3 left-3 px-2.5 py-1 bg-[#002D62]/95 text-white text-xs font-bold rounded-md backdrop-blur-sm">
                 {{card.period}}
@@ -350,7 +363,7 @@
             </div>
             
             <!-- カード情報 -->
-            <div class="p-4 md:p-5">
+            <div class="p-4 md:p-5 flex-1 flex flex-col min-h-[140px]">
               <h3 class="font-serif-jp text-base md:text-lg font-bold text-gray-800 mb-1.5 line-clamp-1">
                 {{card.name}}
               </h3>
@@ -368,6 +381,19 @@
                   class="text-[10px] md:text-xs text-[#002D62] hover:underline break-all line-clamp-1 block">
                   {{card.achievement}}
                 </a>
+              }
+              @if(card.links && card.links.length > 0) {
+                <div class="mt-2 space-y-1">
+                  @for(link of card.links; track link.url) {
+                    <a 
+                      [href]="link.url" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      class="text-[9px] md:text-[10px] text-[#002D62] hover:underline block line-clamp-1">
+                      {{link.label}}
+                    </a>
+                  }
+                </div>
               }
             </div>
           </div>

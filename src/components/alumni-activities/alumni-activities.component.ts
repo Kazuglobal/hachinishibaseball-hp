@@ -24,6 +24,7 @@ interface AlumniCard {
   position: string;
   achievement?: string;
   image: string;
+  links?: { label: string; url: string }[];
 }
 
 @Component({
@@ -169,6 +170,21 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
       position: '代表',
       achievement: 'souden-kougyou.site/',
       image: '/assets/images/alumni-ueno.jpg'
+    },
+    {
+      period: '34期',
+      name: 'じゅんせい',
+      team: 'スレンダーパンダ',
+      position: 'お笑い芸人',
+      image: '/assets/images/junsei3.jpeg',
+      links: [
+        { label: 'X (Twitter)', url: 'https://x.com/sle_pan?s=21&t=PWMKFZuwX3xUq5PsiGYALQ' },
+        { label: 'Instagram', url: 'https://www.instagram.com/sle_pan/' },
+        { label: 'TikTok', url: 'https://vt.tiktok.com/ZSeGhyYGy/' },
+        { label: 'YouTube (スレパンちゃんねる)', url: 'https://youtube.com/channel/UCQ_5GFUSV1tlKAjilomRnaQ' },
+        { label: 'YouTube (まかないちゃん)', url: 'https://youtube.com/@makanai_chan?si=9ETgLbizSptFNV5V' },
+        { label: 'YouTube (ラジオ番組)', url: 'https://youtube.com/playlist?list=PLZiRHX1ip4HQe3UoEPtq8amX6zN4ORqUs&si=i4uFu1br6h5yW_UD' }
+      ]
     }
   ];
 
