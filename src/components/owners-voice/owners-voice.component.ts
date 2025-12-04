@@ -26,7 +26,7 @@ export class OwnersVoiceComponent implements OnInit, OnDestroy {
       id: 'nozaki-junsei',
       image: '/assets/images/junsei3.jpeg',
       title: '「夢は二つでいい」— お笑い芸人×プロ野球選手、異色の二刀流で切り拓く道',
-      family: '34期生 - 野崎 純世 様',
+      family: '34期生 - じゅんせい様',
     },
     {
       id: 'coming-soon-3',
