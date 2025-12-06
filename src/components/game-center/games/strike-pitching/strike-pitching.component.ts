@@ -107,6 +107,87 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
   private ballImage = new Image();
   private imagesLoaded = false;
 
+  // ====================================
+  // Mobile Optimization & Game Config
+  // ====================================
+  private isMobile = false;
+  private readonly MOBILE_BREAKPOINT = 768;
+
+  // PC向けデフォルト設定（Iteration 1: 難易度上方修正）
+  private readonly PC_CONFIG = {
+    // パワーゲージ設定（より速く、シビアに）
+    POWER_GAUGE_SPEED: 3.2,       // ゲージ速度（元2.5→速く）
+    POWER_TOLERANCE: 10,          // パーフェクト許容範囲（元15→厳しく）
+    AUTO_POWER_MODE: false,       // 自動パワーモード無効
+
+    // ゾーン設定
+    ZONE_TAP_PADDING: 0,
+    ZONE_SIZE_MULT: 1.0,
+
+    // ボール視認性
+    BALL_SIZE_MULT: 1.0,
+    BALL_TRAIL_LENGTH: 15,
+
+    // 難易度（より厳しく）
+    BASE_OPTIMAL_POWER: 50,       // 最適パワー基準（元60→下げて変動増）
+    OPTIMAL_POWER_VARIANCE: 35,   // パワー変動幅（元25→増加）
+    PITCH_MISS_CHANCE: 0.3,       // 着弾ずれ確率（新規）
+    ACCURACY_THRESHOLD: 60,       // ずれ発生しきい値（元50→厳しく）
+
+    // コンボ設定
+    COMBO_MAX_MULTIPLIER: 2.0,
+    COMBO_INCREMENT: 0.1,
+
+    // エフェクト設定
+    SCREEN_SHAKE_INTENSITY: 15,
+    RESULT_DISPLAY_DURATION: 1800,
+    SHOW_MISS_DIRECTION: true,    // PCでも外れ方向表示
+  };
+
+  // モバイル向け設定（Iteration 1: 難易度上方修正、簡単すぎを改善）
+  private readonly MOBILE_CONFIG = {
+    // パワーゲージ設定（PCよりやや遅いが、元より速く）
+    POWER_GAUGE_SPEED: 2.5,       // ゲージ速度（元1.8→速く）
+    POWER_TOLERANCE: 15,          // 許容範囲（元25→厳しく）
+    AUTO_POWER_MODE: false,       // 自動モード無効（難易度のため）
+
+    // ゾーン設定（タップしやすく）
+    ZONE_TAP_PADDING: 8,
+    ZONE_SIZE_MULT: 1.15,
+
+    // ボール視認性（大きめ、長い軌跡）
+    BALL_SIZE_MULT: 1.3,
+    BALL_TRAIL_LENGTH: 20,
+
+    // 難易度（PCより少し易しいがチャレンジングに）
+    BASE_OPTIMAL_POWER: 55,
+    OPTIMAL_POWER_VARIANCE: 30,
+    PITCH_MISS_CHANCE: 0.25,      // 着弾ずれ確率
+    ACCURACY_THRESHOLD: 55,       // ずれ発生しきい値
+
+    // コンボ設定
+    COMBO_MAX_MULTIPLIER: 2.0,
+    COMBO_INCREMENT: 0.1,
+
+    // エフェクト設定
+    SCREEN_SHAKE_INTENSITY: 20,
+    RESULT_DISPLAY_DURATION: 1500,
+    SHOW_MISS_DIRECTION: true,
+  };
+
+  // 現在適用中の設定
+  private gameConfig = this.PC_CONFIG;
+
+  // コンボシステム
+  comboCount = signal(0);
+  maxCombo = signal(0);
+  private comboBonus = 0;
+
+  // 画面エフェクト
+  private screenShakeIntensity = 0;
+  private impactFlashAlpha = 0;
+  private missDirection = '';  // 外れ方向テキスト
+
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
     if (this.isBrowser) {
@@ -205,6 +286,16 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
       const containerWidth = container.clientWidth || container.offsetWidth;
       const containerHeight = container.clientHeight || container.offsetHeight;
 
+      // モバイル判定を更新
+      const wasMobile = this.isMobile;
+      this.isMobile = window.innerWidth < this.MOBILE_BREAKPOINT;
+
+      // モードが変わった場合は設定を切り替え
+      if (wasMobile !== this.isMobile) {
+        this.gameConfig = this.isMobile ? this.MOBILE_CONFIG : this.PC_CONFIG;
+        console.log(`[StrikePitching] Mode: ${this.isMobile ? 'MOBILE' : 'PC'}`);
+      }
+
       // アスペクト比を維持しながらサイズを設定
       const aspectRatio = 4 / 3; // aspect-[4/3]に合わせる
       let width = containerWidth;
@@ -250,6 +341,12 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     this.score.set(0);
     this.results.set([]);
     this.savedRank.set(0);
+
+    // コンボリセット
+    this.comboCount.set(0);
+    this.maxCombo.set(0);
+    this.comboBonus = 0;
+
     this.playBgm();
     this.nextPitch();
   }
@@ -268,12 +365,31 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     this.power.set(0);
     this.hitZone.set(0);
     this.particles = [];
+    this.missDirection = '';  // 外れ方向リセット
 
-    // ランダムなターゲットゾーン
-    this.targetZone.set(Math.floor(Math.random() * 9) + 1);
+    // ランダムなターゲットゾーン（後半はコーナー多め）
+    const pitchNumber = this.currentPitch();
+    let zone: number;
+    if (pitchNumber <= 2) {
+      // 序盤: 中央寄り（5中心、周囲も）
+      zone = Math.random() < 0.5 ? 5 : Math.floor(Math.random() * 9) + 1;
+    } else if (pitchNumber <= 4) {
+      // 中盤: ランダム
+      zone = Math.floor(Math.random() * 9) + 1;
+    } else {
+      // 終盤: コーナー多め（1,3,7,9）
+      const corners = [1, 3, 7, 9];
+      zone = Math.random() < 0.6
+        ? corners[Math.floor(Math.random() * 4)]
+        : Math.floor(Math.random() * 9) + 1;
+    }
+    this.targetZone.set(zone);
 
-    // 最適パワー
-    this.optimalPower.set(60 + Math.floor(Math.random() * 25));
+    // 最適パワー（Iteration 3: 段階的難易度）
+    // 後半ほど最適パワーの変動が大きく、予測が難しい
+    const basePower = this.gameConfig.BASE_OPTIMAL_POWER;
+    const variance = this.gameConfig.OPTIMAL_POWER_VARIANCE + (pitchNumber * 3);
+    this.optimalPower.set(basePower + Math.floor(Math.random() * variance));
 
     this.gameState.set('selecting');
     this.animateGame();
@@ -344,8 +460,18 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.gameState() !== 'selecting') return;
 
     this.selectedZone.set(zone);
-    this.gameState.set('power');
-    this.startPowerGauge();
+
+    // モバイル簡易モード: ワンタップで自動パワー設定＆投球
+    if (this.gameConfig.AUTO_POWER_MODE) {
+      // 最適パワー付近でランダムに自動設定
+      const variance = (Math.random() - 0.5) * 30;
+      this.power.set(Math.min(100, Math.max(0, this.optimalPower() + variance)));
+      this.playSound(this.throwSound);
+      this.throwBall();
+    } else {
+      this.gameState.set('power');
+      this.startPowerGauge();
+    }
   }
 
   hoverZone(zone: number): void {
@@ -422,9 +548,12 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     this.power.set(0);
     this.powerDirection = 1;
 
+    // configからゲージ速度を取得（モバイルは遅めで反応しやすく）
+    const gaugeSpeed = this.gameConfig.POWER_GAUGE_SPEED;
+
     this.powerInterval = setInterval(() => {
       this.power.update(p => {
-        const newPower = p + this.powerDirection * 2.5;
+        const newPower = p + this.powerDirection * gaugeSpeed;
         if (newPower >= 100) {
           this.powerDirection = -1;
           return 100;
@@ -439,28 +568,47 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   throwBall(): void {
-    if (this.gameState() !== 'power') return;
+    // autoPowerMode時は'selecting'状態から呼ばれる
+    const state = this.gameState();
+    if (state !== 'power' && state !== 'selecting') return;
 
     clearInterval(this.powerInterval);
     this.gameState.set('throwing');
-    this.playSound(this.throwSound);
+    // autoPowerMode時はselectZoneで既に再生済み
+    if (state === 'power') {
+      this.playSound(this.throwSound);
+    }
 
-    // パワーによる精度計算
+    // パワーによる精度計算（configで調整可能）
     const powerDiff = Math.abs(this.power() - this.optimalPower());
     const powerAccuracy = Math.max(0, 100 - powerDiff * 2);
 
-    // 着弾位置計算
+    // 着弾位置計算（Iteration 1: より厳しい判定）
     let finalZone = this.selectedZone();
+    const accuracyThreshold = this.gameConfig.ACCURACY_THRESHOLD;
+    const missChance = this.gameConfig.PITCH_MISS_CHANCE;
 
-    if (powerAccuracy < 50) {
+    // パワー精度が閾値未満、またはランダムでミス発生
+    if (powerAccuracy < accuracyThreshold || Math.random() < missChance * (1 - powerAccuracy / 100)) {
       const offset = Math.random() > 0.5 ? 1 : -1;
       const row = Math.floor((this.selectedZone() - 1) / 3);
       const col = (this.selectedZone() - 1) % 3;
 
+      // ランダムで横か縦にずれる
       if (Math.random() > 0.5 && col + offset >= 0 && col + offset <= 2) {
         finalZone = row * 3 + (col + offset) + 1;
       } else if (row + offset >= 0 && row + offset <= 2) {
         finalZone = (row + offset) * 3 + col + 1;
+      }
+
+      // さらに精度が低い場合は2マスずれる可能性
+      if (powerAccuracy < accuracyThreshold * 0.5 && Math.random() < 0.3) {
+        const extraOffset = Math.random() > 0.5 ? 1 : -1;
+        const newRow = Math.floor((finalZone - 1) / 3);
+        const newCol = (finalZone - 1) % 3;
+        if (newRow + extraOffset >= 0 && newRow + extraOffset <= 2) {
+          finalZone = (newRow + extraOffset) * 3 + newCol + 1;
+        }
       }
     }
 
@@ -518,6 +666,31 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
       rating = 'miss';
     }
 
+    // コンボシステム
+    if (rating !== 'miss') {
+      this.comboCount.update(c => c + 1);
+      this.maxCombo.update(m => Math.max(m, this.comboCount()));
+
+      // コンボボーナス計算（最大2.0倍）
+      const multiplier = Math.min(
+        this.gameConfig.COMBO_MAX_MULTIPLIER,
+        1 + this.comboCount() * this.gameConfig.COMBO_INCREMENT
+      );
+      this.comboBonus = Math.floor(pitchScore * (multiplier - 1));
+      pitchScore += this.comboBonus;
+    } else {
+      // ミス時はコンボリセット
+      this.comboCount.set(0);
+      this.comboBonus = 0;
+    }
+
+    // 外れ方向検出（モバイル向けフィードバック）
+    if (this.gameConfig.SHOW_MISS_DIRECTION && this.hitZone() !== this.targetZone()) {
+      this.missDirection = this.calculateMissDirection(this.targetZone(), this.hitZone());
+    } else {
+      this.missDirection = '';
+    }
+
     const result: PitchResult = {
       targetZone: this.targetZone(),
       hitZone: this.hitZone(),
@@ -531,6 +704,15 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
       this.playSound(this.perfectSound);
     } else if (rating === 'miss') {
       this.playSound(this.missSound);
+    }
+
+    // 画面エフェクト
+    if (rating === 'perfect') {
+      this.screenShakeIntensity = this.gameConfig.SCREEN_SHAKE_INTENSITY;
+      this.impactFlashAlpha = 0.5;
+    } else if (rating === 'great') {
+      this.screenShakeIntensity = this.gameConfig.SCREEN_SHAKE_INTENSITY * 0.5;
+      this.impactFlashAlpha = 0.3;
     }
 
     this.currentResult.set(result);
@@ -588,6 +770,26 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     const col2 = (zone2 - 1) % 3;
 
     return Math.abs(row1 - row2) + Math.abs(col1 - col2);
+  }
+
+  // 外れ方向を計算してテキストで返す
+  private calculateMissDirection(targetZone: number, hitZone: number): string {
+    const targetRow = Math.floor((targetZone - 1) / 3);
+    const targetCol = (targetZone - 1) % 3;
+    const hitRow = Math.floor((hitZone - 1) / 3);
+    const hitCol = (hitZone - 1) % 3;
+
+    const rowDiff = hitRow - targetRow;  // 正=下、負=上
+    const colDiff = hitCol - targetCol;  // 正=右、負=左
+
+    const directions: string[] = [];
+
+    if (rowDiff < 0) directions.push('↑ 高め');
+    if (rowDiff > 0) directions.push('↓ 低め');
+    if (colDiff < 0) directions.push('← 内角');
+    if (colDiff > 0) directions.push('→ 外角');
+
+    return directions.join(' / ') || '';
   }
 
   private drawGame(): void {
