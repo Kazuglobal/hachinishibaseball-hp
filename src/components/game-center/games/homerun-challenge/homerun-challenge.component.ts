@@ -120,6 +120,87 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   private comboCount = 0;
   private lastHitType: BallResult['type'] | null = null;
 
+  // ====================================
+  // Mobile Layout Optimization Settings
+  // ====================================
+  // モバイル判定（画面幅768px未満をモバイルとする）
+  private isMobile = false;
+  private readonly MOBILE_BREAKPOINT = 768;
+
+  // PC向けデフォルト設定
+  private readonly PC_CONFIG = {
+    // 投球速度の基本値と変動幅
+    PITCH_BASE_SPEED: 12,
+    PITCH_SPEED_VARIANCE: 8,
+    PITCH_SPEED_INCREMENT: 0.5, // 球数ごとの速度増加
+
+    // ボールサイズ倍率
+    BALL_SIZE_MULTIPLIER: 1.0,
+
+    // 最適タイミングゾーン（ballZ値）
+    OPTIMAL_ZONE: 850,
+    OPTIMAL_ZONE_TOLERANCE: 50, // パーフェクト判定の許容範囲
+
+    // カメラ・視点設定
+    PERSPECTIVE_MULTIPLIER: 1.0,
+    PITCHER_Y_POSITION: 0.42,  // 投手のY位置（画面高さに対する割合）
+    BATTER_Y_POSITION: 0.85,   // バッターのY位置
+
+    // Iteration 1: ボール軌跡の視認性設定
+    BALL_TRAIL_LENGTH: 15,      // トレイルの長さ（ポイント数）
+    BALL_TRAIL_OPACITY: 0.6,    // トレイルの不透明度
+    BALL_TRAIL_SIZE_MULT: 1.0,  // トレイルサイズ倍率
+    SHOW_SPEED_INDICATOR: false, // 速度インジケータ表示
+
+    // Iteration 2: タイミングフィードバック設定
+    TIMING_BAR_HEIGHT_MULT: 1.0,  // タイミングバー高さ倍率
+    SWING_BUTTON_SIZE_MULT: 1.0,  // スイングボタン領域倍率
+    SHOW_SWING_HINT: false,       // スイングヒント非表示（PC不要）
+
+    // Iteration 3: 最終ポリッシュと微調整
+    SHOW_HIT_ZONE: false,         // ヒットゾーン非表示（PC不要）
+    FIRST_PLAY_GUIDE: false,      // 初回ガイド非表示（PC不要）
+  };
+
+  // モバイル向け調整設定
+  // ※ボールを見やすく、タイミングを取りやすくするための調整
+  private readonly MOBILE_CONFIG = {
+    // 投球速度（PC版の約70%に減速して反応時間を確保）
+    PITCH_BASE_SPEED: 8,
+    PITCH_SPEED_VARIANCE: 5,
+    PITCH_SPEED_INCREMENT: 0.3,
+
+    // ボールサイズ（PC版の1.3倍で視認性向上）
+    BALL_SIZE_MULTIPLIER: 1.3,
+
+    // 最適タイミングゾーン（より広めに設定して操作性向上）
+    OPTIMAL_ZONE: 850,
+    OPTIMAL_ZONE_TOLERANCE: 70,
+
+    // カメラ・視点設定（投手を少し遠くに配置して軌道を見やすく）
+    PERSPECTIVE_MULTIPLIER: 0.85,
+    PITCHER_Y_POSITION: 0.35,  // 投手を上（遠く）に
+    BATTER_Y_POSITION: 0.88,   // バッターを下（手前）に
+
+    // Iteration 1: ボール軌跡の視認性設定（モバイル強化）
+    BALL_TRAIL_LENGTH: 25,      // 長めのトレイルで軌道を追いやすく
+    BALL_TRAIL_OPACITY: 0.8,    // より濃いトレイル
+    BALL_TRAIL_SIZE_MULT: 1.5,  // 太めのトレイル
+    SHOW_SPEED_INDICATOR: true, // 速度インジケータを表示してタイミング補助
+
+    // Iteration 2: タイミングフィードバック設定（モバイル強化）
+    TIMING_BAR_HEIGHT_MULT: 1.3,  // タイミングバーを太くして視認性向上
+    SWING_BUTTON_SIZE_MULT: 1.2,  // スイングボタン領域を拡大
+    SHOW_SWING_HINT: true,        // 「TAP!」ヒント表示
+
+    // Iteration 3: 最終ポリッシュと微調整
+    SHOW_HIT_ZONE: true,          // ヒットゾーン可視化
+    FIRST_PLAY_GUIDE: true,       // 初回プレイガイド表示
+  };
+
+  // 現在適用中の設定（実行時に切り替え）
+  private gameConfig = this.PC_CONFIG;
+
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
@@ -206,6 +287,18 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
       const containerWidth = container.clientWidth || container.offsetWidth;
       const containerHeight = container.clientHeight || container.offsetHeight;
 
+      // モバイル判定を更新
+      const wasMobile = this.isMobile;
+      this.isMobile = window.innerWidth < this.MOBILE_BREAKPOINT;
+
+      // モードが変わった場合は設定を切り替え
+      if (wasMobile !== this.isMobile) {
+        this.gameConfig = this.isMobile ? this.MOBILE_CONFIG : this.PC_CONFIG;
+        // デバッグ用ログ
+        console.log(`[HomerunChallenge] Mode changed to: ${this.isMobile ? 'MOBILE' : 'PC'}`);
+        console.log('[HomerunChallenge] Current config:', this.gameConfig);
+      }
+
       // アスペクト比を維持しながらサイズを設定
       const aspectRatio = 16 / 10; // aspect-[16/10]に合わせる
       let width = containerWidth;
@@ -290,13 +383,15 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     this.slowMotion = false;
     this.slowMotionFactor = 1;
 
-    // ボール初期位置（投手マウンド）
+    // ボール初期位置（投手マウンド - configの位置設定を使用）
     this.ballX = this.canvasWidth / 2;
-    this.ballY = this.canvasHeight * 0.35;
+    this.ballY = this.canvasHeight * this.gameConfig.PITCHER_Y_POSITION;
     this.ballZ = 0;
 
-    // 投球速度（ランダム変化）
-    const speed = 12 + Math.random() * 8 + (this.currentBall() * 0.5);
+    // 投球速度（configから取得 - モバイル時は遅めに設定）
+    const speed = this.gameConfig.PITCH_BASE_SPEED
+      + Math.random() * this.gameConfig.PITCH_SPEED_VARIANCE
+      + (this.currentBall() * this.gameConfig.PITCH_SPEED_INCREMENT);
     this.ballVz = speed;
     this.ballVx = (Math.random() - 0.5) * 2;
     this.ballVy = (Math.random() - 0.5) * 1;
@@ -488,32 +583,39 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   private checkSwingResult(): void {
-    // タイミング判定（ballZ: 0=投手, 1000=バッター, 最適=800-900）
-    const optimalZone = 850;
+    // タイミング判定（ballZ: 0=投手, 1000=バッター）
+    // configから最適ゾーンと許容範囲を取得（モバイルは広めに設定）
+    const optimalZone = this.gameConfig.OPTIMAL_ZONE;
+    const perfectTolerance = this.gameConfig.OPTIMAL_ZONE_TOLERANCE;
     const diff = Math.abs(this.ballZ - optimalZone);
+
+    // 各判定ゾーンの閾値（perfectToleranceを基準にスケール）
+    const goodThreshold = perfectTolerance * 2;      // パーフェクトの2倍
+    const hitThreshold = perfectTolerance * 3.6;     // パーフェクトの3.6倍
+    const foulThreshold = perfectTolerance * 5.6;    // パーフェクトの5.6倍
 
     let type: BallResult['type'];
     let distance: number;
     let timing: 'perfect' | 'good' | 'early' | 'late';
 
-    if (diff <= 50) {
+    if (diff <= perfectTolerance) {
       // パーフェクト
       type = 'homerun';
       distance = 120 + Math.floor(Math.random() * 30);
       timing = 'perfect';
       this.slowMotion = true;
       this.slowMotionFactor = 0.3;
-    } else if (diff <= 100) {
+    } else if (diff <= goodThreshold) {
       // グッド
       type = Math.random() > 0.3 ? 'homerun' : 'hit';
       distance = type === 'homerun' ? 100 + Math.floor(Math.random() * 20) : 80 + Math.floor(Math.random() * 30);
       timing = 'good';
-    } else if (diff <= 180) {
+    } else if (diff <= hitThreshold) {
       // ヒット/ファウル
       type = Math.random() > 0.5 ? 'hit' : 'foul';
       distance = type === 'hit' ? 50 + Math.floor(Math.random() * 40) : 20 + Math.floor(Math.random() * 30);
       timing = this.ballZ < optimalZone ? 'early' : 'late';
-    } else if (diff <= 280) {
+    } else if (diff <= foulThreshold) {
       // ファウル
       type = 'foul';
       distance = 10 + Math.floor(Math.random() * 20);
@@ -677,6 +779,12 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     if (state === 'pitching' || state === 'swing') {
       // 投球中
       this.drawPitcher();
+
+      // Iteration 3: モバイル用ヒットゾーン可視化（ボールが来る前に目標表示）
+      if (this.gameConfig.SHOW_HIT_ZONE) {
+        this.drawHitZone();
+      }
+
       this.drawBallTrail();
       this.drawBall3D(this.ballX, this.ballY, this.ballZ);
       this.drawBatter();
@@ -692,6 +800,11 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     // タイミングインジケーター
     if (state === 'pitching' || state === 'swing') {
       this.drawTimingIndicator();
+
+      // モバイル: 速度インジケーター（ボールの接近を視覚的に表示）
+      if (this.gameConfig.SHOW_SPEED_INDICATOR) {
+        this.drawSpeedIndicator();
+      }
     }
 
     // コンボ表示
@@ -1077,7 +1190,8 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   private drawPitcher(): void {
     const ctx = this.ctx;
     const x = this.canvasWidth / 2;
-    const y = this.canvasHeight * 0.42;
+    // configから投手のY位置を取得（モバイルは上=遠くに配置して軌道を見やすく）
+    const y = this.canvasHeight * this.gameConfig.PITCHER_Y_POSITION;
 
     // 投球モーションのフェーズ
     const pitchProgress = Math.min(1, this.ballZ / 200);
@@ -1170,7 +1284,8 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   private drawBatter(): void {
     const ctx = this.ctx;
     const x = this.canvasWidth / 2 + 50;
-    const y = this.canvasHeight * 0.85;
+    // configからバッターのY位置を取得（モバイルは下=手前に配置して距離感を確保）
+    const y = this.canvasHeight * this.gameConfig.BATTER_Y_POSITION;
 
     ctx.save();
     ctx.translate(x, y);
@@ -1354,12 +1469,17 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     const ctx = this.ctx;
 
     // 遠近法でサイズ調整（z=0で小さく、z=1000で大きく）
-    const perspective = 0.5 + (z / 1000) * 1.5;
-    const size = 8 + perspective * 14;
+    // configのPERSPECTIVE_MULTIPLIERで調整（モバイルは遠近感を抑えて見やすく）
+    const basePerspective = 0.5 + (z / 1000) * 1.5;
+    const perspective = basePerspective * this.gameConfig.PERSPECTIVE_MULTIPLIER;
+
+    // ボールサイズ（configのBALL_SIZE_MULTIPLIERで調整 - モバイルは大きめ）
+    const baseSize = 8 + perspective * 14;
+    const size = baseSize * this.gameConfig.BALL_SIZE_MULTIPLIER;
 
     // 位置調整（遠近法）
     const perspectiveX = this.canvasWidth / 2 + (x - this.canvasWidth / 2) * perspective;
-    const perspectiveY = this.canvasHeight * 0.45 + (y - this.canvasHeight * 0.35 + z * 0.35) * perspective;
+    const perspectiveY = this.canvasHeight * this.gameConfig.PITCHER_Y_POSITION + (y - this.canvasHeight * 0.35 + z * 0.35) * perspective;
 
     // 影（地面に落ちる影）
     const shadowY = perspectiveY + size + 8;
@@ -1469,15 +1589,138 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   private drawBallTrail(): void {
     const ctx = this.ctx;
 
-    this.ballTrail.forEach((point, i) => {
-      const alpha = point.alpha * 0.6;
+    // configから軌跡設定を取得（モバイルはより見やすく）
+    const maxTrailLength = this.gameConfig.BALL_TRAIL_LENGTH;
+    const baseOpacity = this.gameConfig.BALL_TRAIL_OPACITY;
+    const sizeMult = this.gameConfig.BALL_TRAIL_SIZE_MULT;
+
+    // 軌跡を指定の長さに制限
+    const visibleTrail = this.ballTrail.slice(-maxTrailLength);
+
+    visibleTrail.forEach((point, i) => {
+      const alpha = point.alpha * baseOpacity * (i / visibleTrail.length);
       if (alpha < 0.05) return;
 
+      // モバイルではより太い軌跡で視認性向上
+      const trailSize = (3 + i * 0.4) * sizeMult;
+
+      // グラデーション効果（後ろに行くほど薄く、細く）
       ctx.fillStyle = `rgba(255,255,255,${alpha})`;
       ctx.beginPath();
-      ctx.arc(point.x, point.y, 3 + i * 0.3, 0, Math.PI * 2);
+      ctx.arc(point.x, point.y, trailSize, 0, Math.PI * 2);
       ctx.fill();
+
+      // モバイル時は軌跡にグローを追加
+      if (this.isMobile && alpha > 0.2) {
+        ctx.fillStyle = `rgba(255,200,100,${alpha * 0.3})`;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, trailSize * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
     });
+  }
+
+  // Iteration 1: 速度インジケーター（モバイル専用）
+  // ボールの接近進捗を円形で表示してタイミング補助
+  private drawSpeedIndicator(): void {
+    const ctx = this.ctx;
+    const w = this.canvasWidth;
+    const h = this.canvasHeight;
+
+    // ボールの進捗（0〜1）
+    const progress = Math.min(1, this.ballZ / 1000);
+
+    // インジケーターの位置（画面左上）
+    const indicatorX = 50;
+    const indicatorY = h * 0.25;
+    const radius = 25;
+
+    // 背景円
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(indicatorX, indicatorY, radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 進捗円（プログレスが増すにつれて色が変化）
+    const progressColor = progress < 0.5
+      ? `rgba(100,200,255,${0.5 + progress})`
+      : progress < 0.8
+        ? `rgba(255,200,100,${0.5 + progress * 0.5})`
+        : `rgba(255,100,100,${0.8 + progress * 0.2})`;
+
+    ctx.strokeStyle = progressColor;
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(indicatorX, indicatorY, radius, -Math.PI / 2, -Math.PI / 2 + progress * Math.PI * 2);
+    ctx.stroke();
+
+    // 中央のパーセンテージ表示
+    ctx.fillStyle = progressColor;
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${Math.floor(progress * 100)}%`, indicatorX, indicatorY);
+
+    // PERFECT到達が近い時のパルスエフェクト
+    if (progress > 0.75 && progress < 0.95) {
+      const pulse = Math.sin(this.frameCount * 0.3) * 0.3 + 0.7;
+      ctx.strokeStyle = `rgba(0,255,100,${pulse * 0.5})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(indicatorX, indicatorY, radius + 8 + pulse * 5, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  // Iteration 3: ヒットゾーン可視化（モバイル専用）
+  // バッター位置にターゲットゾーンを表示してスイングタイミングを補助
+  private drawHitZone(): void {
+    const ctx = this.ctx;
+    const w = this.canvasWidth;
+    const h = this.canvasHeight;
+
+    // ボールの進捗
+    const progress = Math.min(1, this.ballZ / 1000);
+
+    // ヒットゾーンの位置（バッター前）
+    const zoneX = w / 2;
+    const zoneY = h * this.gameConfig.BATTER_Y_POSITION - 30;
+
+    // ゾーンの半径（ボール接近で小さくなる）
+    const radius = 30 + (1 - progress) * 20;
+    const innerRadius = radius * 0.4;
+
+    // 不透明度（ボールが来るまで薄く、接近で濃く）
+    const alpha = Math.min(0.5, progress * 0.6);
+
+    // 外円（ターゲットリング）
+    ctx.strokeStyle = `rgba(255,255,100,${alpha})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(zoneX, zoneY, radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // PERFECTゾーン付近で緑にグロー
+    if (progress > 0.7 && progress < 0.95) {
+      const pulse = Math.sin(this.frameCount * 0.25) * 0.3 + 0.5;
+      ctx.strokeStyle = `rgba(0,255,100,${pulse})`;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(zoneX, zoneY, innerRadius + pulse * 5, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // 十字線（スイートスポット）
+    ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.6})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(zoneX - innerRadius, zoneY);
+    ctx.lineTo(zoneX + innerRadius, zoneY);
+    ctx.moveTo(zoneX, zoneY - innerRadius);
+    ctx.lineTo(zoneX, zoneY + innerRadius);
+    ctx.stroke();
   }
 
   private drawTimingIndicator(): void {
@@ -1485,11 +1728,11 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     const w = this.canvasWidth;
     const h = this.canvasHeight;
 
-    // タイミングバー
+    // タイミングバー（configで高さ調整 - モバイルは太め）
     const barWidth = w * 0.65;
-    const barHeight = 16;
+    const barHeight = 16 * this.gameConfig.TIMING_BAR_HEIGHT_MULT;
     const barX = (w - barWidth) / 2;
-    const barY = h - 35;
+    const barY = h - 35 - (barHeight - 16) / 2; // 太さ分上に調整
 
     // 外枠の影
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -1603,6 +1846,31 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     // LATE
     ctx.fillStyle = 'rgba(255,100,100,0.9)';
     ctx.fillText('LATE', barX + barWidth * 0.875, barY - 16);
+
+    // Iteration 2: モバイル用スイングヒント表示
+    if (this.gameConfig.SHOW_SWING_HINT) {
+      const progress = Math.min(1, this.ballZ / 1000);
+
+      // PERFECTゾーンに近づいたらヒント表示
+      if (progress > 0.6 && progress < 0.95) {
+        const hintPulse = Math.sin(this.frameCount * 0.4) * 0.3 + 0.7;
+        const hintY = barY - 50;
+
+        // 「TAP!」テキスト（脈動アニメーション）
+        ctx.font = `bold ${24 * hintPulse}px Oswald, Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // グロー効果
+        ctx.shadowColor = progress > 0.75 ? '#00ff88' : '#ffaa00';
+        ctx.shadowBlur = 15 * hintPulse;
+        ctx.fillStyle = progress > 0.75
+          ? `rgba(0,255,136,${hintPulse})`
+          : `rgba(255,200,100,${hintPulse * 0.8})`;
+        ctx.fillText('TAP!', w / 2, hintY);
+        ctx.shadowBlur = 0;
+      }
+    }
   }
 
   private drawParticles(): void {
