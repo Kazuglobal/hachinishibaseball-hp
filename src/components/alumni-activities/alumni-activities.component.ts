@@ -144,7 +144,7 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
       name: '中村 渉',
       team: '中村畳工店',
       position: '代表',
-      achievement: 'nakamuratatami.jimdofree.com/',
+      achievement: 'nakamuratatamishop-info.vercel.app/',
       image: '/assets/images/alumni-nakamura.jpg'
     },
     {
