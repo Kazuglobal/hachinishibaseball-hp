@@ -10,12 +10,8 @@
     (visible)="brandStoryVisible.set(true)" 
     [class.is-visible]="brandStoryVisible()"
     class="fade-in-up py-24 px-4 sm:px-8 md:px-16 container mx-auto relative overflow-hidden">
-    <div class="absolute top-0 left-0 w-1/3 opacity-30 z-0" [style.transform]="parallaxImage1Transform()">
-      <img ngSrc="https://picsum.photos/800/1200?grayscale&blur=2&random=1" width="800" height="1200" alt="八戸西高等学校野球部OB会 会長挨拶セクション背景" loading="lazy" decoding="async" class="object-cover">
-    </div>
-      <div class="absolute bottom-0 right-0 w-1/4 opacity-30 z-0" [style.transform]="parallaxImage2Transform()">
-      <img ngSrc="https://picsum.photos/600/900?grayscale&blur=2&random=2" width="600" height="900" alt="八戸西高等学校野球部OB会 背景画像" loading="lazy" decoding="async" class="object-cover">
-    </div>
+    <!-- 装飾的な背景画像は削除し、よりクリーンなデザインに -->
+    <div class="absolute inset-0 bg-gradient-to-br from-transparent via-gray-50/30 to-transparent z-0"></div>
     <div class="relative z-10">
       <app-section-title mainTitle="会長挨拶" subTitle="MESSAGE"></app-section-title>
       
@@ -66,19 +62,75 @@
         <app-section-title mainTitle="HACHINISHI" subTitle="白球"></app-section-title>
       </div>
       <div class="mt-16 grid grid-cols-2 gap-8 items-center">
-          <div 
+          <div
             class="space-y-8 transition-transform duration-1000 ease-out"
             [class.translate-x-0]="galleryVisible()"
             [class.-translate-x-full]="!galleryVisible()">
-              <img ngSrc="/assets/images/baseball-history1.jpg" width="800" height="600" alt="八戸西高等学校野球部の歴史と栄光の記録" class="w-full shadow-xl">
-              <img ngSrc="/assets/images/baseball-history2.jpg" width="800" height="1000" alt="八戸西高等学校野球部の伝統と歴史" class="w-full shadow-xl">
+              <picture>
+                <source
+                  type="image/webp"
+                  srcset="/assets/images/baseball-history1.webp"
+                  width="800"
+                  height="600">
+                <img
+                  ngSrc="/assets/images/baseball-history1.jpg"
+                  width="800"
+                  height="600"
+                  alt="八戸西高校野球部の輝かしい歴史 - 甲子園出場の栄光と伝統の記録"
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full shadow-xl rounded-lg">
+              </picture>
+              <picture>
+                <source
+                  type="image/webp"
+                  srcset="/assets/images/baseball-history2.webp"
+                  width="800"
+                  height="1000">
+                <img
+                  ngSrc="/assets/images/baseball-history2.jpg"
+                  width="800"
+                  height="1000"
+                  alt="八戸西高校野球部の伝統を継承する選手たち - 歴史に刻まれた熱戦の記憶"
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full shadow-xl rounded-lg">
+              </picture>
           </div>
-          <div 
+          <div
             class="space-y-8 transition-transform duration-1000 ease-out delay-200"
             [class.translate-x-0]="galleryVisible()"
             [class.translate-x-full]="!galleryVisible()">
-              <img ngSrc="/assets/images/baseball-history3.jpg" width="800" height="1000" alt="八戸西高等学校野球部の白球に捧げた青春" class="w-full shadow-xl">
-              <img ngSrc="/assets/images/baseball-history4.jpg" width="800" height="600" alt="八戸西高等学校野球部OB会の絆と歴史" class="w-full shadow-xl">
+              <picture>
+                <source
+                  type="image/webp"
+                  srcset="/assets/images/baseball-history3.webp"
+                  width="800"
+                  height="1000">
+                <img
+                  ngSrc="/assets/images/baseball-history3.jpg"
+                  width="800"
+                  height="1000"
+                  alt="白球に捧げた青春 - 八戸西高校野球部の感動的な瞬間と絆"
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full shadow-xl rounded-lg">
+              </picture>
+              <picture>
+                <source
+                  type="image/webp"
+                  srcset="/assets/images/baseball-history4.webp"
+                  width="800"
+                  height="600">
+                <img
+                  ngSrc="/assets/images/baseball-history4.jpg"
+                  width="800"
+                  height="600"
+                  alt="八戸西高校野球部OB会の絆 - 世代を超えて受け継がれる野球への情熱"
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full shadow-xl rounded-lg">
+              </picture>
           </div>
       </div>
     </div>
@@ -110,7 +162,21 @@
           [class.is-visible]="buildingHouseVisible()"
           class="fade-in-up delay-200">
           <div class="relative max-w-md mx-auto">
-            <img ngSrc="/assets/images/uniform.jpg" width="800" height="1000" alt="八戸西高等学校野球部OB活躍情報と現役選手の活動" loading="lazy" decoding="async" class="shadow-2xl w-full h-auto max-h-[500px] object-contain rounded-lg">
+            <picture>
+              <source
+                type="image/webp"
+                srcset="/assets/images/uniform.webp"
+                width="800"
+                height="1000">
+              <img
+                ngSrc="/assets/images/uniform.jpg"
+                width="800"
+                height="1000"
+                alt="八戸西高校野球部のユニフォーム - 伝統と誇りを象徴する白球への情熱"
+                loading="lazy"
+                decoding="async"
+                class="shadow-2xl w-full h-auto max-h-[500px] object-contain rounded-lg">
+            </picture>
             <div class="absolute inset-0 bg-gradient-to-t from-[#002D62]/20 to-transparent rounded-lg"></div>
           </div>
         </div>
@@ -149,14 +215,21 @@
             target="_blank" 
             rel="noopener noreferrer"
             class="group inline-flex flex-col items-center">
-            <img 
-              ngSrc="/assets/images/line.png" 
-              width="400" 
-              height="400" 
-              alt="LINE公式アカウント友だち追加用QRコード" 
-              loading="lazy" 
-              decoding="async"
-              class="w-64 sm:w-72 md:w-80 rounded-xl shadow-lg group-hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-1 bg-white p-3">
+            <picture>
+              <source
+                type="image/webp"
+                srcset="/assets/images/line.webp"
+                width="400"
+                height="400">
+              <img
+                ngSrc="/assets/images/line.png"
+                width="400"
+                height="400"
+                alt="八戸西高校野球部OB会 LINE公式アカウント - 最新情報をお届けする友だち追加用QRコード"
+                loading="lazy"
+                decoding="async"
+                class="w-64 sm:w-72 md:w-80 rounded-xl shadow-lg group-hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-1 bg-white p-3">
+            </picture>
             <span class="mt-3 inline-flex items-center gap-2 bg-[#00B900] text-white font-semibold py-2 px-4 rounded-full group-hover:bg-[#009900] transition-colors duration-300">
               LINEで友だち追加
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -197,7 +270,21 @@
             [class.is-visible]="otherServiceVisible()"
             class="fade-in-up text-center {{item.delay}} group cursor-pointer block">
             <div class="relative overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-              <img ngSrc="{{item.img}}" width="800" height="600" alt="八戸西高等学校野球部 {{item.title}} - {{item.description}}" loading="lazy" decoding="async" class="w-full h-auto aspect-[4/3] object-cover group-hover:scale-110 transition-transform duration-300">
+              <picture>
+                <source
+                  type="image/webp"
+                  [srcset]="item.img.replace(/\.(jpg|jpeg|png)$/, '.webp')"
+                  width="800"
+                  height="600">
+                <img
+                  ngSrc="{{item.img}}"
+                  width="800"
+                  height="600"
+                  alt="八戸西高校野球部 {{item.title}} - {{item.description}}"
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full h-auto aspect-[4/3] object-cover group-hover:scale-110 transition-transform duration-300">
+              </picture>
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                 <p class="text-sm">{{item.description}}</p>
