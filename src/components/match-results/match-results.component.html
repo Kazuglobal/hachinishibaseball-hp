@@ -216,6 +216,20 @@
             <div class="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-500"></div>
           </button>
         </div>
+
+        <!-- トップに戻るボタン -->
+        <div class="flex justify-center mt-8 mb-8">
+          <button (click)="scrollToTop()"
+            class="group relative px-8 py-3 bg-gradient-to-r from-slate-500 to-slate-700 text-white font-black text-base rounded-full shadow-[0_10px_30px_rgba(100,116,139,0.4)] transform transition-all duration-300 hover:scale-110 hover:shadow-[0_15px_40px_rgba(100,116,139,0.6)] overflow-hidden">
+            <span class="relative z-10 tracking-widest flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+              トップに戻る
+            </span>
+            <div class="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-500"></div>
+          </button>
+        </div>
       </div>
 
       <!-- 公式戦セクション -->
@@ -346,6 +360,20 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- トップに戻るボタン -->
+        <div class="flex justify-center mt-12 mb-8">
+          <button (click)="scrollToTop()"
+            class="group relative px-8 py-3 bg-gradient-to-r from-slate-500 to-slate-700 text-white font-black text-base rounded-full shadow-[0_10px_30px_rgba(100,116,139,0.4)] transform transition-all duration-300 hover:scale-110 hover:shadow-[0_15px_40px_rgba(100,116,139,0.6)] overflow-hidden">
+            <span class="relative z-10 tracking-widest flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+              トップに戻る
+            </span>
+            <div class="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-500"></div>
+          </button>
         </div>
       </div>
     </div>
