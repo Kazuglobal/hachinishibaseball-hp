@@ -36,9 +36,42 @@ View your app in AI Studio: https://ai.studio/apps/drive/1RvqAaXsfH7bWrc1RWwAKVr
 
 ### 利用可能なコマンド
 
-- `npm run dev` - 開発サーバーを起動（ポート3000）
+- `npm run dev` - 開発サーバーを起動（ポート4200）
 - `npm run build` - 本番用ビルドを実行
 - `npm run preview` - 本番用ビルドをプレビュー
+- `npm run test` - Playwrightテストを実行
+- `npm run test:ui` - Playwright UIモードでテストを実行
+- `npm run test:headed` - ブラウザを表示してテストを実行
+
+### テストについて
+
+プロジェクトには**Playwright**を使用したE2Eテストが含まれています。
+
+#### テストの実行手順
+
+1. **Playwrightブラウザのインストール（初回のみ）**
+   ```bash
+   npx playwright install chromium
+   ```
+
+2. **テストの実行**
+   ```bash
+   npm run test
+   ```
+
+3. **UIモードでテストを実行（推奨）**
+   ```bash
+   npm run test:ui
+   ```
+
+#### テストの内容
+
+- **総会出席フォーム** (`tests/meeting-form.spec.ts`)
+  - フォームの表示確認
+  - 必須フィールドのバリデーション
+  - 出席/欠席での正常な送信
+  - エラー処理の確認
+  - フォームのリセット機能
 
 ## 技術スタック
 
@@ -46,6 +79,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1RvqAaXsfH7bWrc1RWwAKVr
 - **TypeScript** - 言語
 - **TailwindCSS** - CSSフレームワーク
 - **Vite** - ビルドツール
+- **Playwright** - E2Eテストフレームワーク
 
 ## プロジェクト構成
 
