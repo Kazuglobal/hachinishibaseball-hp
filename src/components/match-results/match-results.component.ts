@@ -242,5 +242,12 @@ export class MatchResultsComponent implements OnInit {
       queryParamsHandling: 'merge'
     });
   }
+
+  scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
 }
 
