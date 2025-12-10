@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- 野球ボールのデザイン -->
+  <circle cx="50" cy="50" r="48" fill="#FFFFFF" stroke="#C41E3A" stroke-width="2"/>
+
+  <!-- 縫い目の左側 -->
+  <path d="M 30 25 Q 35 35, 32 45 Q 30 55, 32 65 Q 35 75, 30 85"
+        stroke="#C41E3A"
+        stroke-width="2.5"
+        fill="none"
+        stroke-linecap="round"/>
+
+  <!-- 縫い目のステッチ（左側） -->
+  <path d="M 30 28 L 27 30 M 31 35 L 28 37 M 30 42 L 27 44 M 30 49 L 27 51 M 30 56 L 27 58 M 31 63 L 28 65 M 31 70 L 28 72 M 30 77 L 27 79 M 31 82 L 28 84"
+        stroke="#C41E3A"
+        stroke-width="2"
+        stroke-linecap="round"/>
+
+  <!-- 縫い目の右側 -->
+  <path d="M 70 25 Q 65 35, 68 45 Q 70 55, 68 65 Q 65 75, 70 85"
+        stroke="#C41E3A"
+        stroke-width="2.5"
+        fill="none"
+        stroke-linecap="round"/>
+
+  <!-- 縫い目のステッチ（右側） -->
+  <path d="M 70 28 L 73 30 M 69 35 L 72 37 M 70 42 L 73 44 M 70 49 L 73 51 M 70 56 L 73 58 M 69 63 L 72 65 M 69 70 L 72 72 M 70 77 L 73 79 M 69 82 L 72 84"
+        stroke="#C41E3A"
+        stroke-width="2"
+        stroke-linecap="round"/>
+</svg>
