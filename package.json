@@ -7,13 +7,10 @@
     "dev": "ng serve",
     "build": "ng build",
     "preview": "ng serve --configuration=production",
-<<<<<<< HEAD
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "test:headed": "playwright test --headed"
-=======
+    "test:headed": "playwright test --headed",
     "test:e2e": "playwright test"
->>>>>>> 1926070 (Add mobile E2E test for participation form)
   },
   "dependencies": {
     "@angular/build": "^20.3.0",
