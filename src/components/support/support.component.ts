@@ -55,7 +55,25 @@ export class SupportComponent implements OnInit, AfterViewInit {
   ];
 
   // 2025年の支援者一覧
-  donors2025: Donor[] = [];
+  donors2025: Donor[] = [
+    { period: '1期', names: ['霞 牧広 様'] },
+    { period: '2期', names: ['天間 昭悦 様', '佐藤 幸子 様'] },
+    { period: '3期', names: ['西 様', '三浦 俊司 様', '八田 恭章 様', '坂本 光慈 様', '貝吹 尚寿 様', '工藤 郁夫 様'] },
+    { period: '5期', names: ['鈴木 徳彦 様'] },
+    { period: '9期', names: ['菊地 武広 様'] },
+    { period: '10期', names: ['榎本 直行 様', '植村 賢悦 様'] },
+    { period: '12期', names: ['跡村 秀 様'] },
+    { period: '13期', names: ['三浦 智樹 様', '沼田 匡弘 様'] },
+    { period: '14期', names: ['池田 義仁 様'] },
+    { period: '21期', names: ['中村 渉 様'] },
+    { period: '25期', names: ['佐藤 泰正 様'] },
+    { period: '27期', names: ['土峰 直樹 様'] },
+    { period: '35期', names: ['石郷岡 浩紀 様'] },
+    { period: '41期', names: ['佐々木 琢磨 様'] },
+    { period: '43期', names: ['三浦 颯斗 様'] },
+    { period: '46期', names: ['菊地マネージャー 様', '三浦 滉斗 様'] },
+    { period: '期不明', names: ['今川 はじめ 様', '豊川 寛一 様', '藤釜 涼子 様', '渡辺 正人 様', '小泉 章弘 様', '石倉 睦子 様', '大山 繁 様', '沖田 雄平 様', '工藤 俊也 様', '田中 学 様', '山田 航大 様', '駒澤 凜希 様', '田名部 秀世 様', '田嶋 正博 様', '高嶋 克幸 様', '大下 貴義 様'] }
+  ];
 
   // OB会参加フォーム
   participationForm = {
