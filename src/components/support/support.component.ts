@@ -58,7 +58,7 @@ export class SupportComponent implements OnInit, AfterViewInit {
     { period: '41期', names: ['佐々木 琢磨 様'] },
     { period: '43期', names: ['三浦 颯斗 様'] },
     { period: '46期', names: ['三浦 滉斗 様', '菊地 凜 様'] },
-    { period: '銀行振込の為期は確認中です。', names: ['オキタユウヘイ 様', 'クドウシュンヤ 様', 'タナカガク 様', 'ヤマダコウダイ 様', 'コマサワリンキ 様'] }
+    { period: '48期', names: ['オキタユウヘイ 様', 'クドウシュンヤ 様', 'タナカガク 様', 'ヤマダコウダイ 様', 'コマサワリンキ 様'] }
   ];
 
   // 2025年の支援者一覧
