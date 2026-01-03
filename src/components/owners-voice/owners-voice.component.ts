@@ -32,7 +32,7 @@ export class OwnersVoiceComponent implements OnInit, OnDestroy {
       id: 'miyazaki-katsumi',
       image: '/assets/images/miyazaki1.jpg',
       title: '甲子園は通過点 — 初代甲子園キャプテンが語る、仲間と歩んだ道',
-      family: '45期生 - 宮崎 勝己 様',
+      family: '45期生 - 宮崎 一綺 様',
     },
     {
       id: 'coming-soon-4',
