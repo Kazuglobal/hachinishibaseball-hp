@@ -29,10 +29,10 @@ export class OwnersVoiceComponent implements OnInit, OnDestroy {
       family: '34期生 - じゅんせい様',
     },
     {
-      id: 'coming-soon-3',
-      image: 'https://picsum.photos/seed/alumni3/800/1000',
-      title: '準備中',
-      family: '準備中',
+      id: 'miyazaki-katsumi',
+      image: '/assets/images/miyazaki1.jpg',
+      title: '甲子園は通過点 — 初代甲子園キャプテンが語る、仲間と歩んだ道',
+      family: '45期生 - 宮崎 一綺 様',
     },
     {
       id: 'coming-soon-4',
