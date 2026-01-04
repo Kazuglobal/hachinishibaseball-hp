@@ -39,7 +39,7 @@
       </div>
 
       <!-- 追加画像を表示 -->
-      @if ((activity()!.id === 'newyear-ob-2025' || activity()!.id === 'ai-workshop-2024' || activity()!.id === 'sansha-festival-2025' || activity()!.id === 'hachikoshi-practice-2025' || activity()!.id === 'yoga-training-2025') && activity()!.additionalImages && activity()!.additionalImages.length > 0) {
+      @if (activity()!.additionalImages && activity()!.additionalImages.length > 0) {
         <div class="mb-8">
           <h3 class="text-xl font-bold font-serif-jp text-gray-800 mb-4">関連画像</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

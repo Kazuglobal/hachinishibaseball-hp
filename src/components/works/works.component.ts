@@ -286,15 +286,25 @@ export class WorksComponent implements OnInit, OnDestroy {
     }, 3000);
   }
   works = [
-    { 
+    {
+      id: 'newyear-ob-2026',
+      image: '/assets/images/OB1.jpg',
+      category: 'イベントレポート',
+      title: 'プロ選手も参加！世代を超えた「熱い」同窓会レポートと来年のお誘い',
+      date: '2026年1月2日',
+      content: '新年の幕開けとともに、今年も「パークホテル」に八戸西高校野球部OBの皆様が集結しました。毎年恒例、1月2日午後3時より開催されたOB総会。今年も会場は、西高野球部の誇りと、世代を超えた深い絆で包まれました。今年も北海道日本ハムファイターズで活躍する福島蓮投手が多忙な中駆けつけてくれました！現役プロ選手と直接言葉を交わせる貴重な機会に、会場のボルテージは最高潮に。',
+      additionalImages: ['/assets/images/OB2.jpg', '/assets/images/OB3.jpg', '/assets/images/OB4.jpg', '/assets/images/OB5.jpg'],
+      delay: ''
+    },
+    {
       id: 'newyear-ob-2025',
-      image: '/assets/images/newyear-ob-2025.jpg', 
-      category: 'イベントレポート', 
-      title: '新年OB会', 
+      image: '/assets/images/newyear-ob-2025.jpg',
+      category: 'イベントレポート',
+      title: '新年OB会',
       date: '2025年1月2日',
       content: '新年の幕開けとともに、パークホテルに野球部OBの皆様が集いました。毎年恒例となっている八戸西高校野球部OB会が、今年も1月2日午後3時より開催され、世代を超えた絆を深める貴重な機会となりました。会場にはOBで現役プロ野球選手の日本ハムファイターズ福島投手も駆けつけ、OBたちとの交流を深めました。また、現役大学生も参加し、先輩OBたちから貴重な経験談に熱心に耳を傾ける姿が印象的でした。',
       additionalImages: ['/assets/images/newyear-ob-2025-2.jpg'],
-      delay: '' 
+      delay: ''
     },
     { 
       id: 'gonohe-festival-2024',
