@@ -27,6 +27,20 @@ interface AlumniCard {
   links?: { label: string; url: string }[];
 }
 
+interface AlumniArticle {
+  date: string;
+  category: string;
+  title: string;
+  image: string;
+  imageAlt: string;
+  posterImage?: string;
+  posterImageAlt?: string;
+  lead: string;
+  stats: { label: string; value: string }[];
+  body: string[];
+  sources: { label: string; url: string }[];
+}
+
 @Component({
   selector: 'app-alumni-activities',
   standalone: true,
@@ -84,16 +98,45 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
     name: '福島 蓮',
     team: '北海道日本ハムファイターズ',
     position: '投手',
-    description: '今季５勝を挙げ勝率1.000の好成績をおさめクライマックスシリーズにも登板しました！私たちOB会一同、福島選手の活躍を心から祝福し、更なる飛躍を期待しています。',
-    message: '目指せ、日本ハムのエース！来シーズンも福島蓮選手への熱い応援をよろしくお願いします！',
-    profileUrl: 'https://media.fighters.co.jp/player/94/',
+    description: '2026年5月28日の日本生命セ・パ交流戦・阪神戦で、福島蓮投手が聖地・甲子園でプロ初勝利。7回1失点の好投で、北海道日本ハムファイターズの勝利に大きく貢献しました。',
+    message: '甲子園の悔しさをプロの勝利に変えた45期の誇り。引き続き福島蓮選手への熱い応援をよろしくお願いします！',
+    profileUrl: 'https://media.fighters.co.jp/player/45/',
     mainVideo: 'https://youtu.be/qwNSVgz7pPY',
     videos: [
+      'https://youtu.be/d19AP_SXh_U?si=RixlAf_kqhWvxMTo',
       'https://youtu.be/0gzmhnoMEtc',
       'https://youtu.be/5nEeOwuVlyg',
       'https://youtu.be/e-WA7cYmV5I',
       'https://youtu.be/FIGkQhN6YIk',
       'https://youtu.be/GY1X0xAQ2i8'
+    ]
+  };
+
+  fukushimaArticle: AlumniArticle = {
+    date: '2026.05.28',
+    category: '45期 / 北海道日本ハムファイターズ',
+    title: '福島蓮投手、聖地・甲子園でプロ初勝利',
+    image: '/assets/images/fukushima-koshien-first-win.png',
+    imageAlt: '福島蓮投手の甲子園初勝利を記念したビジュアル',
+    posterImage: '/assets/images/fukushima-koshien-first-win-poster.png',
+    posterImageAlt: '福島蓮投手の甲子園初勝利を記念した縦型ビジュアル',
+    lead: '八戸西高校45期の福島蓮投手が、阪神甲子園球場で行われた交流戦で先発し、7回1失点の力投。北海道日本ハムファイターズの4対2の勝利を呼び込み、プロ入り後初となる甲子園での白星を手にしました。',
+    stats: [
+      { label: '試合', value: '阪神 2-4 日本ハム' },
+      { label: '球場', value: '阪神甲子園球場' },
+      { label: '投球内容', value: '7回100球 5安打 1四球 7奪三振 1失点' },
+      { label: '記録', value: '今季2勝目・甲子園初勝利' }
+    ],
+    body: [
+      '2026年5月28日、阪神甲子園球場で行われた日本生命セ・パ交流戦の阪神対北海道日本ハム第3回戦に、八戸西高校45期の福島蓮投手が先発しました。初回に先制を許したものの、二回以降は長打を許さず、7回を5安打1失点、7奪三振で投げ切り、チームの4対2の勝利に貢献しました。',
+      '福島投手にとって甲子園は、2021年春のセンバツで八戸西高校のエースとして立った特別な場所です。当時は21世紀枠で出場し、具志川商業との初戦で悔しい敗戦を経験しました。5年後、プロのユニフォームで戻った同じマウンドでつかんだ勝利は、本人にとっても母校にとっても大きな節目となりました。',
+      '2021年育成ドラフト1位で日本ハムに入団し、支配下登録を経て一軍の先発マウンドへ。背番号も45となった今季、聖地で示した堂々の投球は、現役部員やOBにとって大きな励みです。八戸西高校野球部OB会は、福島蓮投手のさらなる飛躍を心から応援しています。'
+    ],
+    sources: [
+      { label: 'スポーツナビ 試合出場成績', url: 'https://baseball.yahoo.co.jp/npb/game/2021038925/stats' },
+      { label: 'パ・リーグ.com 試合記事', url: 'https://pacificleague.com/news/2026/5/83095' },
+      { label: '日刊スポーツ 甲子園初勝利記事', url: 'https://www.nikkansports.com/baseball/news/202605280001851.html' },
+      { label: '北海道日本ハムファイターズ 選手名鑑', url: 'https://media.fighters.co.jp/player/45/' }
     ]
   };
 
@@ -542,4 +585,3 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
     return trimmed.replace(/https?:\/\/(?:www\.)?youtube\.com/gi, `https://${this.YOUTUBE_EMBED_HOST}`);
   }
 }
-
