@@ -71,5 +71,209 @@ body {
   animation: fadeInUp 0.6s ease-out forwards;
 }
 
+.koshien-poster-stage {
+  opacity: 0;
+  perspective: 1200px;
+  transform: translateY(28px) scale(0.96) rotateX(6deg);
+  animation: koshienPosterReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+}
 
+.rare-card-stage {
+  position: relative;
+}
 
+.koshien-poster-frame {
+  position: relative;
+  max-width: min(380px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #f8f8f7;
+  box-shadow: 0 22px 60px rgba(0, 45, 98, 0.22), 0 8px 22px rgba(0, 0, 0, 0.12);
+  transform-origin: center center;
+}
+
+.rare-card-frame {
+  padding: 7px;
+  border: 1px solid rgba(238, 204, 120, 0.75);
+  background:
+    linear-gradient(#071d3a, #071d3a) padding-box,
+    conic-gradient(from 135deg, #fff6c8, #2b7fc2, #f1efe4, #b31b1b, #fff6c8, #0b376b, #fff6c8) border-box;
+  box-shadow:
+    0 26px 70px rgba(0, 45, 98, 0.26),
+    0 8px 28px rgba(0, 0, 0, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.42);
+  isolation: isolate;
+}
+
+.koshien-poster-frame::before {
+  content: "";
+  position: absolute;
+  inset: 13px;
+  z-index: 5;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  pointer-events: none;
+}
+
+.koshien-poster-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 5px;
+  transform: scale(1.01);
+}
+
+.rare-card-foil {
+  position: absolute;
+  inset: 7px;
+  z-index: 2;
+  border-radius: 5px;
+  background:
+    linear-gradient(125deg, transparent 8%, rgba(255, 255, 255, 0.42) 16%, transparent 25%),
+    linear-gradient(35deg, rgba(28, 91, 169, 0.16), transparent 36%, rgba(255, 228, 140, 0.2) 58%, transparent 74%),
+    conic-gradient(from 180deg at 55% 42%, rgba(255, 255, 255, 0), rgba(137, 208, 255, 0.22), rgba(255, 237, 166, 0.28), rgba(255, 255, 255, 0), rgba(66, 126, 206, 0.18), rgba(255, 255, 255, 0));
+  mix-blend-mode: screen;
+  opacity: 0.68;
+  pointer-events: none;
+  animation: rareCardFoil 6.4s ease-in-out 0.6s infinite;
+}
+
+.rare-card-grain {
+  position: absolute;
+  inset: 7px;
+  z-index: 3;
+  border-radius: 5px;
+  background-image:
+    radial-gradient(circle at 18% 24%, rgba(255, 255, 255, 0.46) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 78% 16%, rgba(255, 232, 138, 0.38) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 68% 70%, rgba(137, 208, 255, 0.28) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 32% 82%, rgba(255, 255, 255, 0.32) 0 1px, transparent 1.5px);
+  background-size: 44px 44px, 58px 58px, 52px 52px, 38px 38px;
+  opacity: 0.72;
+  pointer-events: none;
+  animation: rareCardSparkle 5.8s steps(2, end) infinite;
+}
+
+.koshien-poster-sheen {
+  position: absolute;
+  inset: -35%;
+  z-index: 4;
+  background: linear-gradient(115deg, transparent 36%, rgba(255, 255, 255, 0.46) 48%, transparent 60%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  transform: translateX(-120%) rotate(8deg);
+  animation: koshienPosterSheen 4.6s ease-in-out 1.2s infinite;
+}
+
+.rare-card-stars {
+  position: absolute;
+  top: 24px;
+  right: 18px;
+  z-index: 6;
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.rare-card-stars span {
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(135deg, #fff8d2, #efc35a 45%, #ffffff 58%, #a36b12);
+  clip-path: polygon(50% 0, 62% 35%, 100% 35%, 68% 56%, 80% 100%, 50% 72%, 20% 100%, 32% 56%, 0 35%, 38% 35%);
+  filter: drop-shadow(0 0 4px rgba(255, 230, 142, 0.9));
+  animation: rareCardStarPulse 2.8s ease-in-out infinite;
+}
+
+.rare-card-stars span:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.rare-card-stars span:nth-child(3) {
+  animation-delay: 0.36s;
+}
+
+.rare-card-stars span:nth-child(4) {
+  animation-delay: 0.54s;
+}
+
+.rare-card-stars span:nth-child(5) {
+  animation-delay: 0.72s;
+}
+
+.koshien-poster-badge,
+.rare-card-badge {
+  display: none !important;
+}
+
+@keyframes koshienPosterReveal {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0);
+  }
+}
+
+@keyframes koshienPosterFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotateZ(-0.6deg);
+  }
+  50% {
+    transform: translateY(-10px) rotateZ(0.6deg);
+  }
+}
+
+@keyframes koshienPosterSheen {
+  0%,
+  45% {
+    transform: translateX(-120%) rotate(8deg);
+  }
+  70%,
+  100% {
+    transform: translateX(120%) rotate(8deg);
+  }
+}
+
+@keyframes rareCardFoil {
+  0%,
+  100% {
+    filter: hue-rotate(0deg) saturate(1.05);
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    filter: hue-rotate(16deg) saturate(1.35);
+    transform: translate3d(1.5%, -1%, 0);
+  }
+}
+
+@keyframes rareCardSparkle {
+  0%,
+  100% {
+    opacity: 0.44;
+  }
+  50% {
+    opacity: 0.86;
+  }
+}
+
+@keyframes rareCardStarPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .koshien-poster-stage,
+  .koshien-poster-frame,
+  .koshien-poster-sheen,
+  .rare-card-foil,
+  .rare-card-grain,
+  .rare-card-stars span {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
