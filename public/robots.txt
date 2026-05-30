@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # サイトマップの場所
-Sitemap: https://hachinishibaseball-ob.com/sitemap.xml
+Sitemap: https://hachinohenishibaseball.com/sitemap.xml
 
 # 検索エンジンにインデックスさせたいページ
 Allow: /
@@ -12,9 +12,9 @@ Allow: /match-results
 Allow: /support
 Allow: /contact
 Allow: /activity/
+Allow: /assets/
 
 # 検索エンジンにインデックスさせたくないディレクトリ
-Disallow: /assets/
 Disallow: /*.json$
 Disallow: /api/
 

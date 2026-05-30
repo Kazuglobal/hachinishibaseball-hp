@@ -128,7 +128,7 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
       title: '守備キャッチ | 八戸西高校 野球部OB会',
       description: '60秒間でフライボールをキャッチ！連続キャッチでコンボボーナス獲得！',
       keywords: '野球ゲーム,守備,キャッチ,ミニゲーム',
-      url: 'https://hachinishibaseball-ob.com/game/catch'
+      url: 'https://hachinohenishibaseball.com/game/catch'
     });
     this.highScore.set(this.gameScoreService.getHighScore('catch'));
     if (this.isBrowser) {

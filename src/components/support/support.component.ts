@@ -91,7 +91,7 @@ export class SupportComponent implements OnInit, AfterViewInit {
             title: 'ご支援のお願い | 八戸西高校 | 八戸西高等学校',
             description: '八戸西高校（八戸西高等学校）野球部OB会へのご支援をお願いします。現役チームへの支援、OB会への参加、寄付など、様々な形でご支援いただけます。八戸西高校野球部の活動を応援してください。',
             keywords: '八戸西高校,八戸西高等学校,八戸西高校野球部,野球部,OB会,支援,寄付,現役チーム支援,OB会参加,八戸西高校OB会,八戸西高校野球部支援',
-            url: 'https://hachinishibaseball-ob.com/support'
+            url: 'https://hachinohenishibaseball.com/support'
           });
 
     // ルーティング変更時にフラグメントを処理

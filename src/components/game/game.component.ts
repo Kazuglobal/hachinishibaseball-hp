@@ -49,7 +49,7 @@ export class GameComponent implements OnInit, OnDestroy {
       title: 'ホームラン王チャレンジ | 八戸西高校 野球部OB会',
       description: 'タイミングを合わせてホームランを打とう！10球勝負でハイスコアを目指す野球ゲーム。',
       keywords: '野球ゲーム,ホームラン,バッティングゲーム,八戸西高校',
-      url: 'https://hachinishibaseball-ob.com/game'
+      url: 'https://hachinohenishibaseball.com/game'
     });
     
     // ハイスコアを読み込み
