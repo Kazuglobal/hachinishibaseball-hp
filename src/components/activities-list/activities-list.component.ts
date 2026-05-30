@@ -206,7 +206,7 @@ export class ActivitiesListComponent implements OnInit {
       title: '活動報告一覧 | 八戸西高校 | 八戸西高等学校',
       description: '八戸西高校（八戸西高等学校）野球部の活動報告一覧。練習試合、遠征、イベント、OB会活動など、八戸西高校野球部の最新の活動情報を掲載しています。',
       keywords: '八戸西高校,八戸西高等学校,八戸西高校野球部,活動報告,活動報告一覧,練習試合,遠征,イベント,OB会活動,八戸西高校野球部活動',
-      url: 'https://hachinishibaseball-ob.com/activities'
+      url: 'https://hachinohenishibaseball.com/activities'
     });
     
     // 日付順にソート（最新が最初）

@@ -71,7 +71,7 @@ export class GameCenterComponent implements OnInit {
       title: 'ゲームセンター | 八戸西高校 野球部OB会',
       description: '八戸西高校野球部OB会公式サイトの野球ミニゲーム集。ホームランチャレンジ、ストライクピッチング、守備キャッチの3種類のゲームで遊ぼう！',
       keywords: '八戸西高校,野球部,OB会,野球ゲーム,ミニゲーム,ホームラン,ピッチング',
-      url: 'https://hachinishibaseball-ob.com/game'
+      url: 'https://hachinohenishibaseball.com/game'
     });
   }
 

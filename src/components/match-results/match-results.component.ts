@@ -42,7 +42,7 @@ export class MatchResultsComponent implements OnInit {
       title: '試合結果',
       description: '八戸西高等学校野球部の試合結果を掲載。公式戦（室岡杯、春季県大会、甲子園予選、秋季リーグ戦、秋季県大会、1年生大会）と練習試合の結果を詳しく紹介しています。',
       keywords: '八戸西高等学校,野球部,試合結果,公式戦,練習試合,甲子園予選,春季県大会,秋季県大会',
-      url: 'https://hachinishibaseball-ob.com/match-results'
+      url: 'https://hachinohenishibaseball.com/match-results'
     });
 
     // 初期表示を有効にする

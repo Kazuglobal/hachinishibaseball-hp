@@ -222,7 +222,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
       title: 'ストライクピッチング | 八戸西高校 野球部OB会',
       description: '指定されたコースに投げ分けろ！精密なコントロールで高得点を狙え！',
       keywords: '野球ゲーム,ピッチング,投球,ミニゲーム',
-      url: 'https://hachinishibaseball-ob.com/game/pitching'
+      url: 'https://hachinohenishibaseball.com/game/pitching'
     });
     this.highScore.set(this.gameScoreService.getHighScore('pitching'));
     if (this.isBrowser) {

@@ -22,7 +22,7 @@ export class SEOService {
   private document = inject(DOCUMENT);
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   
-  private readonly baseUrl = 'https://hachinishibaseball-ob.com';
+  private readonly baseUrl = 'https://hachinohenishibaseball.com';
   private readonly defaultImage = `${this.baseUrl}/assets/og-image.jpg`;
   private readonly siteName = '八戸西高等学校野球OB会';
 

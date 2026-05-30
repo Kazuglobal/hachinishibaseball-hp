@@ -218,7 +218,7 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
       title: 'ホームランチャレンジ | 八戸西高校 野球部OB会',
       description: 'タイミングを合わせてホームランを打て！10球中何本ホームランを打てるかチャレンジ！',
       keywords: '野球ゲーム,ホームラン,バッティング,ミニゲーム',
-      url: 'https://hachinishibaseball-ob.com/game/homerun'
+      url: 'https://hachinohenishibaseball.com/game/homerun'
     });
     this.highScore.set(this.gameScoreService.getHighScore('homerun'));
     if (this.isBrowser) {
