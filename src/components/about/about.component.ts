@@ -72,26 +72,12 @@ export class AboutComponent implements OnInit, AfterViewInit {
       career: ['三菱製紙八戸クラブ', '北海道日本ハムファイターズ', '平成３０年にコーチ就任']
     },
     {
-      name: '根深　周平',
-      position: '野手コーチ',
-      period: '',
-      education: ['東奥義塾高校', '仙台大学'],
-      career: ['弘前アレッズ　主将', '令和２年にコーチ就任']
-    },
-    {
       name: '齋藤　昌宏',
       position: '部長',
       period: '24期',
       education: ['八戸西高校', '日本体育大学'],
       career: ['平成２３年に八戸西高校監督就任', '三本木農業高校での監督生活を経て八戸西高校に再任']
     },
-    {
-      name: '宮重　太一',
-      position: '副部長　捕手',
-      period: '',
-      education: ['八戸高校（平成６年甲子園出場）', '東京学芸大学'],
-      career: []
-    }
   ];
 
   staffVisible = signal(false);
