@@ -1,5 +1,29 @@
 # コードレビュー監査レポート（2026-07-05）
 
+## 対応状況（2026-07-08 追記）
+
+指摘36件のうち35件を修正済み。#16（ダミー画像の差し替え）のみユーザー判断によりスキップ。
+本番ビルド（`strict: true` + `strictTemplates: true`、警告0件）・Playwright E2E全10件・
+実ブラウザでのルート/フォーム/ゲーム動作確認まで完了。
+
+| # | 状態 | 対応内容 |
+|---|---|---|
+| 1 | ✅ 修正 | `withHashLocation()` を撤去しpathベースルーティングに変更。ヘッダー実測で `/about`・`/support` 等が実URLで正しく表示されることを実証 |
+| 2 | ✅ 修正 | catch-flyの着地判定を再設計。着地目標Yを`playerY-30`基準の分布に変更し、影・着地目標も`ball.y`追従に統一。シミュレーションでY軸単体キャッチ率70%を確認 |
+| 3 | ✅ 修正 | 5秒フォールバック・GIFエラー時タイマーをID管理し`ngOnDestroy`でクリア。destroy時に`enableBodyScroll(true)`も追加。scrollY退避・復元も実装（#30と統合） |
+| 4-5 | ✅ 修正 | `isAnimating`フラグでrAFループの多重起動を防止。`nextPitch()`は初回のみループ起動。結果表示の2段`setTimeout`をID管理しdestroyでクリア |
+| 6 | ✅ 修正 | プレースホルダーGA4スクリプトを削除（実測定ID未定のため） |
+| 7 | ✅ 修正 | Tailwindをangular.jsonの`styles`経由でビルド統合。CDN script・importmap・console握りつぶしパッチ・旧`index.css`を全削除。d3もnpm化しバンドル |
+| 8 | ✅ 修正 | support.component.tsのハードコードGAS URLを削除し`environment.gasWebAppUrl`に統一（ユーザー確認済み） |
+| 9 | ✅ 修正 | `@ViewChild`をsignalベースの`viewChild()`+`effect()`に変更。resizeリスナーも named関数化して`ngOnDestroy`で解除。実ブラウザでバー28件描画を確認 |
+| 10 | ✅ 修正 | participation-form.spec.tsの3重複を解消。ロケータの曖昧性（strict mode violation）・ローディング表示のタイミング起因の不安定性も修正し、全10件パス |
+| 11-24 | ✅ 修正 | contact二重読み・support購読リーク・カルーセルタイマーリーク・iframeメモ化・href="#"リンク・alumni-voiceエラー処理/XSSエスケープ・side-ui pointer-events・ゲーム二重起動ガード・homerunコンボリセット/スペースキー・GAS無害化（3スクリプト共通）・パンくずオフセット、全て修正し実測で確認 |
+| 25-36 | ✅ 修正 | optimalPowerクランプ、game-scoreバリデーション+保存済み判定改善、構造化データクリーンアップ+uploadDate修正、scrollService更新、カルーセルオフセット計算修正、d3バンドル化、二重購読解消、console握りつぶし削除（#7と統合）、未使用インポート・GameResultComponent・tsconfig残骸等のデッドコード削除、`tsconfig.json`に`strict`+`strictTemplates`を有効化（型/テンプレートエラー計12件を修正、うち2件はNgOptimizedImageの`priority`+`loading`競合という実行時エラーの発見・修正を伴った） |
+| 35 | ⏭ 見送り | 活動報告データの3ファイル重複は、実際には全17件のIDが完全一致し、`works.component`は`additionalImages`を描画しないため実害なし（当初报告の「食い違い」は誤検知）と確認。JSON集約への大規模リファクタは高リスク・低実益と判断し見送り |
+| 16 | ⏭ 見送り | picsum.photosダミー画像の差し替えはユーザー判断でスキップ |
+
+
+
 対象: リポジトリ全体（Angular 20 SPA / GAS連携 / Stripe / Playwright E2E / Vercel）
 手法: 全ソース読解 + 本番ビルド実行 + ヘッドレスブラウザでのルーティング実証 + E2Eテスト実行
 

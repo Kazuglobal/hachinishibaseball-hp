@@ -22,12 +22,13 @@
           class="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 block">
           <!-- 画像 -->
           <div class="relative overflow-hidden aspect-[4/3]">
-            <img 
-              [ngSrc]="activity.image" 
+            <img
+              [ngSrc]="activity.image"
               [alt]="activity.title"
               width="800"
               height="600"
-              loading="lazy"
+              [priority]="i < 3"
+              [loading]="i < 3 ? undefined : 'lazy'"
               decoding="async"
               class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
             <div class="absolute top-4 left-4">

@@ -29,6 +29,21 @@ function sanitizeInput(input, maxLength) {
 }
 
 /**
+ * スプレッドシートのセルが数式として解釈されないようにするヘルパー関数
+ * 先頭が =, +, -, @ の場合、Google Sheetsが数式と誤認しセルインジェクションが発生し得るため、
+ * 先頭にシングルクォートを付与して文字列として扱わせる
+ * @param {string} value - 無害化する文字列
+ * @return {string} 無害化された文字列
+ */
+function sanitizeForSheet(value) {
+  const str = String(value || '');
+  if (/^[=+\-@]/.test(str)) {
+    return "'" + str;
+  }
+  return str;
+}
+
+/**
  * メールアドレスの形式を検証するヘルパー関数
  * @param {string} email - 検証するメールアドレス
  * @return {boolean} 有効なメールアドレスの場合true
@@ -203,13 +218,13 @@ function doPost(e) {
       sheet.getRange('A1:F1').setFontWeight('bold');
     }
     
-    // データを追加
+    // データを追加（数式インジェクション対策として無害化してから書き込む）
     sheet.appendRow([
-      data.name || '',
-      data.email || '',
-      data.phone || '',
-      data.subject || '',
-      data.message || '',
+      sanitizeForSheet(data.name),
+      sanitizeForSheet(data.email),
+      sanitizeForSheet(data.phone),
+      sanitizeForSheet(data.subject),
+      sanitizeForSheet(data.message),
       new Date().toLocaleString('ja-JP')
     ]);
     
@@ -249,10 +264,11 @@ function doPost(e) {
     })).setMimeType(ContentService.MimeType.JSON);
     
   } catch (error) {
+    // 内部エラーの詳細はログにのみ残し、クライアントには漏らさない
     Logger.log('ERROR: ' + error.toString());
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
-      error: error.toString()
+      error: '送信処理中にエラーが発生しました。しばらくしてから再度お試しください。'
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }

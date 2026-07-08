@@ -58,10 +58,7 @@ export class HomeComponent implements OnInit {
   galleryVisible = signal(false);
   buildingHouseVisible = signal(false);
   otherServiceVisible = signal(false);
-  eventVisible = signal(false);
-  aboutUsVisible = signal(false);
   blogVisible = signal(false);
-  contactVisible = signal(false);
 
   // Parallax effect for Brand Story
   parallaxImage1Transform = computed(() => `translateY(${this.scrollService.scrollY() * 0.1}px)`);

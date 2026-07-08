@@ -3,7 +3,6 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
-import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { NgOptimizedImage } from '@angular/common';
 import { SEOService } from '../../services/seo.service';
@@ -49,7 +48,6 @@ interface AlumniArticle {
     RouterLink,
     SectionTitleComponent,
     BackButtonComponent,
-    ObserveVisibilityDirective,
     NgOptimizedImage
   ],
   templateUrl: './alumni-activities.component.html',
@@ -62,6 +60,7 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
   private isBrowser: boolean;
   private readonly YOUTUBE_EMBED_HOST = 'www.youtube.com';
   private intervalId: any;
+  private resumeTimeoutId: any;
   private resizeListener?: () => void;
   private touchStartX = 0;
   private touchEndX = 0;
@@ -82,9 +81,15 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
 
   carouselTransform = computed(() => {
     const cardsPerView = this.cardsPerView();
-    const maxIndex = Math.max(0, this.alumniCards.length - Math.floor(cardsPerView));
-    const clampedIndex = Math.min(this.cardIndex(), maxIndex);
-    return `translateX(-${clampedIndex * (100 / cardsPerView)}%)`;
+    // cardsPerViewが小数（モバイル: 1.2）の場合、整数インデックスでクランプすると
+    // トラック全幅を超えてtranslateしてしまい右側に空白ができるため、
+    // 実際のトラック幅を基準にパーセンテージ単位でクランプする
+    const perCardPercent = 100 / cardsPerView;
+    const trackWidthPercent = this.alumniCards.length * perCardPercent;
+    const maxTranslatePercent = Math.max(0, trackWidthPercent - 100);
+    const desiredTranslatePercent = this.cardIndex() * perCardPercent;
+    const clampedTranslatePercent = Math.min(desiredTranslatePercent, maxTranslatePercent);
+    return `translateX(-${clampedTranslatePercent}%)`;
   });
 
   // モバイル判定
@@ -259,7 +264,8 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
         name: `福島蓮選手の活躍動画 - ${this.fukushimaInfo.name}`,
         description: this.fukushimaInfo.description,
         thumbnailUrl: this.getThumbnailUrl(videoId, 'high'),
-        uploadDate: new Date().toISOString(),
+        // 閲覧日時ではなく、実際の出来事の日付（fukushimaArticle.dateと同一）を使用
+        uploadDate: '2026-05-28',
         contentUrl: this.getWatchUrl(this.fukushimaInfo.mainVideo)
       });
     }
@@ -277,6 +283,10 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.stopAutoSlide();
+    if (this.resumeTimeoutId) {
+      clearTimeout(this.resumeTimeoutId);
+      this.resumeTimeoutId = null;
+    }
     if (this.isBrowser && this.resizeListener) {
       window.removeEventListener('resize', this.resizeListener);
     }
@@ -320,7 +330,10 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
       this.touchEndX = event.changedTouches[0].clientX;
       this.handleSwipe();
       this.isTouching = false;
-      setTimeout(() => {
+      if (this.resumeTimeoutId) {
+        clearTimeout(this.resumeTimeoutId);
+      }
+      this.resumeTimeoutId = setTimeout(() => {
         if (!this.isTouching) {
           this.startAutoSlide();
         }
@@ -366,7 +379,10 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
   goToCard(index: number): void {
     this.cardIndex.set(index);
     this.stopAutoSlide();
-    setTimeout(() => {
+    if (this.resumeTimeoutId) {
+      clearTimeout(this.resumeTimeoutId);
+    }
+    this.resumeTimeoutId = setTimeout(() => {
       if (this.isBrowser && this.windowWidth() < 768) {
         this.startAutoSlide();
       }
@@ -481,7 +497,24 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
     return `https://www.youtube.com/watch?v=${videoId}`;
   }
 
+  // bypassSecurityTrustResourceUrlは呼ぶたびに新しいオブジェクトを返すため、
+  // テンプレートバインディングが毎回の変更検知で「変更あり」と判定されiframeが再読み込みされてしまう。
+  // 同一入力に対しては同じSafeResourceUrlインスタンスを返すようキャッシュする。
+  private safeUrlCache = new Map<string, SafeResourceUrl>();
+
   getSafeUrl(url: string): SafeResourceUrl {
+    const cacheKey = `${this.isMobile()}|${url}`;
+    const cached = this.safeUrlCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const result = this.computeSafeUrl(url);
+    this.safeUrlCache.set(cacheKey, result);
+    return result;
+  }
+
+  private computeSafeUrl(url: string): SafeResourceUrl {
     // モバイルではiframeを使用しないため、空のURLを返す
     if (this.isMobile()) {
       return this.sanitizer.bypassSecurityTrustResourceUrl('');

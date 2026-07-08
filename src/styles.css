@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Custom styles */
 body {
   background-color: #F8F8F7;
@@ -69,6 +73,126 @@ body {
 
 .animate-fade-in-up {
   animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* 3D Transform Extensions（tilt.directive / match-results / strike-pitchingのカード演出用） */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.perspective-500 {
+  perspective: 500px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+/* Tailwindの.transformユーティリティを拡張し、3D回転・Z軸移動に対応させる */
+.transform {
+  transform: translate3d(var(--tw-translate-x, 0), var(--tw-translate-y, 0), var(--tw-translate-z, 0)) rotate(var(--tw-rotate, 0)) skewX(var(--tw-skew-x, 0)) skewY(var(--tw-skew-y, 0)) scaleX(var(--tw-scale-x, 1)) scaleY(var(--tw-scale-y, 1)) rotateX(var(--tw-rotate-x, 0)) rotateY(var(--tw-rotate-y, 0)) !important;
+}
+
+.rotate-x-10 {
+  --tw-rotate-x: 10deg;
+}
+
+.rotate-x-2 {
+  --tw-rotate-x: 2deg;
+}
+
+.rotate-y-2 {
+  --tw-rotate-y: 2deg;
+}
+
+.hover\:rotate-x-0:hover {
+  --tw-rotate-x: 0deg;
+}
+
+.hover\:rotate-x-2:hover {
+  --tw-rotate-x: 2deg;
+}
+
+.hover\:rotate-y-2:hover {
+  --tw-rotate-y: 2deg;
+}
+
+.group-hover\:translate-z-10:hover {
+  --tw-translate-z: 10px;
+}
+
+.group-hover\:translate-z-20:hover {
+  --tw-translate-z: 20px;
+}
+
+.group-hover\:translate-z-5:hover {
+  --tw-translate-z: 5px;
+}
+
+.translate-z-10 {
+  --tw-translate-z: 10px;
+}
+
+.translate-z-20 {
+  --tw-translate-z: 20px;
+}
+
+/* Glare Effect Styles（tilt.directive.ts用） */
+.js-tilt-glare {
+  border-radius: inherit;
+}
+
+.js-tilt-glare-inner {
+  box-shadow: 0 0 50px 2px rgba(255, 255, 255, 0.3);
+}
+
+/* Spin Slow Animation */
+@keyframes spinSlow {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 60s linear infinite;
+}
+
+/* Pulse Slow Animation */
+@keyframes pulseSlow {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.1);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulseSlow 8s ease-in-out infinite;
+}
+
+/* Bounce Slow Animation */
+@keyframes bounceSlow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounceSlow 3s ease-in-out infinite;
+}
+
+/* Delay Utilities */
+.delay-1000 {
+  animation-delay: 1000ms;
 }
 
 .koshien-poster-stage {
@@ -213,8 +337,7 @@ body {
 }
 
 @keyframes koshienPosterFloat {
-  0%,
-  100% {
+  0%, 100% {
     transform: translateY(0) rotateZ(-0.6deg);
   }
   50% {
@@ -223,19 +346,16 @@ body {
 }
 
 @keyframes koshienPosterSheen {
-  0%,
-  45% {
+  0%, 45% {
     transform: translateX(-120%) rotate(8deg);
   }
-  70%,
-  100% {
+  70%, 100% {
     transform: translateX(120%) rotate(8deg);
   }
 }
 
 @keyframes rareCardFoil {
-  0%,
-  100% {
+  0%, 100% {
     filter: hue-rotate(0deg) saturate(1.05);
     transform: translate3d(0, 0, 0);
   }
@@ -246,8 +366,7 @@ body {
 }
 
 @keyframes rareCardSparkle {
-  0%,
-  100% {
+  0%, 100% {
     opacity: 0.44;
   }
   50% {
@@ -256,8 +375,7 @@ body {
 }
 
 @keyframes rareCardStarPulse {
-  0%,
-  100% {
+  0%, 100% {
     transform: scale(1);
   }
   50% {

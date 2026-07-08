@@ -20,6 +20,9 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   showSupportPopup = signal(false); // ご支援のお願いポップアップの表示状態
   private gifTimeout?: number;
   private popupTimeout?: number;
+  private fallbackTimeout?: number;
+  private gifErrorPopupTimeout?: number;
+  private savedScrollY = 0;
   private isBrowser: boolean;
 
   constructor(
@@ -37,12 +40,11 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
     
     // フォールバック: 一定時間後にポップアップを表示（GIFが読み込まれない場合の対策）
     if (this.isBrowser) {
-      setTimeout(() => {
+      this.fallbackTimeout = window.setTimeout(() => {
         if (!this.showSupportPopup() && !this.showGif()) {
           const popupClosed = typeof localStorage !== 'undefined' ? localStorage.getItem('support-popup-closed') : null;
           const today = new Date().toDateString();
           if (popupClosed !== today) {
-            console.log('Fallback: Showing popup after timeout');
             this.showSupportPopup.set(true);
             this.enableBodyScroll(false);
             this.cdr.markForCheck();
@@ -121,15 +123,11 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
         // ローカルストレージをチェック（今日閉じた場合は再表示しない）
         const popupClosed = typeof localStorage !== 'undefined' ? localStorage.getItem('support-popup-closed') : null;
         const today = new Date().toDateString();
-        console.log('Animation ended. Popup closed:', popupClosed, 'Today:', today);
         if (popupClosed !== today) {
-          console.log('Showing support popup');
           this.showSupportPopup.set(true);
           // bodyのスクロールを無効化（ポップアップ表示中）
           this.enableBodyScroll(false);
           this.cdr.markForCheck();
-        } else {
-          console.log('Popup already closed today, skipping');
         }
       }, 500); // 500ms遅延でスムーズに表示
     }, 3000); // 3秒後に静止画に切り替え
@@ -151,12 +149,16 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.isBrowser && typeof document !== 'undefined') {
       if (enable) {
         document.body.style.overflow = '';
-        // モバイルでのスクロール位置を保持
         document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, this.savedScrollY);
       } else {
+        this.savedScrollY = window.scrollY;
         document.body.style.overflow = 'hidden';
         // モバイルでのスクロール位置を保持
         document.body.style.position = 'fixed';
+        document.body.style.top = `-${this.savedScrollY}px`;
         document.body.style.width = '100%';
       }
     }
@@ -170,24 +172,30 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.popupTimeout) {
       clearTimeout(this.popupTimeout);
     }
+    if (this.fallbackTimeout) {
+      clearTimeout(this.fallbackTimeout);
+    }
+    if (this.gifErrorPopupTimeout) {
+      clearTimeout(this.gifErrorPopupTimeout);
+    }
+    // ポップアップ表示中に破棄された場合、bodyのスクロールロックを解除する
+    if (this.showSupportPopup()) {
+      this.enableBodyScroll(true);
+    }
   }
 
   onGifError(event: any) {
     // GIFの読み込みエラー時は静止画に切り替え
-    console.error('GIF error:', event);
-    console.error('GIF path:', this.gifSrc());
     this.gifError.set(true);
     this.showGif.set(false);
     this.cdr.markForCheck();
     // エラー時もポップアップを表示
     if (this.isBrowser) {
-      setTimeout(() => {
+      this.gifErrorPopupTimeout = window.setTimeout(() => {
         const popupClosed = typeof localStorage !== 'undefined' ? localStorage.getItem('support-popup-closed') : null;
         const today = new Date().toDateString();
-        console.log('GIF error. Popup closed:', popupClosed, 'Today:', today);
         // 今日閉じた場合は再表示しない
         if (popupClosed !== today) {
-          console.log('Showing support popup after GIF error');
           this.showSupportPopup.set(true);
           // bodyのスクロールを無効化（ポップアップ表示中）
           this.enableBodyScroll(false);

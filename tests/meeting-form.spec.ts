@@ -10,7 +10,7 @@ test.describe('総会出席フォーム', () => {
 
   test('フォームが正しく表示される', async ({ page }) => {
     // フォームの要素が表示されることを確認
-    await expect(page.locator('h1')).toContainText('八戸西高等学校野球部OB会');
+    await expect(page.locator('h1.sr-only')).toContainText('八戸西高等学校野球部OB会');
     await expect(page.getByText('2026年1月2日（金）に野球部OB会総会が開催されます')).toBeVisible();
 
     // フォームフィールドの存在を確認
@@ -40,8 +40,9 @@ test.describe('総会出席フォーム', () => {
     await page.check('input[name="attendance"][value="出席"]');
     await page.fill('#remarks', 'よろしくお願いします');
 
-    // GAS API呼び出しをモック
+    // GAS API呼び出しをモック（ローディング表示を確認できるよう、応答に少し遅延を入れる）
     await page.route('**/script.google.com/macros/s/**', async (route) => {
+      await new Promise(resolve => setTimeout(resolve, 300));
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -56,7 +57,7 @@ test.describe('総会出席フォーム', () => {
     await expect(page.getByText('送信中...')).toBeVisible();
 
     // 成功メッセージが表示されることを確認
-    await expect(page.getByText('ありがとうございました！')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'ありがとうございました！', exact: true })).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('出欠のご回答を承りました。ご参加をお待ちしております。')).toBeVisible();
 
     // 「別の回答を送信する」ボタンが表示されることを確認
@@ -84,7 +85,7 @@ test.describe('総会出席フォーム', () => {
     await page.click('button[type="submit"]');
 
     // 成功メッセージが表示されることを確認
-    await expect(page.getByText('ありがとうございました！')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'ありがとうございました！', exact: true })).toBeVisible({ timeout: 10000 });
   });
 
   test('電話番号なしでも送信できる', async ({ page }) => {
@@ -107,7 +108,7 @@ test.describe('総会出席フォーム', () => {
     await page.click('button[type="submit"]');
 
     // 成功メッセージが表示されることを確認
-    await expect(page.getByText('ありがとうございました！')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'ありがとうございました！', exact: true })).toBeVisible({ timeout: 10000 });
   });
 
   test('備考欄なしでも送信できる', async ({ page }) => {
@@ -130,7 +131,7 @@ test.describe('総会出席フォーム', () => {
     await page.click('button[type="submit"]');
 
     // 成功メッセージが表示されることを確認
-    await expect(page.getByText('ありがとうございました！')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'ありがとうございました！', exact: true })).toBeVisible({ timeout: 10000 });
   });
 
   test('送信エラー時にエラーメッセージが表示される', async ({ page }) => {
@@ -173,7 +174,7 @@ test.describe('総会出席フォーム', () => {
     await page.click('button[type="submit"]');
 
     // 成功メッセージが表示されるまで待機
-    await expect(page.getByText('ありがとうございました！')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'ありがとうございました！', exact: true })).toBeVisible({ timeout: 10000 });
 
     // 「別の回答を送信する」ボタンをクリック
     await page.click('button:has-text("別の回答を送信する")');

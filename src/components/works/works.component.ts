@@ -1,13 +1,12 @@
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, signal, computed, PLATFORM_ID, Inject, ChangeDetectorRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
 import { NgOptimizedImage, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-works',
   templateUrl: './works.component.html',
-  imports: [SectionTitleComponent, ObserveVisibilityDirective, NgOptimizedImage, RouterLink],
+  imports: [ObserveVisibilityDirective, NgOptimizedImage, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorksComponent implements OnInit, OnDestroy {
@@ -16,6 +15,7 @@ export class WorksComponent implements OnInit, OnDestroy {
   windowWidth = signal(1024);
   private isBrowser: boolean;
   private intervalId: any;
+  private resumeTimeoutId: any;
   private resizeListener?: () => void;
   private touchStartX = 0;
   private touchEndX = 0;
@@ -85,6 +85,10 @@ export class WorksComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.stopAutoSlide();
+    if (this.resumeTimeoutId) {
+      clearTimeout(this.resumeTimeoutId);
+      this.resumeTimeoutId = null;
+    }
     if (this.isBrowser && this.resizeListener) {
       window.removeEventListener('resize', this.resizeListener);
     }
@@ -216,7 +220,10 @@ export class WorksComponent implements OnInit, OnDestroy {
       this.handleSwipe();
       this.isTouching = false;
       // タッチ操作後、少し遅延してから自動スライドを再開
-      setTimeout(() => {
+      if (this.resumeTimeoutId) {
+        clearTimeout(this.resumeTimeoutId);
+      }
+      this.resumeTimeoutId = setTimeout(() => {
         if (!this.isTouching) {
           this.startAutoSlide();
         }
@@ -257,11 +264,7 @@ export class WorksComponent implements OnInit, OnDestroy {
   goToPage(page: number): void {
     this.currentIndex.set(page);
     this.stopAutoSlide();
-    setTimeout(() => {
-      if (this.isBrowser && this.windowWidth() < 768) {
-        this.startAutoSlide();
-      }
-    }, 3000);
+    this.scheduleAutoSlideResume();
     this.cdr.markForCheck();
   }
 
@@ -269,17 +272,20 @@ export class WorksComponent implements OnInit, OnDestroy {
   handlePrev(): void {
     this.prev();
     this.stopAutoSlide();
-    setTimeout(() => {
-      if (this.isBrowser && this.windowWidth() < 768) {
-        this.startAutoSlide();
-      }
-    }, 3000);
+    this.scheduleAutoSlideResume();
   }
 
   handleNext(): void {
     this.next();
     this.stopAutoSlide();
-    setTimeout(() => {
+    this.scheduleAutoSlideResume();
+  }
+
+  private scheduleAutoSlideResume(): void {
+    if (this.resumeTimeoutId) {
+      clearTimeout(this.resumeTimeoutId);
+    }
+    this.resumeTimeoutId = setTimeout(() => {
       if (this.isBrowser && this.windowWidth() < 768) {
         this.startAutoSlide();
       }

@@ -31,6 +31,17 @@ export class ScrollService {
     this.updateValues();
   }
 
+  /**
+   * ドキュメント高さを再計測する
+   * ルート遷移でコンテンツの高さが変わっても、resize以外では自動更新されないため、
+   * ルーティング完了時などに明示的に呼び出す
+   */
+  refreshDocumentHeight(): void {
+    if (this.isBrowser) {
+      this.updateValues();
+    }
+  }
+
   private updateValues() {
     this.scrollY.set(window.scrollY);
     this.documentHeight.set(document.documentElement.scrollHeight);

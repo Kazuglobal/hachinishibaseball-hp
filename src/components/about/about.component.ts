@@ -1,22 +1,23 @@
-import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnInit, PLATFORM_ID, Inject, signal, inject } from '@angular/core';
-import { isPlatformBrowser, CommonModule, NgOptimizedImage } from '@angular/common';
+import { Component, ChangeDetectionStrategy, ElementRef, OnInit, OnDestroy, PLATFORM_ID, Inject, signal, inject, viewChild, effect } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
+import * as d3 from 'd3';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
 import { SEOService } from '../../services/seo.service';
 
-declare var d3: any;
-
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [CommonModule, SectionTitleComponent, ObserveVisibilityDirective, BackButtonComponent, NgOptimizedImage],
+  imports: [CommonModule, SectionTitleComponent, ObserveVisibilityDirective, BackButtonComponent],
   templateUrl: './about.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AboutComponent implements OnInit, AfterViewInit {
-  @ViewChild('barChartContainer', { static: true }) barChartContainer!: ElementRef;
-  
+export class AboutComponent implements OnInit, OnDestroy {
+  // *ngIfで出し入れされる要素のため、signalベースのviewChildクエリを使う
+  // （@ViewChild({static:true})は*ngIf内の要素を解決できず永久にundefinedになるため）
+  barChartContainer = viewChild<ElementRef<HTMLElement>>('barChartContainer');
+
   isVisible = signal(false);
   viewMode = signal<'chart' | 'table'>('chart');
 
@@ -94,9 +95,19 @@ export class AboutComponent implements OnInit, AfterViewInit {
 
   private isBrowser: boolean;
   private seoService = inject(SEOService);
+  private resizeHandler = () => this.renderChartIfVisible();
 
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
+
+    // グラフ表示に切り替わった、またはコンテナ要素が生成されたタイミングで再描画
+    effect(() => {
+      const container = this.barChartContainer();
+      const mode = this.viewMode();
+      if (this.isBrowser && container && mode === 'chart') {
+        this.createBarChart(container.nativeElement);
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -111,30 +122,37 @@ export class AboutComponent implements OnInit, AfterViewInit {
     // 初期表示を有効にする
     this.isVisible.set(true);
     this.staffVisible.set(true);
-  }
 
-  ngAfterViewInit(): void {
     if (this.isBrowser) {
-      this.createBarChart();
       // ウィンドウリサイズ時に再描画
-      window.addEventListener('resize', () => {
-        const host = this.barChartContainer.nativeElement as HTMLElement;
-        host.innerHTML = '';
-        this.createBarChart();
-      }, { passive: true });
+      window.addEventListener('resize', this.resizeHandler, { passive: true });
     }
   }
 
-  private createBarChart(): void {
+  ngOnDestroy(): void {
+    if (this.isBrowser) {
+      window.removeEventListener('resize', this.resizeHandler);
+    }
+  }
+
+  private renderChartIfVisible(): void {
+    const container = this.barChartContainer();
+    if (container && this.viewMode() === 'chart') {
+      this.createBarChart(container.nativeElement);
+    }
+  }
+
+  private createBarChart(hostElement: HTMLElement): void {
+    hostElement.innerHTML = '';
+
     const data = this.schoolData;
     const margin = { top: 20, right: 60, bottom: 30, left: 100 };
-    const container = this.barChartContainer.nativeElement as HTMLElement;
-    const containerWidth = Math.max(480, container.clientWidth);
+    const containerWidth = Math.max(480, hostElement.clientWidth);
     const width = containerWidth - margin.left - margin.right;
     const barHeight = 20;
     const height = (data.length * (barHeight + 5)) + margin.top + margin.bottom;
 
-    const svg = d3.select(this.barChartContainer.nativeElement)
+    const svg = d3.select(hostElement)
       .append("svg")
         .attr("width", '100%')
         .attr("height", height)
@@ -164,7 +182,7 @@ export class AboutComponent implements OnInit, AfterViewInit {
         .call(d3.axisBottom(x)
             .ticks(5)
             .tickSize(-gridHeight)
-            .tickFormat('')
+            .tickFormat(() => '')
         )
         .select(".domain").remove();
 
@@ -180,7 +198,7 @@ export class AboutComponent implements OnInit, AfterViewInit {
 
     bars.append("rect")
       .attr("class", "bar")
-      .attr("y", (d:any) => y(d.school))
+      .attr("y", (d:any) => y(d.school)!)
       .attr("height", y.bandwidth())
       .attr("x", 0)
       .attr("width", 0)
@@ -197,7 +215,7 @@ export class AboutComponent implements OnInit, AfterViewInit {
     // Bar labels
     bars.append("text")
       .attr("class", "label")
-      .attr("y", (d:any) => y(d.school) + y.bandwidth() / 2)
+      .attr("y", (d:any) => y(d.school)! + y.bandwidth() / 2)
       .attr("x", (d:any) => x(d.count) + 6)
       .attr("dy", ".35em")
       .style("fill", "#333")

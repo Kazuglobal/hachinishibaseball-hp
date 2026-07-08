@@ -31,6 +31,7 @@ export interface AlumniVoice {
 export class AlumniVoiceService {
   private alumniVoices = signal<AlumniVoice[]>([]);
   private isLoaded = signal<boolean>(false);
+  private loadError = signal<boolean>(false);
 
   constructor() {
     this.loadData();
@@ -44,14 +45,26 @@ export class AlumniVoiceService {
     try {
       // JSONファイルを直接インポートして読み込む
       const response = await fetch('/assets/data/alumni-voices.json');
+      if (!response.ok) {
+        throw new Error(`HTTPエラー: ${response.status}`);
+      }
       const data = await response.json();
       this.alumniVoices.set(data);
       this.isLoaded.set(true);
     } catch (error) {
       console.error('Failed to load alumni voices data:', error);
       this.alumniVoices.set([]);
+      this.loadError.set(true);
       this.isLoaded.set(true);
     }
+  }
+
+  /**
+   * データ読み込みに失敗したかどうかを取得
+   * @returns 読み込みエラー状態のシグナル
+   */
+  hasLoadError() {
+    return this.loadError;
   }
 
   /**
