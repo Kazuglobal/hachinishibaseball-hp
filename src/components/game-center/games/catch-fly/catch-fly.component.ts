@@ -111,6 +111,7 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
   // ゲームオーバー
   nickname = '';
   savedRank = signal(0);
+  scoreSaved = signal(false);
   highScore = signal(0);
 
   // サウンド
@@ -318,6 +319,9 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   startGame(): void {
+    // 連打による多重起動防止（gameLoop/spawnInterval/timerが上書きされ解除不能になるため）
+    if (this.gameState() === 'playing') return;
+
     this.gameState.set('playing');
     this.score.set(0);
     this.combo.set(0);
@@ -329,6 +333,7 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
     this.particles = [];
     this.catchEffects = [];
     this.savedRank.set(0);
+    this.scoreSaved.set(false);
     this.playerX = this.canvasWidth / 2;
     this.isDiving = false;
 
@@ -382,15 +387,27 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const startX = Math.random() * (this.canvasWidth * 0.8) + this.canvasWidth * 0.1;
+    const startY = -50;
+
+    // 高度(z)の変化量を先に決め、着地までのフレーム数を算出する
+    const vz = -1.5 - Math.random() * 0.5 - elapsed * 0.02;
+    const framesToLand = 100 / Math.abs(vz);
+
+    // 着地地点(y)はキャッチ判定の基準点（プレイヤーの捕球エリア）を中心にばらつかせる。
+    // canvasHeightに対して比率でばらつきを持たせることで、取れる球・取れない球の両方が発生する。
+    const catchZoneY = this.playerY - 30;
+    const landingSpread = this.canvasHeight * 0.12;
+    const targetLandingY = catchZoneY + (Math.random() - 0.5) * 2 * landingSpread;
+    const vy = (targetLandingY - startY) / framesToLand;
 
     const ball: Ball = {
       id: this.ballIdCounter++,
       x: startX,
-      y: -50,
+      y: startY,
       z: 100, // 最高点からスタート
       vx: (Math.random() - 0.5) * (type === 'curve' ? 4 : 1),
-      vy: 1.5 + Math.random() * 1.5 + elapsed * 0.03,
-      vz: -1.5 - Math.random() * 0.5 - elapsed * 0.02,
+      vy,
+      vz,
       size: 18 + Math.random() * 6,
       rotation: 0,
       rotationSpeed: (Math.random() - 0.5) * 0.3,
@@ -816,8 +833,8 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
     const shadowAlpha = 0.3 * shadowScale;
     const shadowSize = ball.size * (0.5 + shadowScale * 0.5);
 
-    // 影のY位置（ボールの真下、地面上）
-    const shadowY = this.canvasHeight - 40;
+    // 影のY位置（ボールの真下、着地予定地点）
+    const shadowY = ball.y;
 
     ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
     ctx.beginPath();
@@ -834,7 +851,7 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
     const pulse = Math.sin(this.frameCount * 0.15) * 0.2 + 0.8;
 
     // 着地予測Y位置
-    const landingY = this.canvasHeight - 40;
+    const landingY = ball.y;
 
     // 外枠（パルスアニメーション）
     const outerRadius = 40 + (1 - progress) * 20;
@@ -1213,6 +1230,7 @@ export class CatchFlyComponent implements OnInit, AfterViewInit, OnDestroy {
   saveScore(): void {
     const rank = this.gameScoreService.addScore('catch', this.nickname, this.score());
     this.savedRank.set(rank);
+    this.scoreSaved.set(true);
     this.highScore.set(this.gameScoreService.getHighScore('catch'));
   }
 

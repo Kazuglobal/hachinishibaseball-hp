@@ -42,7 +42,7 @@
                     height="600" 
                     [alt]="work.title" 
                     [priority]="i === 0"
-                    [loading]="i === 0 ? null : 'lazy'"
+                    [loading]="i === 0 ? undefined : 'lazy'"
                     [disableOptimizedSrcset]="true"
                     class="w-full aspect-[4/3] object-cover transition-transform duration-500 group-active:scale-105">
                   <div class="absolute top-2.5 left-2.5 bg-[#002D62]/95 text-white px-2.5 py-1 rounded-md text-[10px] font-semibold backdrop-blur-sm">
@@ -94,7 +94,7 @@
                 height="600" 
                 [alt]="work.title" 
                 [priority]="i < 3"
-                [loading]="i < 3 ? null : 'lazy'"
+                [loading]="i < 3 ? undefined : 'lazy'"
                 [disableOptimizedSrcset]="true"
                 class="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110">
               <div class="absolute top-4 left-4 bg-[#002D62]/90 text-white px-3 py-1 rounded text-xs font-semibold">

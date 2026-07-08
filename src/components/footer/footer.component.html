@@ -9,7 +9,7 @@
         <p class="mt-4 text-sm">八戸西高等学校野球OB会 事務局</p>
         <p class="text-sm mt-2">〒039-1101 青森県八戸市大字尻内町字中根市14</p>
         <p class="text-sm mt-2">TEL: 090-8610-2693</p>
-        <a href="#" class="inline-block mt-4 bg-gray-100 text-[#333] font-bold py-2 px-4 text-sm hover:bg-white transition-colors">
+        <a href="https://www.google.com/maps/search/?api=1&query=%E9%9D%92%E6%A3%AE%E7%9C%8C%E5%85%AB%E6%88%B8%E5%B8%82%E5%A4%A7%E5%AD%97%E5%B0%BB%E5%86%85%E7%94%BA%E5%AD%97%E4%B8%AD%E6%A0%B9%E5%B8%8214" target="_blank" rel="noopener noreferrer" class="inline-block mt-4 bg-gray-100 text-[#333] font-bold py-2 px-4 text-sm hover:bg-white transition-colors">
           Google Map
         </a>
       </div>
@@ -31,7 +31,7 @@
               } @else if (section.title === 'お問い合わせ') {
                 <a routerLink="/contact" class="hover:text-white transition-colors">{{section.title}}</a>
               } @else if (section.links.length === 0) {
-                 <a href="#" class="hover:text-white transition-colors">{{section.title}}</a>
+                 <span class="hover:text-white transition-colors">{{section.title}}</span>
               } @else {
                 {{section.title}}
               }
@@ -48,8 +48,10 @@
                       <a routerLink="/" [fragment]="'message'" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
                     } @else if (section.title === '活動報告' && link === 'イベントレポート') {
                       <a routerLink="/activities" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
+                    } @else if (section.title === '活動報告' && link === '支援活動') {
+                      <a routerLink="/activities" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
                     } @else {
-                      <a href="#" class="text-xs text-gray-400 hover:text-white transition-colors">{{link}}</a>
+                      <span class="text-xs text-gray-400">{{link}}</span>
                     }
                   </li>
                 }
@@ -61,7 +63,7 @@
     </div>
     <div class="mt-16 pt-8 border-t border-gray-700 flex flex-col sm:flex-row justify-between items-center text-xs">
       <div class="flex space-x-4">
-        <a href="#" class="hover:text-white">サイトマップ</a>
+        <a href="/sitemap.xml" class="hover:text-white">サイトマップ</a>
         <a routerLink="/privacy-policy" class="hover:text-white">プライバシーポリシー</a>
         <button type="button" class="hover:text-white" (click)="tokushoho.showModal()">特定商取引法に基づく表記</button>
       </div>

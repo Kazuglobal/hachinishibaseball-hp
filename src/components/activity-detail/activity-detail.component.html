@@ -1,6 +1,6 @@
 <section 
   [class.is-visible]="isVisible()"
-  class="fade-in-up pt-32 pb-12 md:pt-40 md:pb-20 container mx-auto px-4 sm:px-8">
+  class="fade-in-up pt-12 pb-12 md:pt-20 md:pb-20 container mx-auto px-4 sm:px-8">
   @if (activity()) {
     <!-- カスタムタイトル（最適化・デザイン改善） -->
     <div class="max-w-4xl mx-auto mb-8 md:mb-12">
@@ -31,6 +31,22 @@
 
     <div class="max-w-4xl mx-auto">
 
+      <!-- メイン画像 -->
+      @if (activity()!.image) {
+        <div class="mb-8 relative overflow-hidden rounded-lg shadow-lg">
+          <img
+            ngSrc="{{activity()!.image}}"
+            width="1200"
+            height="800"
+            [alt]="activity()!.title"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            [disableOptimizedSrcset]="true"
+            class="w-full h-auto max-h-[500px] rounded-lg shadow-lg object-contain">
+        </div>
+      }
+
       <!-- 記事本文 -->
       <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed mb-8">
         <div class="text-[15px] leading-8 whitespace-pre-line bg-white/80 backdrop-blur p-6 md:p-8 rounded-lg shadow-sm">
@@ -39,26 +55,28 @@
       </div>
 
       <!-- 追加画像を表示 -->
-      @if (activity()!.additionalImages && activity()!.additionalImages.length > 0) {
-        <div class="mb-8">
-          <h3 class="text-xl font-bold font-serif-jp text-gray-800 mb-4">関連画像</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            @for (additionalImage of activity()!.additionalImages; track additionalImage; let i = $index) {
-              <div class="relative overflow-hidden rounded-lg shadow-lg">
-                <img 
-                  ngSrc="{{additionalImage}}" 
-                  width="1200" 
-                  height="800" 
-                  [alt]="activity()!.title + ' 追加画像 ' + (i + 1)" 
-                  [loading]="i === 0 ? 'eager' : 'lazy'"
-                  [fetchpriority]="i === 0 ? 'high' : 'auto'"
-                  decoding="async"
-                  [disableOptimizedSrcset]="true"
-                  class="w-full h-auto max-h-[400px] md:max-h-[500px] rounded-lg shadow-lg object-contain transition-transform duration-300 hover:scale-105">
-              </div>
-            }
+      @if (activity()!.additionalImages; as additionalImages) {
+        @if (additionalImages.length > 0) {
+          <div class="mb-8">
+            <h3 class="text-xl font-bold font-serif-jp text-gray-800 mb-4">関連画像</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              @for (additionalImage of additionalImages; track additionalImage; let i = $index) {
+                <div class="relative overflow-hidden rounded-lg shadow-lg">
+                  <img
+                    ngSrc="{{additionalImage}}"
+                    width="1200"
+                    height="800"
+                    [alt]="activity()!.title + ' 追加画像 ' + (i + 1)"
+                    [loading]="i === 0 ? 'eager' : 'lazy'"
+                    [attr.fetchpriority]="i === 0 ? 'high' : 'auto'"
+                    decoding="async"
+                    [disableOptimizedSrcset]="true"
+                    class="w-full h-auto max-h-[400px] md:max-h-[500px] rounded-lg shadow-lg object-contain transition-transform duration-300 hover:scale-105">
+                </div>
+              }
+            </div>
           </div>
-        </div>
+        }
       }
 
       <!-- ナビゲーションボタン -->

@@ -103,6 +103,12 @@
             style="text-shadow: 3px 3px 0px rgba(0,0,0,0.5);">
             {{getRatingText(currentResult()!.rating)}}
           </p>
+          <!-- 外れ方向フィードバック -->
+          @if (currentResult()!.rating === 'miss' && missDirection()) {
+          <p class="mt-2 text-red-300 text-sm md:text-base font-bold tracking-wider">
+            {{missDirection()}}
+          </p>
+          }
           <div class="mt-6 flex flex-col items-center justify-center gap-1 animate-slide-up">
             <div class="flex items-center gap-2">
               <span class="text-cyan-400 text-4xl font-black">+</span>
@@ -162,7 +168,7 @@
           </div>
 
           <!-- ニックネーム入力 -->
-          @if (savedRank() === 0) {
+          @if (!scoreSaved()) {
           <div class="mb-8">
             <label class="block text-xs text-slate-400 font-bold mb-3 uppercase tracking-wider">名前を入力</label>
             <div class="flex gap-2">
@@ -174,13 +180,17 @@
               </button>
             </div>
           </div>
-          } @else {
+          } @else if (savedRank() > 0) {
           <div
             class="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-xl p-4 mb-8">
             <p class="text-yellow-400 font-bold flex items-center justify-center gap-2">
               <span class="text-xl">🏆</span>
               ランキング: <span class="text-2xl font-oswald">{{savedRank()}}</span>位
             </p>
+          </div>
+          } @else {
+          <div class="bg-white/5 border border-white/10 rounded-xl p-4 mb-8">
+            <p class="text-slate-300 font-bold text-center">スコアを保存しました（ランキング圏外でした）</p>
           </div>
           }
 

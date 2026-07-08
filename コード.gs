@@ -2,6 +2,19 @@
  * Google Apps Script for OB会出欠フォーム
  */
 
+/**
+ * スプレッドシートのセルが数式として解釈されないようにするヘルパー関数
+ * @param {string} value - 無害化する文字列
+ * @return {string} 無害化された文字列
+ */
+function sanitizeForSheet(value) {
+  const str = String(value || '');
+  if (/^[=+\-@]/.test(str)) {
+    return "'" + str;
+  }
+  return str;
+}
+
 function doPost(e) {
   try {
     Logger.log('doPost called');
@@ -88,14 +101,14 @@ function doPost(e) {
       sheet.getRange('A1:G1').setFontWeight('bold');
     }
     
-    // データを追加
+    // データを追加（数式インジェクション対策として無害化してから書き込む）
     sheet.appendRow([
-      data.name || '',
-      data.period || '',
-      data.email || '',
-      data.phone || '',
-      data.attendance || '',
-      data.remarks || '',
+      sanitizeForSheet(data.name),
+      sanitizeForSheet(data.period),
+      sanitizeForSheet(data.email),
+      sanitizeForSheet(data.phone),
+      sanitizeForSheet(data.attendance),
+      sanitizeForSheet(data.remarks),
       new Date().toLocaleString('ja-JP')
     ]);
     
@@ -130,10 +143,11 @@ function doPost(e) {
     })).setMimeType(ContentService.MimeType.JSON);
     
   } catch (error) {
+    // 内部エラーの詳細はログにのみ残し、クライアントには漏らさない
     Logger.log('ERROR: ' + error.toString());
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
-      error: error.toString()
+      error: '送信処理中にエラーが発生しました。しばらくしてから再度お試しください。'
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }

@@ -37,15 +37,32 @@ export class GameScoreService {
 
   private loadScores(): void {
     if (!this.isBrowser) return;
-    
+
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        this.scores.set(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        this.scores.set({
+          homerun: this.sanitizeScoreList(parsed?.homerun),
+          pitching: this.sanitizeScoreList(parsed?.pitching),
+          catch: this.sanitizeScoreList(parsed?.catch)
+        });
       }
     } catch (e) {
       console.error('Failed to load game scores:', e);
     }
+  }
+
+  // localStorageの内容は旧形式・破損データの可能性があるため、形状を検証して不正な要素を除外する
+  private sanitizeScoreList(value: unknown): GameScore[] {
+    if (!Array.isArray(value)) return [];
+    return value.filter((item): item is GameScore =>
+      !!item &&
+      typeof item === 'object' &&
+      typeof (item as GameScore).nickname === 'string' &&
+      typeof (item as GameScore).score === 'number' &&
+      typeof (item as GameScore).date === 'string'
+    );
   }
 
   private saveScores(): void {

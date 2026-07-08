@@ -38,10 +38,13 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
   private ctx!: CanvasRenderingContext2D;
   private animationId: number = 0;
+  private isAnimating = false;
   private isBrowser: boolean;
   private powerInterval: any;
   private resizeHandler?: () => void;
   private resizeObserver?: ResizeObserver;
+  private resultShowTimeoutId: number | null = null;
+  private nextPitchTimeoutId: number | null = null;
 
   private seoService = inject(SEOService);
   private gameScoreService = inject(GameScoreService);
@@ -91,6 +94,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
   // ゲームオーバー
   nickname = '';
   savedRank = signal(0);
+  scoreSaved = signal(false);
   highScore = signal(0);
 
   // サウンド
@@ -186,7 +190,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
   // 画面エフェクト
   private screenShakeIntensity = 0;
   private impactFlashAlpha = 0;
-  private missDirection = '';  // 外れ方向テキスト
+  missDirection = signal('');  // 外れ方向テキスト（結果表示UIで参照）
 
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -262,8 +266,17 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
     }
+    this.isAnimating = false;
     if (this.powerInterval) {
       clearInterval(this.powerInterval);
+    }
+    if (this.resultShowTimeoutId !== null) {
+      clearTimeout(this.resultShowTimeoutId);
+      this.resultShowTimeoutId = null;
+    }
+    if (this.nextPitchTimeoutId !== null) {
+      clearTimeout(this.nextPitchTimeoutId);
+      this.nextPitchTimeoutId = null;
     }
     if (this.isBrowser && this.resizeHandler) {
       window.removeEventListener('resize', this.resizeHandler);
@@ -336,11 +349,15 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   startGame(): void {
+    // 連打による多重起動防止
+    if (this.gameState() !== 'ready' && this.gameState() !== 'gameover') return;
+
     this.gameState.set('ready');
     this.currentPitch.set(0);
     this.score.set(0);
     this.results.set([]);
     this.savedRank.set(0);
+    this.scoreSaved.set(false);
 
     // コンボリセット
     this.comboCount.set(0);
@@ -365,7 +382,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     this.power.set(0);
     this.hitZone.set(0);
     this.particles = [];
-    this.missDirection = '';  // 外れ方向リセット
+    this.missDirection.set('');  // 外れ方向リセット
 
     // ランダムなターゲットゾーン（後半はコーナー多め）
     const pitchNumber = this.currentPitch();
@@ -389,17 +406,27 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     // 後半ほど最適パワーの変動が大きく、予測が難しい
     const basePower = this.gameConfig.BASE_OPTIMAL_POWER;
     const variance = this.gameConfig.OPTIMAL_POWER_VARIANCE + (pitchNumber * 3);
-    this.optimalPower.set(basePower + Math.floor(Math.random() * variance));
+    const optimalPower = Math.min(100, basePower + Math.floor(Math.random() * variance));
+    this.optimalPower.set(optimalPower);
 
     this.gameState.set('selecting');
-    this.animateGame();
+
+    // アニメーションループはゲーム開始時に1本だけ起動し、以後は継続させる
+    // （投球毎に再起動すると、前の投球のループが終了しないまま多重起動してしまう）
+    if (!this.isAnimating) {
+      this.isAnimating = true;
+      this.animateGame();
+    }
   }
 
   private animateGame(): void {
     this.frameCount++;
 
     const state = this.gameState();
-    if (state === 'gameover' || state === 'ready') return;
+    if (state === 'gameover' || state === 'ready') {
+      this.isAnimating = false;
+      return;
+    }
 
     if (state === 'throwing') {
       this.updateThrowing();
@@ -686,9 +713,9 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
 
     // 外れ方向検出（モバイル向けフィードバック）
     if (this.gameConfig.SHOW_MISS_DIRECTION && this.hitZone() !== this.targetZone()) {
-      this.missDirection = this.calculateMissDirection(this.targetZone(), this.hitZone());
+      this.missDirection.set(this.calculateMissDirection(this.targetZone(), this.hitZone()));
     } else {
-      this.missDirection = '';
+      this.missDirection.set('');
     }
 
     const result: PitchResult = {
@@ -723,13 +750,15 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
     this.addResultParticles(rating);
     this.gloveShake = 10;
 
-    setTimeout(() => {
+    this.resultShowTimeoutId = window.setTimeout(() => {
+      this.resultShowTimeoutId = null;
       this.showResult.set(true);
       // this.gameState.set('result'); // 既にupdateThrowingで変更済み
 
-      setTimeout(() => {
+      this.nextPitchTimeoutId = window.setTimeout(() => {
+        this.nextPitchTimeoutId = null;
         this.nextPitch();
-      }, 2000);
+      }, this.gameConfig.RESULT_DISPLAY_DURATION);
     }, 300);
   }
 
@@ -1237,6 +1266,7 @@ export class StrikePitchingComponent implements OnInit, AfterViewInit, OnDestroy
   saveScore(): void {
     const rank = this.gameScoreService.addScore('pitching', this.nickname, this.score());
     this.savedRank.set(rank);
+    this.scoreSaved.set(true);
     this.highScore.set(this.gameScoreService.getHighScore('pitching'));
   }
 

@@ -4,7 +4,6 @@ import { RouterLink } from '@angular/router';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { NgOptimizedImage } from '@angular/common';
-import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
 import { SEOService } from '../../services/seo.service';
 
 interface Activity {
@@ -25,8 +24,7 @@ interface Activity {
     SectionTitleComponent,
     BackButtonComponent,
     NgOptimizedImage,
-    RouterLink,
-    ObserveVisibilityDirective
+    RouterLink
   ],
   templateUrl: './activities-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
