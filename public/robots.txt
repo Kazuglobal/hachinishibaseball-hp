@@ -7,11 +7,15 @@ Sitemap: https://hachinohenishibaseball.com/sitemap.xml
 # 検索エンジンにインデックスさせたいページ
 Allow: /
 Allow: /about
+Allow: /activities
+Allow: /activity/
 Allow: /alumni-activities
+Allow: /alumni-voice/
 Allow: /match-results
 Allow: /support
 Allow: /contact
-Allow: /activity/
+Allow: /game
+Allow: /privacy-policy
 Allow: /assets/
 
 # 検索エンジンにインデックスさせたくないディレクトリ

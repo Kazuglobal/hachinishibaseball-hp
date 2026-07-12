@@ -98,67 +98,144 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- Activity Detail Pages (Recent Activities) -->
+  <!-- Activity Detail Pages (All Activities) -->
   <url>
-    <loc>https://hachinohenishibaseball.com/activity/newyear-ob-2025</loc>
-    <lastmod>2025-11-27</lastmod>
+    <loc>https://hachinohenishibaseball.com/activity/newyear-ob-2026</loc>
+    <lastmod>2026-01-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://hachinohenishibaseball.com/activity/elementary-baseball-clinic-2025</loc>
-    <lastmod>2025-11-27</lastmod>
+    <loc>https://hachinohenishibaseball.com/activity/hachikoshi-practice-2025</loc>
+    <lastmod>2025-11-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://hachinohenishibaseball.com/activity/sansha-festival-2025</loc>
+    <lastmod>2025-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://hachinohenishibaseball.com/activity/yoga-training-2025</loc>
+    <lastmod>2025-06-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://hachinohenishibaseball.com/activity/sendai-expedition-2025</loc>
+    <lastmod>2025-06-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://hachinohenishibaseball.com/activity/training-camp-2025</loc>
+    <lastmod>2025-04-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://hachinohenishibaseball.com/activity/graduation-ceremony-2025</loc>
-    <lastmod>2025-11-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hachinohenishibaseball.com/activity/freeblaze-support-2025</loc>
-    <lastmod>2025-11-27</lastmod>
+    <lastmod>2025-03-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://hachinohenishibaseball.com/activity/exchange-activity-2025</loc>
-    <lastmod>2025-11-27</lastmod>
+    <lastmod>2025-03-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://hachinohenishibaseball.com/activity/training-camp-2025</loc>
-    <lastmod>2025-11-27</lastmod>
+    <loc>https://hachinohenishibaseball.com/activity/elementary-baseball-clinic-2025</loc>
+    <lastmod>2025-02-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://hachinohenishibaseball.com/activity/freeblaze-support-2025</loc>
+    <lastmod>2025-01-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://hachinohenishibaseball.com/activity/newyear-ob-2025</loc>
+    <lastmod>2025-01-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://hachinohenishibaseball.com/activity/gonohe-festival-2024</loc>
-    <lastmod>2025-11-27</lastmod>
+    <lastmod>2024-12-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://hachinohenishibaseball.com/activity/support-school-exchange-2024</loc>
+    <lastmod>2024-11-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://hachinohenishibaseball.com/activity/practice-game-komadai-2024</loc>
+    <lastmod>2024-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://hachinohenishibaseball.com/activity/ground-closing-2024</loc>
+    <lastmod>2024-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://hachinohenishibaseball.com/activity/anniversary-lecture-2024</loc>
+    <lastmod>2024-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://hachinohenishibaseball.com/activity/ai-workshop-2024</loc>
-    <lastmod>2025-11-27</lastmod>
+    <lastmod>2024-08-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <!-- Alumni Voice Pages -->
   <url>
+    <loc>https://hachinohenishibaseball.com/alumni-voice/miyazaki-katsumi</loc>
+    <lastmod>2026-01-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://hachinohenishibaseball.com/alumni-voice/nozaki-junsei</loc>
+    <lastmod>2025-12-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://hachinohenishibaseball.com/alumni-voice/hayashino-satoshi</loc>
-    <lastmod>2025-11-27</lastmod>
+    <lastmod>2025-12-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
