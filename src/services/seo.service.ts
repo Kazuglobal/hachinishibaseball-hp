@@ -2,6 +2,8 @@ import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Title, Meta } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 
 export interface SEOData {
   title?: string;
@@ -20,11 +22,28 @@ export class SEOService {
   private titleService = inject(Title);
   private metaService = inject(Meta);
   private document = inject(DOCUMENT);
+  private router = inject(Router);
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
-  
+
   private readonly baseUrl = 'https://hachinohenishibaseball.com';
   private readonly defaultImage = `${this.baseUrl}/assets/og-image.jpg`;
   private readonly siteName = '八戸西高等学校野球OB会';
+
+  constructor() {
+    // 各ページ側で updateSEO() を呼び忘れても、遷移のたびに
+    // canonical をそのページ自身のURLへ自動的に同期させるフォールバック。
+    // これにより、コンポーネント固有の設定漏れでトップページのcanonicalが
+    // 残留する事故を防ぐ。
+    if (this.isBrowser) {
+      this.router.events
+        .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+        .subscribe((event) => {
+          const path = event.urlAfterRedirects.split('?')[0].split('#')[0];
+          const canonicalUrl = path === '/' ? this.baseUrl + '/' : `${this.baseUrl}${path}`;
+          this.updateCanonicalUrl(canonicalUrl);
+        });
+    }
+  }
 
   /**
    * ページのSEO情報を設定
