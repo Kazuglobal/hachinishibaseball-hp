@@ -5,6 +5,7 @@ import { FooterComponent } from './components/footer/footer.component';
 import { MenuComponent } from './components/menu/menu.component';
 import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 import { ScrollService } from './services/scroll.service';
+import { SEOService } from './services/seo.service';
 import { RouterOutlet, NavigationEnd, Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { filter } from 'rxjs';
@@ -24,6 +25,7 @@ import { filter } from 'rxjs';
 })
 export class AppComponent implements OnInit {
   scrollService = inject(ScrollService);
+  private seoService = inject(SEOService);
   router = inject(Router);
   private isBrowser: boolean;
 
@@ -48,7 +50,14 @@ export class AppComponent implements OnInit {
       this.router.events
         .pipe(filter(event => event instanceof NavigationEnd))
         .subscribe(() => {
+          // 遷移先ページが独自の構造化データを設定しない場合に、前ページの
+          // JSON-LDが残留しないようクリアしておく（必要なら各ページが再度設定する）
+          this.seoService.removeStructuredData();
+
           setTimeout(() => {
+            // コンテンツ描画後にドキュメント高さを再計測（スクロール進捗バー用）
+            this.scrollService.refreshDocumentHeight();
+
             const url = this.router.url;
             const fragmentIndex = url.indexOf('#');
             if (fragmentIndex !== -1) {

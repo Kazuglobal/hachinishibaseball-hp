@@ -112,12 +112,12 @@ export class ContactComponent implements OnInit {
 
       // レスポンスを確認
       if (response.ok) {
+        // response.json()はボディを一度しか読めないため、先にtext()で受けてからパースする
+        const rawBody = await response.text();
         let result;
         try {
-          result = await response.json();
+          result = JSON.parse(rawBody);
         } catch (parseError) {
-          // JSONパースに失敗した場合、生のレスポンスボディを取得
-          const rawBody = await response.text();
           const errorMessage = parseError instanceof Error ? parseError.message : 'Unknown parse error';
           throw new Error(`レスポンスの解析に失敗しました: ${errorMessage}. レスポンスボディ: ${rawBody}`);
         }

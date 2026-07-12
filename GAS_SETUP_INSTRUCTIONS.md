@@ -8,7 +8,7 @@
 ### 1. Google Apps Scriptでプロジェクトを作成
 1. [Google Apps Script](https://script.google.com/)にアクセス
 2. 「新しいプロジェクト」をクリック
-3. `gas-script.js`の内容をコピー＆ペースト
+3. `gas-script-fixed.js`の内容をコピー＆ペースト
 4. 「保存」をクリック
 
 ### 2. スプレッドシートを作成（重要）
@@ -34,7 +34,8 @@
    - 「詳細」→「OB会出欠フォーム（安全ではないページ）に移動」をクリック
    - 「許可」をクリック
 7. 表示されたWebアプリのURLをコピー
-8. `src/components/support/support.component.ts`の69行目の`GAS_WEB_APP_URL`に貼り付け
+8. `src/environments/environment.ts`と`src/environments/environment.prod.ts`の`gasWebAppUrl`に貼り付け
+   （出欠フォーム・お問い合わせフォームの両方がこの値を共有しています）
 
 ### 4. 再デプロイ（コードを更新した場合）
 1. 「デプロイ」→「デプロイを管理」をクリック

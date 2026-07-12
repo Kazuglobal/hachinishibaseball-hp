@@ -1,6 +1,6 @@
 <section 
   [class.is-visible]="isVisible()"
-  class="fade-in-up pt-32 pb-12 md:pt-40 md:pb-20 container mx-auto px-4 sm:px-8">
+  class="fade-in-up pt-12 pb-12 md:pt-20 md:pb-20 container mx-auto px-4 sm:px-8">
   
   <!-- タイトル -->
   <div class="max-w-6xl mx-auto mb-12 md:mb-16">
@@ -43,6 +43,105 @@
           公式プロフィールを見る →
         </a>
       </div>
+
+      <!-- 甲子園初勝利記事 -->
+      <article class="mb-10 md:mb-14 border-y border-[#002D62]/15 py-8 md:py-10">
+        <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-8 md:gap-10 items-start">
+          <div class="relative overflow-hidden rounded-xl bg-[#002D62]/10">
+            <img
+              [ngSrc]="fukushimaArticle.image"
+              [alt]="fukushimaArticle.imageAlt"
+              width="1536"
+              height="1024"
+              loading="eager"
+              decoding="async"
+              class="w-full h-auto object-cover">
+          </div>
+
+          <div>
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+              <span class="text-sm font-bold text-[#B31B1B]">{{fukushimaArticle.date}}</span>
+              <span class="text-xs text-gray-400">/</span>
+              <span class="text-sm font-semibold text-[#002D62]">{{fukushimaArticle.category}}</span>
+            </div>
+            <h3 class="font-serif-jp text-2xl md:text-3xl font-bold text-[#002D62] leading-tight mb-4">
+              {{fukushimaArticle.title}}
+            </h3>
+            <p class="text-base md:text-lg leading-relaxed text-gray-800 mb-6">
+              {{fukushimaArticle.lead}}
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              @for(stat of fukushimaArticle.stats; track stat.label) {
+                <div class="border-l-4 border-[#B31B1B] bg-white/70 px-4 py-3">
+                  <p class="text-xs font-bold text-gray-500 mb-1">{{stat.label}}</p>
+                  <p class="text-sm md:text-base font-semibold text-gray-900 leading-snug">{{stat.value}}</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 md:mt-10 max-w-4xl mx-auto space-y-4">
+          @for(paragraph of fukushimaArticle.body; track paragraph) {
+            <p class="text-base md:text-lg leading-8 text-gray-800">
+              {{paragraph}}
+            </p>
+          }
+        </div>
+
+        @if(fukushimaArticle.posterImage) {
+          <div class="mt-10 md:mt-12 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 md:gap-10 items-center">
+            <div class="order-2 lg:order-1">
+              <p class="text-sm font-bold text-[#B31B1B] mb-3">MEMORIAL PHOTO</p>
+              <h4 class="font-serif-jp text-2xl md:text-3xl font-bold text-[#002D62] leading-tight mb-4">
+                甲子園に刻んだ、プロとしての一勝
+              </h4>
+              <p class="text-base md:text-lg leading-8 text-gray-800">
+                八戸西高校のエースとして立った甲子園での悔しさを胸に、福島蓮投手はプロのマウンドで白星をつかみました。母校で培った粘り強さと挑戦する姿勢は、現役部員、OB、そして西高野球部を応援するすべての人に大きな力を与えてくれます。
+              </p>
+            </div>
+
+            <div class="order-1 lg:order-2 koshien-poster-stage rare-card-stage">
+              <div class="koshien-poster-frame rare-card-frame">
+                <img
+                  [ngSrc]="fukushimaArticle.posterImage"
+                  [alt]="fukushimaArticle.posterImageAlt || fukushimaArticle.title"
+                  width="1024"
+                  height="1536"
+                  loading="lazy"
+                  decoding="async"
+                  class="koshien-poster-image">
+                <div class="rare-card-foil" aria-hidden="true"></div>
+                <div class="rare-card-grain" aria-hidden="true"></div>
+                <div class="koshien-poster-sheen" aria-hidden="true"></div>
+                <div class="rare-card-stars" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <div class="mt-8 pt-5 border-t border-gray-200">
+          <p class="text-xs font-bold text-gray-500 mb-3">参考資料</p>
+          <div class="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4">
+            @for(source of fukushimaArticle.sources; track source.url) {
+              <a
+                [href]="source.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-sm text-[#002D62] hover:text-[#B31B1B] hover:underline transition-colors duration-200">
+                {{source.label}} →
+              </a>
+            }
+          </div>
+        </div>
+      </article>
 
       <!-- メイン動画 -->
       <div class="mb-8 md:mb-12">
@@ -287,7 +386,7 @@
                     height="600" 
                     [alt]="card.name"
                     [priority]="i === 0"
-                    [loading]="i === 0 ? null : 'lazy'"
+                    [loading]="i === 0 ? undefined : 'lazy'"
                     [disableOptimizedSrcset]="true"
                     class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-active:scale-105">
                   <!-- 卒期バッジ -->
@@ -351,7 +450,7 @@
                 height="600" 
                 [alt]="card.name"
                 [priority]="i < 4"
-                [loading]="i < 4 ? null : 'lazy'"
+                [loading]="i < 4 ? undefined : 'lazy'"
                 [disableOptimizedSrcset]="true"
                 class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-110">
               <!-- 卒期バッジ -->
@@ -438,8 +537,8 @@
 
     <!-- お問い合わせボタン -->
     <div class="text-center">
-      <a 
-        href="#" 
+      <a
+        routerLink="/contact"
         class="inline-block bg-[#002D62] text-white py-2.5 px-6 md:py-3 md:px-8 text-xs md:text-sm rounded-lg hover:bg-blue-950 transition-colors duration-300 shadow-md hover:shadow-lg">
         掲載を希望される方はこちら
       </a>

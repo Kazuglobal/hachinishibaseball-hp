@@ -1,8 +1,7 @@
 import { Component, ChangeDetectionStrategy, CUSTOM_ELEMENTS_SCHEMA, OnInit, AfterViewInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, NavigationEnd, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { filter } from 'rxjs';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { environment } from '../../environments/environment';
@@ -22,11 +21,8 @@ interface Donor {
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class SupportComponent implements OnInit, AfterViewInit {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private seoService = inject(SEOService);
-  isVisible = signal(true);
 
   // 昨年の入金者一覧
   donors: Donor[] = [
@@ -82,39 +78,21 @@ export class SupportComponent implements OnInit, AfterViewInit {
   readonly stripeBuyButtonId = environment.stripe.buyButtonId;
   readonly stripePublishableKey = environment.stripe.publishableKey;
 
-  // GAS Web App URL（実際のURLに置き換えてください）
-  private readonly GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrFlZnWu0rwYNQ2z-CC7TUQYo2Dod-vh3CcNHbGRqqN2Glgc_xE6eTiXxBu5OVpFB0/exec';
+  // GAS Web App URL（環境設定から取得。お問い合わせフォームと同一デプロイに統一）
+  private readonly GAS_WEB_APP_URL = environment.gasWebAppUrl;
 
   ngOnInit() {
-          // SEO設定
-          this.seoService.updateSEO({
-            title: 'ご支援のお願い | 八戸西高校 | 八戸西高等学校',
-            description: '八戸西高校（八戸西高等学校）野球部OB会へのご支援をお願いします。現役チームへの支援、OB会への参加、寄付など、様々な形でご支援いただけます。八戸西高校野球部の活動を応援してください。',
-            keywords: '八戸西高校,八戸西高等学校,八戸西高校野球部,野球部,OB会,支援,寄付,現役チーム支援,OB会参加,八戸西高校OB会,八戸西高校野球部支援',
-            url: 'https://hachinohenishibaseball.com/support'
-          });
-
-    // ルーティング変更時にフラグメントを処理
-    this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(() => {
-        setTimeout(() => {
-          this.scrollToFragment();
-        }, 100);
-      });
-
-    // 初回ロード時のフラグメント処理
-    setTimeout(() => {
-      this.scrollToFragment();
-    }, 100);
+    // SEO設定
+    this.seoService.updateSEO({
+      title: 'ご支援のお願い | 八戸西高校 | 八戸西高等学校',
+      description: '八戸西高校（八戸西高等学校）野球部OB会へのご支援をお願いします。現役チームへの支援、OB会への参加、寄付など、様々な形でご支援いただけます。八戸西高校野球部の活動を応援してください。',
+      keywords: '八戸西高校,八戸西高等学校,八戸西高校野球部,野球部,OB会,支援,寄付,現役チーム支援,OB会参加,八戸西高校OB会,八戸西高校野球部支援',
+      url: 'https://hachinohenishibaseball.com/support'
+    });
+    // フラグメントへのスクロールはAppComponentがルート遷移毎に一括処理する
   }
 
   ngAfterViewInit() {
-    // ビュー初期化後にフラグメントを処理（確実に要素が存在する）
-    setTimeout(() => {
-      this.scrollToFragment();
-    }, 300);
-    
     // Stripeスクリプトを動的に読み込む
     this.loadStripeScript();
   }
@@ -130,19 +108,6 @@ export class SupportComponent implements OnInit, AfterViewInit {
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
-  }
-
-  private scrollToFragment() {
-    const fragment = this.route.snapshot.fragment;
-    if (fragment) {
-      const element = document.getElementById(fragment);
-      if (element) {
-        element.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
-    }
   }
 
   async onSubmitParticipation() {

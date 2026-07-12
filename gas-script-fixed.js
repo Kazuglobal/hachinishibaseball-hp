@@ -8,6 +8,19 @@
  * 4. 設定を変更した場合は、必ず「新しいバージョン」で再デプロイ
  */
 
+/**
+ * スプレッドシートのセルが数式として解釈されないようにするヘルパー関数
+ * @param {string} value - 無害化する文字列
+ * @return {string} 無害化された文字列
+ */
+function sanitizeForSheet(value) {
+  const str = String(value || '');
+  if (/^[=+\-@]/.test(str)) {
+    return "'" + str;
+  }
+  return str;
+}
+
 function doPost(e) {
   try {
     // デバッグ用ログ
@@ -129,14 +142,14 @@ function doPost(e) {
       Logger.log('Header row added');
     }
     
-    // データを追加
+    // データを追加（数式インジェクション対策として無害化してから書き込む）
     sheet.appendRow([
-      data.name || '',
-      data.period || '',
-      data.email || '',
-      data.phone || '',
-      data.attendance || '',
-      data.remarks || '',
+      sanitizeForSheet(data.name),
+      sanitizeForSheet(data.period),
+      sanitizeForSheet(data.email),
+      sanitizeForSheet(data.phone),
+      sanitizeForSheet(data.attendance),
+      sanitizeForSheet(data.remarks),
       new Date().toLocaleString('ja-JP')
     ]);
     Logger.log('Data appended to spreadsheet');
@@ -192,10 +205,10 @@ ${new Date().toLocaleString('ja-JP')}
     Logger.log('ERROR: ' + error.toString());
     Logger.log('Error stack: ' + (error.stack || 'no stack'));
     
-    // エラーレスポンス
+    // エラーレスポンス（内部エラーの詳細はログにのみ残し、クライアントには漏らさない）
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
-      error: error.toString()
+      error: '送信処理中にエラーが発生しました。しばらくしてから再度お試しください。'
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }

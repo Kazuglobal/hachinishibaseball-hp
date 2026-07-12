@@ -7,12 +7,13 @@
 </div>
 
 <!-- Floating CTA -->
-<div 
+<div
   class="fixed bottom-8 right-8 z-40 transition-all duration-500 ease-in-out"
   [class.opacity-100]="showFloatingCta()"
   [class.translate-y-0]="showFloatingCta()"
   [class.opacity-0]="!showFloatingCta()"
-  [class.translate-y-10]="!showFloatingCta()">
+  [class.translate-y-10]="!showFloatingCta()"
+  [class.pointer-events-none]="!showFloatingCta()">
     <a [routerLink]="['/support']" [fragment]="'credit'" class="relative w-24 h-24 rounded-full flex items-center justify-center text-[#B31B1B] text-center text-xs font-bold leading-tight shadow-2xl hover:scale-110 transition-transform duration-300 overflow-hidden group" style="background: radial-gradient(circle at 25% 25%, #fffef7 0%, #f8f6f0 30%, #f0ede5 60%, #e8e5dd 100%);">
       <!-- 野球ボールの縫い目パターン（究極版） -->
       <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">

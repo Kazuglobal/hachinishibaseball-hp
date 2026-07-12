@@ -149,7 +149,7 @@
           </div>
 
           <!-- ニックネーム入力 -->
-          @if (savedRank() === 0) {
+          @if (!scoreSaved()) {
           <div class="mb-6">
             <label class="block text-sm text-gray-400 mb-2">ニックネーム（任意）</label>
             <input type="text" [(ngModel)]="nickname" placeholder="名無し" maxlength="20"
@@ -164,9 +164,13 @@
               スコアを保存
             </button>
           </div>
-          } @else {
+          } @else if (savedRank() > 0) {
           <div class="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4 mb-6">
             <p class="text-yellow-400 font-bold">🏆 ランキング {{savedRank()}}位！</p>
+          </div>
+          } @else {
+          <div class="bg-white/10 border border-white/20 rounded-lg p-4 mb-6">
+            <p class="text-gray-300 font-bold">スコアを保存しました（ランキング圏外でした）</p>
           </div>
           }
 

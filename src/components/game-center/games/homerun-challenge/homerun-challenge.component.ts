@@ -94,6 +94,7 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   // ゲームオーバー
   nickname = '';
   savedRank = signal(0);
+  scoreSaved = signal(false);
   highScore = signal(0);
   nicknameError = signal<string | null>(null);
 
@@ -207,6 +208,9 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
 
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
+    // プレイ中（投球中）以外（ニックネーム入力など）ではスペースキーを横取りしない
+    if (this.gameState() !== 'pitching') return;
+
     if (event.code === 'Space' || event.key === ' ') {
       event.preventDefault();
       this.swing();
@@ -338,11 +342,18 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   startGame(): void {
+    // 連打による多重起動防止
+    if (this.gameState() !== 'ready' && this.gameState() !== 'gameover') return;
+
     this.gameState.set('ready');
     this.currentBall.set(0);
     this.score.set(0);
     this.results.set([]);
     this.savedRank.set(0);
+    this.scoreSaved.set(false);
+    // コンボ状態を新しいゲームに持ち越さないようリセット
+    this.comboCount = 0;
+    this.lastHitType = null;
     this.playBgm();
     this.nextPitch();
   }
@@ -2060,6 +2071,7 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
 
     const rank = this.gameScoreService.addScore('homerun', sanitized, this.score());
     this.savedRank.set(rank);
+    this.scoreSaved.set(true);
     this.highScore.set(this.gameScoreService.getHighScore('homerun'));
   }
 

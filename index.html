@@ -6,18 +6,8 @@
   <base href="/" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Google Analytics 4 -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXXXX', {
-      'anonymize_ip': true,
-      'cookie_flags': 'SameSite=None;Secure'
-    });
-  </script>
-  
+  <!-- Google Analytics 4: 実際の測定IDが決まり次第、ここに gtag.js を設定してください -->
+
   <!-- Primary Meta Tags -->
   <meta name="title" content="八戸西高校 野球部OB会 | 八戸西高等学校 | 公式サイト | 活動報告・試合結果・OB活躍情報" />
   <meta name="description" content="八戸西高校（八戸西高等学校）野球部OB会の公式ウェブサイト。活動報告、試合結果、OB活躍情報、現役チームへの支援情報などを掲載。八戸西高校野球部OBと現役選手、ファンを繋ぐ情報ハブです。青森県八戸市の高校野球を応援するOB会の最新情報をお届けします。八戸西高校野球部の歴史、伝統、そしてOBの活躍を紹介しています。" />
@@ -73,8 +63,7 @@
   <!-- Preload Critical Resources -->
   <link rel="preload" href="/assets/images/hero-first-view.jpg" as="image" type="image/jpeg" fetchpriority="high" />
   <link rel="preload" href="/assets/images/hero-loading.gif" as="image" type="image/gif" fetchpriority="high" />
-  <link rel="preload" href="/assets/index.css" as="style" />
-  
+
   
   <!-- Structured Data (JSON-LD) -->
   <script type="application/ld+json">
@@ -223,38 +212,6 @@
     ]
   }
   </script>
-  <script>
-    // Tailwind CDN警告を抑制（開発環境のみ）
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      const originalWarn = console.warn;
-      console.warn = function(...args) {
-        if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) {
-          return; // Tailwind CDN警告を無視
-        }
-        originalWarn.apply(console, args);
-      };
-    }
-
-    // YouTube広告トラッキングのCORSエラーを抑制
-    // このエラーはYouTubeの広告システムによるもので、動画の再生には影響しません
-    (function() {
-      const originalError = console.error;
-      console.error = function(...args) {
-        // YouTube広告トラッキングのCORSエラーをフィルタリング
-        const errorMessage = args[0]?.toString() || '';
-        const fullMessage = args.join(' ');
-        
-        if (errorMessage.includes('googleads.g.doubleclick.net') || 
-            (fullMessage.includes('Access to fetch') && fullMessage.includes('CORS policy') && fullMessage.includes('youtube.com'))) {
-          return; // YouTube広告トラッキングのCORSエラーを無視
-        }
-        originalError.apply(console, args);
-      };
-    })();
-  </script>
-  <!-- Defer non-critical scripts -->
-  <script src="https://cdn.tailwindcss.com" defer></script>
-  <script src="https://d3js.org/d3.v7.min.js" defer></script>
   <!-- Stripe script - load only when needed -->
   <script>
     // Load Stripe script only when support page is visited
@@ -340,24 +297,6 @@
       animation: slideInRight 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
   </style>
-<script type="importmap">
-{
-  "imports": {
-    "rxjs": "https://aistudiocdn.com/rxjs@^7.8.2?conditions=es2015",
-    "rxjs/operators": "https://aistudiocdn.com/rxjs@^7.8.2/operators?conditions=es2015",
-    "rxjs/ajax": "https://aistudiocdn.com/rxjs@^7.8.2/ajax?conditions=es2015",
-    "rxjs/webSocket": "https://aistudiocdn.com/rxjs@^7.8.2/webSocket?conditions=es2015",
-    "rxjs/testing": "https://aistudiocdn.com/rxjs@^7.8.2/testing?conditions=es2015",
-    "rxjs/fetch": "https://aistudiocdn.com/rxjs@^7.8.2/fetch?conditions=es2015",
-    "@angular/compiler": "https://next.esm.sh/@angular/compiler@^20.3.7?external=rxjs",
-    "@angular/platform-browser": "https://next.esm.sh/@angular/platform-browser@^20.3.7?external=rxjs",
-    "@angular/core": "https://next.esm.sh/@angular/core@^20.3.7?external=rxjs",
-    "@angular/common": "https://next.esm.sh/@angular/common@^20.3.7?external=rxjs",
-    "@angular/router": "https://next.esm.sh/@angular/router@^20.3.7?external=rxjs"
-  }
-}
-</script>
-<link rel="stylesheet" href="assets/index.css">
 </head>
 <body>
   <app-root></app-root>

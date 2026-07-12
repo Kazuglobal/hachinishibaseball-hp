@@ -1,10 +1,8 @@
 import { Component, ChangeDetectionStrategy, OnInit, AfterViewInit, inject, signal, computed, ChangeDetectorRef, PLATFORM_ID, Inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { NgOptimizedImage } from '@angular/common';
-import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
 import { SEOService } from '../../services/seo.service';
 
 interface Activity {
@@ -20,7 +18,7 @@ interface Activity {
 @Component({
   selector: 'app-activity-detail',
   standalone: true,
-  imports: [CommonModule, SectionTitleComponent, BackButtonComponent, NgOptimizedImage, RouterLink, ObserveVisibilityDirective],
+  imports: [CommonModule, BackButtonComponent, NgOptimizedImage, RouterLink],
   templateUrl: './activity-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
