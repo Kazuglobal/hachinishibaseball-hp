@@ -5,6 +5,7 @@ import { SectionTitleComponent } from '../shared/section-title/section-title.com
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { NgOptimizedImage } from '@angular/common';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
+import { SEOService } from '../../services/seo.service';
 
 interface Activity {
   id: string;
@@ -27,6 +28,7 @@ export class ActivityDetailComponent implements OnInit, AfterViewInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private seoService = inject(SEOService);
   private isBrowser: boolean;
   isVisible = signal(false);
 
@@ -214,6 +216,26 @@ export class ActivityDetailComponent implements OnInit, AfterViewInit {
         // ソート済み配列でのインデックスを取得
         const index = sorted.findIndex(a => a.id === id);
         this.currentActivityIndex.set(index);
+
+        const description = foundActivity.content.length > 120
+          ? `${foundActivity.content.slice(0, 120)}…`
+          : foundActivity.content;
+
+        this.seoService.updateSEO({
+          title: `${foundActivity.title} | 活動報告`,
+          description,
+          keywords: `八戸西高校,八戸西高等学校,八戸西高校野球部,活動報告,${foundActivity.category}`,
+          image: foundActivity.image.startsWith('http') ? foundActivity.image : `https://hachinohenishibaseball.com${foundActivity.image}`,
+          url: `https://hachinohenishibaseball.com/activity/${foundActivity.id}`,
+          type: 'article'
+        });
+
+        this.seoService.addArticleStructuredData({
+          headline: foundActivity.title,
+          description,
+          image: foundActivity.image.startsWith('http') ? foundActivity.image : `https://hachinohenishibaseball.com${foundActivity.image}`,
+          datePublished: this.parseDate(foundActivity.date).toISOString()
+        });
       } else {
         // 記事が見つからない場合はホームにリダイレクト
         this.router.navigate(['/']);

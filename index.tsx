@@ -1,7 +1,7 @@
 
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { provideRouter, withHashLocation } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { IMAGE_LOADER, ImageLoaderConfig } from '@angular/common';
 import { AppComponent } from './src/app.component';
 import { routes } from './src/app.routes';
@@ -19,7 +19,7 @@ function localImageLoader(config: ImageLoaderConfig): string {
 bootstrapApplication(AppComponent, {
   providers: [
     provideZonelessChangeDetection(),
-    provideRouter(routes, withHashLocation()),
+    provideRouter(routes),
     {
       provide: IMAGE_LOADER,
       useValue: localImageLoader,

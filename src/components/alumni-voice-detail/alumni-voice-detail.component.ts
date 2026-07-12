@@ -7,6 +7,7 @@ import { BackButtonComponent } from '../shared/back-button/back-button.component
 import { NgOptimizedImage } from '@angular/common';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
 import { AlumniVoiceService, AlumniVoice } from '../../services/alumni-voice.service';
+import { SEOService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-alumni-voice-detail',
@@ -21,6 +22,7 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
   private cdr = inject(ChangeDetectorRef);
   private sanitizer = inject(DomSanitizer);
   private alumniVoiceService = inject(AlumniVoiceService);
+  private seoService = inject(SEOService);
   private isBrowser: boolean;
   isVisible = signal(false);
 
@@ -62,6 +64,20 @@ export class AlumniVoiceDetailComponent implements OnInit, AfterViewInit {
         const sorted = this.sortedVoices();
         const index = sorted.findIndex(v => v.id === id);
         this.currentVoiceIndex.set(index);
+
+        const plainContent = foundVoice.content.replace(/\[IMAGE:[^\]]*\]/g, '').replace(/###\s*/g, '').trim();
+        const description = plainContent.length > 120
+          ? `${plainContent.slice(0, 120)}…`
+          : plainContent;
+
+        this.seoService.updateSEO({
+          title: `${foundVoice.title} | ALUMNI VOICE`,
+          description,
+          keywords: `八戸西高校,八戸西高等学校,八戸西高校野球部,OB活躍情報,ALUMNI VOICE,${foundVoice.generation}`,
+          image: foundVoice.image.startsWith('http') ? foundVoice.image : `https://hachinohenishibaseball.com${foundVoice.image}`,
+          url: `https://hachinohenishibaseball.com/alumni-voice/${foundVoice.id}`,
+          type: 'article'
+        });
       } else {
         // 記事が見つからない場合はホームにリダイレクト
         this.router.navigate(['/']);

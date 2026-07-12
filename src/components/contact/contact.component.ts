@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { environment } from '../../environments/environment';
+import { SEOService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-contact',
@@ -14,6 +15,7 @@ import { environment } from '../../environments/environment';
 })
 export class ContactComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
+  private seoService = inject(SEOService);
 
   // お問い合わせフォーム
   contactForm = {
@@ -35,6 +37,13 @@ export class ContactComponent implements OnInit {
   private readonly EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   ngOnInit() {
+    this.seoService.updateSEO({
+      title: 'お問い合わせ | 八戸西高校 | 八戸西高等学校',
+      description: '八戸西高校（八戸西高等学校）野球部OB会へのお問い合わせはこちらから。ご質問、ご支援に関するご相談など、お気軽にお問い合わせください。',
+      keywords: '八戸西高校,八戸西高等学校,八戸西高校野球部,OB会,お問い合わせ,連絡先',
+      url: 'https://hachinohenishibaseball.com/contact'
+    });
+
     // ページの一番上にスクロール
     window.scrollTo({
       top: 0,
