@@ -16,9 +16,132 @@
   ],
   "rewrites": [
     {
+      "source": "/about",
+      "destination": "/about.html"
+    },
+    {
+      "source": "/match-results",
+      "destination": "/match-results.html"
+    },
+    {
+      "source": "/support",
+      "destination": "/support.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact.html"
+    },
+    {
+      "source": "/activities",
+      "destination": "/activities.html"
+    },
+    {
+      "source": "/alumni-activities",
+      "destination": "/alumni-activities.html"
+    },
+    {
+      "source": "/privacy-policy",
+      "destination": "/privacy-policy.html"
+    },
+    {
+      "source": "/game",
+      "destination": "/game.html"
+    },
+    {
+      "source": "/game/homerun",
+      "destination": "/game/homerun.html"
+    },
+    {
+      "source": "/game/pitching",
+      "destination": "/game/pitching.html"
+    },
+    {
+      "source": "/game/catch",
+      "destination": "/game/catch.html"
+    },
+    {
+      "source": "/activity/newyear-ob-2026",
+      "destination": "/activity/newyear-ob-2026.html"
+    },
+    {
+      "source": "/activity/newyear-ob-2025",
+      "destination": "/activity/newyear-ob-2025.html"
+    },
+    {
+      "source": "/activity/gonohe-festival-2024",
+      "destination": "/activity/gonohe-festival-2024.html"
+    },
+    {
+      "source": "/activity/support-school-exchange-2024",
+      "destination": "/activity/support-school-exchange-2024.html"
+    },
+    {
+      "source": "/activity/practice-game-komadai-2024",
+      "destination": "/activity/practice-game-komadai-2024.html"
+    },
+    {
+      "source": "/activity/ground-closing-2024",
+      "destination": "/activity/ground-closing-2024.html"
+    },
+    {
+      "source": "/activity/anniversary-lecture-2024",
+      "destination": "/activity/anniversary-lecture-2024.html"
+    },
+    {
+      "source": "/activity/ai-workshop-2024",
+      "destination": "/activity/ai-workshop-2024.html"
+    },
+    {
+      "source": "/activity/freeblaze-support-2025",
+      "destination": "/activity/freeblaze-support-2025.html"
+    },
+    {
+      "source": "/activity/elementary-baseball-clinic-2025",
+      "destination": "/activity/elementary-baseball-clinic-2025.html"
+    },
+    {
+      "source": "/activity/graduation-ceremony-2025",
+      "destination": "/activity/graduation-ceremony-2025.html"
+    },
+    {
+      "source": "/activity/hachikoshi-practice-2025",
+      "destination": "/activity/hachikoshi-practice-2025.html"
+    },
+    {
+      "source": "/activity/sansha-festival-2025",
+      "destination": "/activity/sansha-festival-2025.html"
+    },
+    {
+      "source": "/activity/training-camp-2025",
+      "destination": "/activity/training-camp-2025.html"
+    },
+    {
+      "source": "/activity/exchange-activity-2025",
+      "destination": "/activity/exchange-activity-2025.html"
+    },
+    {
+      "source": "/activity/sendai-expedition-2025",
+      "destination": "/activity/sendai-expedition-2025.html"
+    },
+    {
+      "source": "/activity/yoga-training-2025",
+      "destination": "/activity/yoga-training-2025.html"
+    },
+    {
+      "source": "/alumni-voice/hayashino-satoshi",
+      "destination": "/alumni-voice/hayashino-satoshi.html"
+    },
+    {
+      "source": "/alumni-voice/miyazaki-katsumi",
+      "destination": "/alumni-voice/miyazaki-katsumi.html"
+    },
+    {
+      "source": "/alumni-voice/nozaki-junsei",
+      "destination": "/alumni-voice/nozaki-junsei.html"
+    },
+    {
       "source": "/((?!.*\\..*).*)",
       "destination": "/index.html"
     }
   ]
 }
-
