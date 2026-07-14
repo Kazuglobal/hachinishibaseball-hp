@@ -38,6 +38,7 @@ export class ActivityDetailComponent implements OnInit, AfterViewInit {
   private activities: Activity[] = [
     {
       id: 'fukuda-hiroyuki-obituary-2026',
+      image: '/assets/images/fukuda-hiroyuki-obituary-2026.jpg',
       category: '訃報',
       title: '元硬式野球部監督 福田裕行先生 ご逝去のお知らせ',
       date: '2026年7月12日',
