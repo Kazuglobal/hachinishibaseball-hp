@@ -293,6 +293,15 @@ export class WorksComponent implements OnInit, OnDestroy {
   }
   works = [
     {
+      id: 'fukuda-hiroyuki-obituary-2026',
+      image: '/assets/images/baseball-history1.jpg',
+      category: '訃報',
+      title: '元硬式野球部監督 福田裕行先生 ご逝去のお知らせ',
+      date: '2026年7月12日',
+      content: '八戸西高等学校硬式野球部の元監督であられた福田裕行先生が、令和8年7月12日、ご逝去されました。享年85。1984年から1988年までの5年間にわたり本校硬式野球部の監督を務められ、選手たちの指導と部の発展に多大なるご尽力をくださいました。',
+      delay: ''
+    },
+    {
       id: 'newyear-ob-2026',
       image: '/assets/images/OB1.jpg',
       category: 'イベントレポート',
