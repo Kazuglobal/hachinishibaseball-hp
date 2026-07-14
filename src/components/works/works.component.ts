@@ -118,16 +118,22 @@ export class WorksComponent implements OnInit, OnDestroy {
     const preloadCount = Math.min(cardsPerView + 2, this.works.length);
     
     for (let i = 0; i < preloadCount; i++) {
-      const img = new Image();
-      img.src = this.works[i].image;
+      const image = this.works[i].image;
+      if (image) {
+        const img = new Image();
+        img.src = image;
+      }
     }
   }
 
   private preloadImageForIndex(index: number): void {
     const normalizedIndex = index >= 0 ? index % this.works.length : (index % this.works.length + this.works.length) % this.works.length;
     if (normalizedIndex >= 0 && normalizedIndex < this.works.length) {
-      const img = new Image();
-      img.src = this.works[normalizedIndex].image;
+      const image = this.works[normalizedIndex].image;
+      if (image) {
+        const img = new Image();
+        img.src = image;
+      }
     }
   }
 
@@ -292,6 +298,14 @@ export class WorksComponent implements OnInit, OnDestroy {
     }, 3000);
   }
   works = [
+    {
+      id: 'fukuda-hiroyuki-obituary-2026',
+      category: '訃報',
+      title: '元硬式野球部監督 福田裕行先生 ご逝去のお知らせ',
+      date: '2026年7月12日',
+      content: '八戸西高等学校硬式野球部の元監督であられた福田裕行先生が、令和8年7月12日、ご逝去されました。享年85。1984年から1988年までの5年間にわたり本校硬式野球部の監督を務められ、選手たちの指導と部の発展に多大なるご尽力をくださいました。',
+      delay: ''
+    },
     {
       id: 'newyear-ob-2026',
       image: '/assets/images/OB1.jpg',
