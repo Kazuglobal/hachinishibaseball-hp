@@ -7,7 +7,7 @@ import { SEOService } from '../../services/seo.service';
 
 interface Activity {
   id: string;
-  image: string;
+  image?: string;
   category: string;
   title: string;
   date: string;
@@ -38,7 +38,6 @@ export class ActivityDetailComponent implements OnInit, AfterViewInit {
   private activities: Activity[] = [
     {
       id: 'fukuda-hiroyuki-obituary-2026',
-      image: '/assets/images/baseball-history1.jpg',
       category: '訃報',
       title: '元硬式野球部監督 福田裕行先生 ご逝去のお知らせ',
       date: '2026年7月12日',
@@ -227,11 +226,15 @@ export class ActivityDetailComponent implements OnInit, AfterViewInit {
           ? `${foundActivity.content.slice(0, 120)}…`
           : foundActivity.content;
 
+        const ogImage = foundActivity.image
+          ? (foundActivity.image.startsWith('http') ? foundActivity.image : `https://hachinohenishibaseball.com${foundActivity.image}`)
+          : undefined;
+
         this.seoService.updateSEO({
           title: `${foundActivity.title} | 活動報告`,
           description,
           keywords: `八戸西高校,八戸西高等学校,八戸西高校野球部,活動報告,${foundActivity.category}`,
-          image: foundActivity.image.startsWith('http') ? foundActivity.image : `https://hachinohenishibaseball.com${foundActivity.image}`,
+          image: ogImage,
           url: `https://hachinohenishibaseball.com/activity/${foundActivity.id}`,
           type: 'article'
         });
@@ -239,7 +242,7 @@ export class ActivityDetailComponent implements OnInit, AfterViewInit {
         this.seoService.addArticleStructuredData({
           headline: foundActivity.title,
           description,
-          image: foundActivity.image.startsWith('http') ? foundActivity.image : `https://hachinohenishibaseball.com${foundActivity.image}`,
+          image: ogImage,
           datePublished: this.parseDate(foundActivity.date).toISOString()
         });
       } else {

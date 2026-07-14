@@ -8,7 +8,7 @@ import { SEOService } from '../../services/seo.service';
 
 interface Activity {
   id: string;
-  image: string;
+  image?: string;
   category: string;
   title: string;
   date: string;
@@ -38,7 +38,6 @@ export class ActivitiesListComponent implements OnInit {
   activities: Activity[] = [
     {
       id: 'fukuda-hiroyuki-obituary-2026',
-      image: '/assets/images/baseball-history1.jpg',
       category: '訃報',
       title: '元硬式野球部監督 福田裕行先生 ご逝去のお知らせ',
       date: '2026年7月12日',

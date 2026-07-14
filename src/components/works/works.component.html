@@ -35,21 +35,28 @@
               <a 
                 [routerLink]="['/activity', work.id]"
                 class="group overflow-hidden rounded-xl shadow-lg bg-white cursor-pointer block h-full flex flex-col">
-                <div class="relative overflow-hidden flex-shrink-0">
-                  <img 
-                    ngSrc="{{work.image}}" 
-                    width="800" 
-                    height="600" 
-                    [alt]="work.title" 
-                    [priority]="i === 0"
-                    [loading]="i === 0 ? undefined : 'lazy'"
-                    [disableOptimizedSrcset]="true"
-                    class="w-full aspect-[4/3] object-cover transition-transform duration-500 group-active:scale-105">
-                  <div class="absolute top-2.5 left-2.5 bg-[#002D62]/95 text-white px-2.5 py-1 rounded-md text-[10px] font-semibold backdrop-blur-sm">
-                    {{work.category}}
+                @if (work.image) {
+                  <div class="relative overflow-hidden flex-shrink-0">
+                    <img
+                      ngSrc="{{work.image}}"
+                      width="800"
+                      height="600"
+                      [alt]="work.title"
+                      [priority]="i === 0"
+                      [loading]="i === 0 ? undefined : 'lazy'"
+                      [disableOptimizedSrcset]="true"
+                      class="w-full aspect-[4/3] object-cover transition-transform duration-500 group-active:scale-105">
+                    <div class="absolute top-2.5 left-2.5 bg-[#002D62]/95 text-white px-2.5 py-1 rounded-md text-[10px] font-semibold backdrop-blur-sm">
+                      {{work.category}}
+                    </div>
                   </div>
-                </div>
+                }
                 <div class="p-4 flex-1 flex flex-col">
+                  @if (!work.image) {
+                    <span class="inline-block mb-1.5 bg-[#002D62]/95 text-white px-2.5 py-1 rounded-md text-[10px] font-semibold w-fit">
+                      {{work.category}}
+                    </span>
+                  }
                   <span class="text-[10px] text-gray-500 mb-1.5">{{work.date}}</span>
                   <h3 class="font-serif-jp text-sm font-semibold mt-0 mb-2 text-gray-800 line-clamp-2 leading-snug flex-shrink-0">{{work.title}}</h3>
                   <p class="text-xs text-gray-600 leading-relaxed line-clamp-2 flex-1 mb-3">{{work.content}}</p>
@@ -87,21 +94,28 @@
             [routerLink]="['/activity', work.id]"
             [class.is-visible]="sectionVisible()"
             class="fade-in-up group overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 bg-white cursor-pointer block {{work.delay}}">
-            <div class="relative overflow-hidden">
-              <img 
-                ngSrc="{{work.image}}" 
-                width="800" 
-                height="600" 
-                [alt]="work.title" 
-                [priority]="i < 3"
-                [loading]="i < 3 ? undefined : 'lazy'"
-                [disableOptimizedSrcset]="true"
-                class="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110">
-              <div class="absolute top-4 left-4 bg-[#002D62]/90 text-white px-3 py-1 rounded text-xs font-semibold">
-                {{work.category}}
+            @if (work.image) {
+              <div class="relative overflow-hidden">
+                <img
+                  ngSrc="{{work.image}}"
+                  width="800"
+                  height="600"
+                  [alt]="work.title"
+                  [priority]="i < 3"
+                  [loading]="i < 3 ? undefined : 'lazy'"
+                  [disableOptimizedSrcset]="true"
+                  class="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110">
+                <div class="absolute top-4 left-4 bg-[#002D62]/90 text-white px-3 py-1 rounded text-xs font-semibold">
+                  {{work.category}}
+                </div>
               </div>
-            </div>
+            }
             <div class="p-6">
+              @if (!work.image) {
+                <span class="inline-block mb-2 bg-[#002D62]/90 text-white px-3 py-1 rounded text-xs font-semibold w-fit">
+                  {{work.category}}
+                </span>
+              }
               <span class="text-xs text-gray-500">{{work.date}}</span>
               <h3 class="font-serif-jp text-lg mt-2 mb-3 text-gray-800 line-clamp-2">{{work.title}}</h3>
               <p class="text-sm text-gray-600 leading-relaxed line-clamp-3">{{work.content}}</p>
