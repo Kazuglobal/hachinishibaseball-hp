@@ -1,128 +1,223 @@
 <!-- ヘッダー -->
 <div
-  class="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white py-4 px-4 shadow-2xl sticky top-0 z-10 border-b border-blue-500/30 backdrop-blur-md">
+  class="bg-gradient-to-r from-[#0f1e2e] via-[#16213e] to-[#0f1e2e] text-white py-3 px-4 shadow-lg sticky top-0 z-10 border-b border-sky-500/30">
   <div class="container mx-auto max-w-4xl flex items-center justify-between">
     <a routerLink="/game"
-      class="flex items-center gap-2 text-white/80 hover:text-cyan-300 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 group border border-white/10 hover:border-cyan-400/50">
+      class="flex items-center gap-2 text-white/80 hover:text-sky-400 px-3 py-2 rounded-lg transition-all duration-300 group">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:-translate-x-1 transition-transform"
         fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
-      <span class="font-bold tracking-wide">戻る</span>
+      <span class="font-medium">戻る</span>
     </a>
-    <div class="flex items-center gap-3">
-      <div
-        class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 ring-2 ring-cyan-400/20">
-        <span class="text-xl">⚾</span>
-      </div>
-      <h1
-        class="font-oswald text-2xl md:text-3xl tracking-widest font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-blue-300 drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]">
-        STRIKE PITCHING
-      </h1>
-    </div>
-    <div
-      class="text-right hidden sm:block bg-gradient-to-br from-slate-800/50 to-slate-900/50 px-4 py-2 rounded-xl border border-white/10 backdrop-blur-sm">
-      <div class="text-[10px] text-cyan-400/80 font-bold mb-0.5 tracking-widest">ハイスコア</div>
-      <div class="font-oswald font-black text-xl text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">{{highScore()
-        | number}}</div>
+    <h1
+      class="font-oswald text-xl md:text-2xl tracking-wider font-bold text-sky-400 drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]">
+      STRIKE PITCHING
+    </h1>
+    <div class="text-right hidden sm:block">
+      <div class="text-xs text-sky-400/70">HI-SCORE</div>
+      <div class="font-oswald font-bold text-lg text-white">{{highScore() | number}}</div>
     </div>
   </div>
 </div>
 
-<!-- メインゲームエリア -->
-<main
-  class="bg-[url('/assets/images/stadium_background.png')] bg-cover bg-center min-h-[calc(100vh-72px)] flex flex-col overflow-hidden relative">
-  <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-[2px]"></div>
+<main class="bg-[#0a0a0a] min-h-[calc(100vh-56px)] flex flex-col">
+  <div class="flex-1 flex flex-col container mx-auto max-w-4xl w-full p-4">
 
-  <div class="flex-1 flex flex-col container mx-auto max-w-4xl w-full p-3 sm:p-4 relative z-10">
-
-    <!-- スコアパネル（レイアウト改善） -->
-    <div class="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
-      <!-- 投球数 -->
+    <!-- 上部ステータス -->
+    <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
       <div
-        class="bg-slate-900/80 rounded-xl sm:rounded-2xl px-3 sm:px-6 py-2 sm:py-3 flex flex-col justify-center items-center border border-white/10 shadow-lg backdrop-blur-md relative overflow-hidden">
-        <div class="flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1">
-          <span class="text-cyan-400 text-sm sm:text-lg">●</span>
-          <span class="text-[8px] sm:text-[10px] text-slate-400 font-black uppercase tracking-wider">球数</span>
-        </div>
-        <div class="flex items-baseline">
-          <span class="font-oswald text-2xl sm:text-4xl font-black text-white drop-shadow-lg">{{currentPitch()}}</span>
-          <span class="text-slate-500 text-xs sm:text-sm ml-1 font-bold">/ {{totalPitches}}</span>
-        </div>
+        class="bg-gradient-to-b from-[#12233a] to-[#0b1523] rounded-xl px-3 py-2.5 border border-white/10 flex flex-col items-center justify-center">
+        <span class="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">打者</span>
+        <span class="font-bold text-sm text-white text-center leading-tight">{{currentBatter().name}}</span>
       </div>
 
-      <!-- スコア（メイン・大きく表示） -->
       <div
-        class="bg-gradient-to-br from-slate-900/90 via-blue-950/90 to-slate-900/90 rounded-xl sm:rounded-2xl px-3 sm:px-8 py-2 sm:py-3 flex flex-col justify-center items-center border border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.15)] relative overflow-hidden backdrop-blur-md">
-        <div
-          class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent animate-pulse">
-        </div>
+        class="bg-gradient-to-b from-[#1a2400] to-[#101600] rounded-xl px-3 py-2.5 border border-sky-500/30 flex flex-col items-center justify-center">
+        <span class="text-[10px] text-sky-400/70 uppercase tracking-wider mb-0.5">SCORE</span>
+        <span class="font-oswald text-2xl sm:text-3xl font-bold text-sky-300">{{score() | number}}</span>
+      </div>
 
-        <!-- コンボバッジ（スコア上に小さく表示） -->
-        @if (comboCount() >= 2) {
-        <div
-          class="absolute top-1 right-1 sm:top-2 sm:right-2 flex items-center gap-1 bg-orange-500/90 px-1.5 sm:px-2 py-0.5 rounded-full animate-pulse z-20">
-          <span class="text-xs sm:text-sm">🔥</span>
-          <span class="text-[10px] sm:text-xs font-black text-white">×{{comboCount()}}</span>
-        </div>
-        }
+      <div
+        class="bg-gradient-to-b from-[#12233a] to-[#0b1523] rounded-xl px-3 py-2.5 border border-white/10 flex flex-col items-center justify-center">
+        <span class="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">球数 / 失点</span>
+        <span class="font-oswald text-xl font-bold text-white">{{pitchCount()}}<span
+            class="text-white/40 mx-1">/</span><span class="text-red-400">{{runs()}}</span></span>
+      </div>
+    </div>
 
-        <div class="flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1 relative z-10">
-          <span class="text-yellow-400 text-sm sm:text-lg">★</span>
-          <span class="text-[8px] sm:text-[10px] text-cyan-300 font-black uppercase tracking-wider">スコア</span>
-        </div>
-        <span
-          class="font-oswald text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-cyan-100 to-cyan-300 tracking-tight relative z-10 drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]">
-          {{score() | number}}
-        </span>
+    <!-- スタミナバー（実際の投手と同じく球数で消耗する） -->
+    <div class="mb-3">
+      <div class="flex items-center justify-between text-[10px] text-white/50 mb-1">
+        <span class="uppercase tracking-wider">スタミナ</span>
+        <span>{{stamina()}}%</span>
+      </div>
+      <div class="h-2 rounded-full bg-white/10 overflow-hidden">
+        <div class="h-full rounded-full transition-all duration-300"
+          [class]="stamina() > 60 ? 'bg-green-500' : stamina() > 30 ? 'bg-yellow-500' : 'bg-red-500'"
+          [style.width.%]="stamina()"></div>
       </div>
     </div>
 
     <!-- ゲームキャンバス -->
     <div
-      class="relative bg-black/40 rounded-3xl overflow-hidden shadow-2xl border border-white/10 aspect-[4/3] w-full flex-shrink-0 mb-4 ring-1 ring-white/5 backdrop-blur-sm">
-      <canvas #gameCanvas class="w-full h-full cursor-pointer relative z-10" (click)="onCanvasClick($event)"
-        (touchstart)="onCanvasTouch($event)">
-      </canvas>
+      class="relative bg-black rounded-2xl overflow-hidden shadow-2xl border-2 border-sky-500/20 aspect-[4/3] w-full flex-shrink-0">
+      <canvas #gameCanvas class="w-full h-full cursor-crosshair touch-none" (click)="onCanvasPointer($event)"
+        (touchstart)="onCanvasPointer($event)"></canvas>
 
-      <!-- 結果表示オーバーレイ -->
-      @if (showResult() && currentResult()) {
+      <!-- 判定表示 -->
+      @if (showJudge()) {
       <div
-        class="absolute inset-0 flex items-center justify-center pointer-events-none z-20 bg-black/20 backdrop-blur-[2px] animate-fade-in">
-        <div class="text-center animate-scale-in transform perspective-1000">
-          <!-- コンボ表示 -->
-          @if (comboCount() >= 2) {
-          <div class="mb-2 animate-pulse">
-            <span class="text-orange-400 font-oswald font-black text-2xl tracking-wider drop-shadow-lg">
-              🔥 {{comboCount()}} COMBO!
-            </span>
-          </div>
+        class="absolute inset-0 flex items-center justify-center bg-black/35 backdrop-blur-[1px] z-10 pointer-events-none">
+        <div class="text-center px-4">
+          <p class="text-4xl sm:text-6xl font-black drop-shadow-[0_0_30px_currentColor] animate-scale-in"
+            [style.color]="judgeColor()">
+            {{judgeText()}}
+          </p>
+          @if (judgeSub()) {
+          <p class="mt-2 text-white/75 text-sm sm:text-base">{{judgeSub()}}</p>
           }
+        </div>
+      </div>
+      }
 
-          <p class="text-7xl md:text-9xl font-black italic tracking-tighter {{getRatingColor(currentResult()!.rating)}} drop-shadow-[0_0_50px_currentColor] animate-bounce-custom"
-            style="text-shadow: 3px 3px 0px rgba(0,0,0,0.5);">
-            {{getRatingText(currentResult()!.rating)}}
-          </p>
-          <!-- 外れ方向フィードバック -->
-          @if (currentResult()!.rating === 'miss' && missDirection()) {
-          <p class="mt-2 text-red-300 text-sm md:text-base font-bold tracking-wider">
-            {{missDirection()}}
-          </p>
+      <!-- 状態ガイド -->
+      @if (gameState() === 'selectType') {
+      <div
+        class="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-sky-300 text-xs px-3 py-1.5 rounded-full border border-sky-400/30 pointer-events-none">
+        ① 球種を選ぶ
+      </div>
+      }
+      @if (gameState() === 'aiming') {
+      <div
+        class="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-red-300 text-xs px-3 py-1.5 rounded-full border border-red-400/30 pointer-events-none">
+        ② 投げたいコースをタップ
+      </div>
+      }
+      @if (gameState() === 'power') {
+      <div
+        class="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-orange-300 text-xs px-3 py-1.5 rounded-full border border-orange-400/30 pointer-events-none">
+        ③ 球威を決める（強いほど速いが制球が難しい）
+      </div>
+      }
+      @if (gameState() === 'control') {
+      <div
+        class="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-green-300 text-xs px-3 py-1.5 rounded-full border border-green-400/30 pointer-events-none">
+        ④ 中央で止めて制球を合わせる
+      </div>
+      }
+    </div>
+
+    <!-- 操作パネル -->
+    <div class="mt-3">
+      @if (gameState() === 'ready') {
+      <div class="text-center">
+        <button (click)="startGame()"
+          class="bg-gradient-to-b from-sky-400 to-sky-600 text-black text-2xl font-black py-5 px-16 rounded-full shadow-[0_8px_0_#075985,0_15px_30px_rgba(56,189,248,0.3)] hover:translate-y-[4px] hover:shadow-[0_4px_0_#075985] active:shadow-none active:translate-y-[8px] transition-all duration-100 animate-pulse">
+          ⚾ START GAME
+        </button>
+        <div class="mt-6 max-w-lg mx-auto text-left bg-[#0f1a26] border border-white/10 rounded-xl p-4">
+          <h3 class="text-sky-400 font-bold text-sm mb-2">ルール（実際の投球と同じ流れ）</h3>
+          <ul class="text-white/60 text-xs space-y-1.5 leading-relaxed">
+            <li>・<span class="text-white/80">3アウトを取るまでが1イニング</span>。無失点で抑えるほど高得点。</li>
+            <li>・<span class="text-white/80">球種 → コース → 球威 → 制球</span>の順に決めて投げます。</li>
+            <li>・球威を上げると球速が出ますが、制球メーターが速くなり荒れやすくなります。</li>
+            <li>・打者は選球眼に応じてボール球を見送ります。追い込んでから外の変化球で空振りを取るのが基本。</li>
+            <li>・球数が増えるとスタミナが落ち、球速と制球が悪化します。</li>
+          </ul>
+        </div>
+      </div>
+      }
+
+      <!-- ① 球種選択 -->
+      @if (gameState() === 'selectType') {
+      <div class="bg-[#0f1a26] border border-white/10 rounded-xl p-3">
+        <p class="text-white/50 text-[11px] uppercase tracking-wider mb-2">球種を選択</p>
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+          @for (p of pitchTypes; track p.id) {
+          <button (click)="selectPitchType(p)"
+            class="rounded-lg py-2 px-1 border transition-all hover:scale-[1.03] active:scale-95 bg-white/5 hover:bg-white/10"
+            [style.border-color]="p.color + '66'">
+            <span class="block font-bold text-xs" [style.color]="p.color">{{p.name}}</span>
+            <span class="block text-[9px] text-white/40 mt-0.5">{{speedRangeLabel(p)}}</span>
+            <span class="block text-[9px] text-white/55">{{breakLabel(p)}}</span>
+          </button>
           }
-          <div class="mt-6 flex flex-col items-center justify-center gap-1 animate-slide-up">
-            <div class="flex items-center gap-2">
-              <span class="text-cyan-400 text-4xl font-black">+</span>
-              <span
-                class="text-white text-5xl font-oswald font-black tracking-tighter drop-shadow-[0_0_20px_rgba(34,211,238,0.8)]">
-                {{currentResult()!.score | number}}
-              </span>
-            </div>
-            <!-- コンボボーナス表示 -->
-            @if (comboCount() >= 2 && currentResult()!.rating !== 'miss') {
-            <span class="text-orange-300 text-sm font-bold">
-              (コンボボーナス +{{(currentResult()!.score * (comboCount() * 0.1) / (1 + comboCount() * 0.1)) | number:'1.0-0'}})
-            </span>
+        </div>
+      </div>
+      }
+
+      <!-- ② コース指定（9分割の補助ボタン） -->
+      @if (gameState() === 'aiming') {
+      <div class="bg-[#0f1a26] border border-white/10 rounded-xl p-3">
+        <p class="text-white/50 text-[11px] uppercase tracking-wider mb-2">
+          コースを指定 — <span class="font-bold" [style.color]="selectedPitchType().color">{{selectedPitchType().name}}</span>
+        </p>
+        <div class="flex items-center gap-4 justify-center">
+          <div class="grid grid-cols-3 gap-1 w-[132px]">
+            @for (z of zones; track z) {
+            <button (click)="aimZone(z)"
+              class="aspect-square rounded bg-white/5 border border-white/15 hover:bg-sky-500/30 hover:border-sky-400 active:scale-95 transition-all"></button>
             }
+          </div>
+          <p class="text-white/40 text-xs max-w-[220px] leading-relaxed">
+            キャンバスを直接タップすればゾーンの外（ボール球）も狙えます。<br>
+            追い込んだら外して振らせるのが本格派。
+          </p>
+        </div>
+      </div>
+      }
+
+      <!-- ③④ メーター -->
+      @if (gameState() === 'power' || gameState() === 'control') {
+      <div class="bg-[#0f1a26] border border-white/10 rounded-xl p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] uppercase tracking-wider"
+            [class]="gameState() === 'power' ? 'text-orange-400' : 'text-green-400'">
+            {{ gameState() === 'power' ? '球威メーター' : '制球メーター' }}
+          </span>
+          <span class="font-oswald text-lg font-bold text-white">{{meter() | number:'1.0-0'}}</span>
+        </div>
+
+        <div class="relative h-7 rounded-lg bg-black/50 overflow-hidden border border-white/10">
+          @if (gameState() === 'power') {
+          <!-- 球威: 高いほど速いが制球難 -->
+          <div class="absolute inset-0 bg-gradient-to-r from-sky-600/40 via-yellow-500/40 to-red-600/50"></div>
+          } @else {
+          <!-- 制球: 中央が完璧 -->
+          <div class="absolute inset-y-0 left-[44%] w-[12%] bg-green-500/40 border-x border-green-400/60"></div>
+          <div class="absolute inset-y-0 left-[34%] w-[10%] bg-yellow-500/20"></div>
+          <div class="absolute inset-y-0 left-[56%] w-[10%] bg-yellow-500/20"></div>
+          }
+          <div class="absolute top-0 bottom-0 w-1 bg-white shadow-[0_0_10px_#fff]" [style.left.%]="meter()"></div>
+        </div>
+
+        <button (click)="stopMeterAndAdvance()"
+          class="w-full mt-3 bg-gradient-to-b from-red-500 to-red-700 text-white text-2xl font-black py-4 rounded-xl shadow-[0_6px_0_#7f1d1d] active:shadow-none active:translate-y-[6px] transition-all duration-100 touch-manipulation">
+          STOP
+        </button>
+        <p class="text-white/35 text-[11px] text-center mt-2">タップ or スペースキー で停止</p>
+      </div>
+      }
+
+      @if (gameState() === 'throwing' || gameState() === 'result') {
+      <div class="bg-[#0f1a26] border border-white/10 rounded-xl p-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] text-white/40 uppercase tracking-wider">PITCH</span>
+          <span class="font-bold text-sm" [style.color]="selectedPitchType().color">{{selectedPitchType().name}}</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="text-right">
+            <span class="text-[10px] text-white/40 block leading-none">球速</span>
+            <span class="font-oswald text-xl font-bold text-white">{{currentSpeed()}}<span
+                class="text-[10px] text-white/50 ml-0.5">km/h</span></span>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-white/40 block leading-none">制球</span>
+            <span class="font-oswald text-xl font-bold"
+              [class]="controlAccuracy() >= 80 ? 'text-green-400' : controlAccuracy() >= 50 ? 'text-yellow-400' : 'text-red-400'">
+              {{controlAccuracy()}}<span class="text-[10px] ml-0.5">%</span>
+            </span>
           </div>
         </div>
       </div>
@@ -131,78 +226,81 @@
 
     <!-- ゲームオーバー -->
     @if (gameState() === 'gameover') {
-    <div
-      class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl animate-fade-in z-[9999] overflow-y-auto flex items-center justify-center">
-      <div class="w-full max-w-lg p-4">
+    <div class="fixed inset-0 bg-black/80 backdrop-blur-md animate-fade-in z-[9999] overflow-y-auto">
+      <div class="min-h-full flex items-start justify-center py-8 px-4 pt-16">
         <div
-          class="bg-gradient-to-b from-slate-900 to-slate-950 rounded-3xl p-8 text-center border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
-          <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent">
-          </div>
-
-          <h2
-            class="text-4xl font-black font-oswald text-white mb-8 tracking-widest drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-            GAME SET
+          class="bg-gradient-to-b from-[#12233a] to-[#0b1523] rounded-2xl p-8 max-w-md w-full text-center border border-sky-500/30 shadow-2xl">
+          <h2 class="text-3xl font-bold font-oswald text-sky-400 mb-6 drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]">
+            CHANGE
           </h2>
 
-          <!-- スコア -->
-          <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/5 relative group">
-            <div
-              class="absolute inset-0 bg-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
-            </div>
-            <p class="text-cyan-400 text-xs font-bold tracking-[0.3em] mb-2 uppercase">トータルスコア</p>
-            <p class="text-6xl font-oswald font-black text-white tracking-tight drop-shadow-2xl">
-              {{score() | number}}
-            </p>
+          <div class="bg-gradient-to-br from-sky-500/20 to-blue-500/20 rounded-xl p-6 mb-6 border border-sky-500/30">
+            <p class="text-white/70 text-sm mb-1">FINAL SCORE</p>
+            <p class="text-5xl font-oswald font-bold text-sky-300">{{score() | number}}</p>
           </div>
 
-          <!-- 統計 -->
-          <div class="grid grid-cols-2 gap-4 mb-8">
-            <div class="bg-slate-800/50 rounded-xl p-4 border border-white/5">
-              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">パーフェクト / グレート</p>
-              <p class="text-3xl font-oswald font-bold text-yellow-400">{{getPerfectPitchCount()}}</p>
+          <!-- 投手成績（実際のスコアブックの項目） -->
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <div class="bg-white/5 rounded-xl p-3 border border-white/10">
+              <p class="text-[10px] text-gray-500 font-bold mb-1">奪三振</p>
+              <p class="text-2xl font-oswald font-bold text-cyan-400">{{strikeouts()}}</p>
             </div>
-            <div class="bg-slate-800/50 rounded-xl p-4 border border-white/5">
-              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">制球率</p>
-              <p class="text-3xl font-oswald font-bold text-green-400">{{getAverageAccuracy()}}%</p>
+            <div class="bg-white/5 rounded-xl p-3 border border-white/10">
+              <p class="text-[10px] text-gray-500 font-bold mb-1">被安打</p>
+              <p class="text-2xl font-oswald font-bold text-orange-400">{{hitsAllowed()}}</p>
+            </div>
+            <div class="bg-white/5 rounded-xl p-3 border border-white/10">
+              <p class="text-[10px] text-gray-500 font-bold mb-1">失点</p>
+              <p class="text-2xl font-oswald font-bold text-red-400">{{runs()}}</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mb-6">
+            <div class="bg-white/5 rounded-xl p-3 border border-white/10">
+              <p class="text-[10px] text-gray-500 font-bold mb-1">与四球</p>
+              <p class="text-xl font-oswald font-bold text-white">{{walksAllowed()}}</p>
+            </div>
+            <div class="bg-white/5 rounded-xl p-3 border border-white/10">
+              <p class="text-[10px] text-gray-500 font-bold mb-1">球数</p>
+              <p class="text-xl font-oswald font-bold text-white">{{pitchCount()}}</p>
+            </div>
+            <div class="bg-white/5 rounded-xl p-3 border border-white/10">
+              <p class="text-[10px] text-gray-500 font-bold mb-1">ストライク率</p>
+              <p class="text-xl font-oswald font-bold text-white">{{strikePercentage()}}<span
+                  class="text-xs text-white/50">%</span></p>
             </div>
           </div>
 
-          <!-- ニックネーム入力 -->
           @if (!scoreSaved()) {
-          <div class="mb-8">
-            <label class="block text-xs text-slate-400 font-bold mb-3 uppercase tracking-wider">名前を入力</label>
-            <div class="flex gap-2">
-              <input type="text" [(ngModel)]="nickname" placeholder="選手名" maxlength="10"
-                class="flex-1 px-5 py-3 bg-slate-950 border border-white/10 rounded-xl text-white placeholder-slate-600 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all font-bold text-center uppercase tracking-wider">
-              <button (click)="saveScore()"
-                class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-6 py-3 rounded-xl font-black transition-all shadow-lg shadow-cyan-500/20 active:scale-95">
-                保存
-              </button>
-            </div>
+          <div class="mb-6">
+            <label class="block text-sm text-gray-400 mb-2">ニックネーム</label>
+            <input type="text" [(ngModel)]="nickname" placeholder="名無し" maxlength="20"
+              class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none">
+            @if (nicknameError()) {
+            <p class="mt-2 text-sm text-red-400 text-left">{{nicknameError()}}</p>
+            }
+            <button (click)="saveScore()"
+              class="w-full mt-3 bg-gradient-to-r from-sky-500 to-blue-500 text-black py-3 rounded-lg font-bold hover:from-sky-400 hover:to-blue-400 transition-all shadow-lg shadow-sky-500/30">
+              スコアを保存
+            </button>
           </div>
           } @else if (savedRank() > 0) {
-          <div
-            class="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-xl p-4 mb-8">
-            <p class="text-yellow-400 font-bold flex items-center justify-center gap-2">
-              <span class="text-xl">🏆</span>
-              ランキング: <span class="text-2xl font-oswald">{{savedRank()}}</span>位
-            </p>
+          <div class="bg-sky-500/20 border border-sky-500/50 rounded-lg p-4 mb-6">
+            <p class="text-sky-300 font-bold">🏆 ランキング {{savedRank()}}位！</p>
           </div>
           } @else {
-          <div class="bg-white/5 border border-white/10 rounded-xl p-4 mb-8">
-            <p class="text-slate-300 font-bold text-center">スコアを保存しました（ランキング圏外でした）</p>
+          <div class="bg-white/10 border border-white/20 rounded-lg p-4 mb-6">
+            <p class="text-gray-300 font-bold">スコアを保存しました（ランキング圏外でした）</p>
           </div>
           }
 
-          <!-- ボタン -->
-          <div class="flex gap-3">
+          <div class="flex gap-4">
             <button (click)="startGame()"
-              class="flex-1 bg-white text-slate-950 py-4 rounded-xl font-black hover:bg-slate-200 transition-all shadow-lg active:scale-95 tracking-wider">
+              class="flex-1 bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 rounded-lg font-bold hover:from-blue-500 hover:to-blue-700 transition-all shadow-lg">
               もう一度
             </button>
             <a routerLink="/game"
-              class="flex-1 bg-white/5 text-white py-4 rounded-xl font-bold hover:bg-white/10 transition-all text-center border border-white/10 active:scale-95 tracking-wider">
-              終了
+              class="flex-1 bg-white/10 text-white py-3 rounded-lg font-bold hover:bg-white/20 transition-all text-center border border-white/20">
+              ゲーム選択
             </a>
           </div>
         </div>
@@ -210,91 +308,42 @@
     </div>
     }
 
-    <!-- 操作エリア -->
-    <div class="mb-4 flex flex-col justify-center min-h-[80px]">
-      @if (gameState() === 'ready') {
-      <div class="text-center animate-bounce-slight">
-        <button (click)="startGame()"
-          class="group relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-2xl font-black py-5 px-20 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.4)] hover:shadow-[0_0_50px_rgba(6,182,212,0.6)] hover:-translate-y-1 active:translate-y-0 transition-all duration-300 overflow-hidden border border-white/20">
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out">
-          </div>
-          <span class="relative z-10 flex items-center gap-4 tracking-widest">
-            プレイボール
-          </span>
-        </button>
-      </div>
-      }
-
-      @if (gameState() === 'selecting') {
-      <div class="text-center">
-        <div
-          class="inline-flex items-center justify-center gap-4 bg-slate-900/80 px-8 py-3 rounded-full border border-yellow-500/30 shadow-lg backdrop-blur-md animate-pulse-slow">
-          <span class="text-2xl text-yellow-400">🎯</span>
-          <p class="text-white text-lg font-bold tracking-wider">
-            ターゲット: <span class="text-yellow-400 text-2xl font-black ml-2">{{getZoneLabel(targetZone())}}</span>
-          </p>
-        </div>
-        <p class="text-slate-400 text-xs font-bold mt-2 tracking-widest uppercase">黄色のゾーンをタップ</p>
-      </div>
-      }
-
-      @if (gameState() === 'power') {
-      <div class="text-center px-2">
-        <button (click)="throwBall()"
-          class="group relative w-full bg-gradient-to-r from-rose-600 to-red-600 text-white text-2xl sm:text-3xl font-black py-5 sm:py-6 rounded-2xl shadow-[0_0_40px_rgba(225,29,72,0.4)] active:scale-95 transition-all duration-150 touch-manipulation border border-white/20 overflow-hidden min-h-[60px]">
-          <div class="absolute inset-0 bg-[url('/assets/patterns/noise.png')] opacity-20"></div>
-          <span class="relative z-10 flex items-center justify-center gap-3 tracking-[0.2em]">
-            投げろ！
-          </span>
-        </button>
-        <p
-          class="text-green-400 text-xs sm:text-sm mt-3 font-bold flex items-center justify-center gap-2 uppercase tracking-wider">
-          <span class="w-2 h-2 bg-green-400 rounded-full animate-ping"></span>
-          緑のゾーンで止めろ
-          <span class="w-2 h-2 bg-green-400 rounded-full animate-ping"></span>
-        </p>
-      </div>
-      }
-
-      @if (gameState() === 'throwing') {
-      <div class="text-center">
-        <div
-          class="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-slate-900/50 border border-white/10 backdrop-blur-sm">
-          <div class="flex gap-1">
-            <div class="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style="animation-delay: 0s"></div>
-            <div class="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-            <div class="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-          </div>
-          <p class="text-cyan-300 text-sm font-bold tracking-widest uppercase">投球中...</p>
-        </div>
-      </div>
-      }
-    </div>
-
-    <!-- 結果履歴 -->
-    @if (results().length > 0) {
-    <div class="mt-auto bg-slate-900/80 rounded-2xl p-4 border border-white/5 backdrop-blur-md">
-      <h3 class="text-slate-500 text-[10px] font-black mb-3 uppercase tracking-[0.2em] flex items-center gap-3">
-        <span>投球履歴</span>
-        <div class="flex-1 h-px bg-slate-800"></div>
+    <!-- 配球チャート -->
+    @if (pitchLog().length > 0) {
+    <div class="mt-4 bg-gradient-to-b from-[#12233a] to-[#0b1523] rounded-xl p-4 border border-white/10">
+      <h3 class="text-white/50 text-xs font-bold mb-3 uppercase tracking-wider flex items-center gap-2">
+        <span class="w-1 h-3 bg-sky-500 rounded-full"></span>
+        配球チャート（打者目線）
       </h3>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-        @for (result of results(); track $index) {
-        <div class="flex flex-col items-center justify-center p-2 rounded-xl border-2 
-              transition-all duration-300 hover:scale-105" [class.bg-yellow-500/20]="result.rating === 'perfect'"
-          [class.border-yellow-500/50]="result.rating === 'perfect'"
-          [class.text-yellow-400]="result.rating === 'perfect'" [class.bg-green-500/20]="result.rating === 'great'"
-          [class.border-green-500/50]="result.rating === 'great'" [class.text-green-400]="result.rating === 'great'"
-          [class.bg-blue-500/20]="result.rating === 'good'" [class.border-blue-500/50]="result.rating === 'good'"
-          [class.text-blue-400]="result.rating === 'good'" [class.bg-slate-700/50]="result.rating === 'ok'"
-          [class.border-slate-600]="result.rating === 'ok'" [class.text-slate-400]="result.rating === 'ok'"
-          [class.bg-red-500/20]="result.rating === 'miss'" [class.border-red-500/50]="result.rating === 'miss'"
-          [class.text-red-400]="result.rating === 'miss'">
-          <span class="font-black text-xs uppercase tracking-wider">{{getRatingText(result.rating)}}</span>
-          <span class="text-[10px] font-bold opacity-80">+{{result.score}}</span>
+      <div class="flex items-start gap-4 flex-wrap">
+        <div class="relative w-[140px] h-[140px] bg-black/40 rounded border border-white/10">
+          <div class="absolute border border-white/40" style="left:27.3%;top:27.3%;width:45.5%;height:45.5%"></div>
+          @for (rec of pitchLog(); track $index) {
+          <span class="absolute w-2.5 h-2.5 rounded-full -translate-x-1/2 -translate-y-1/2 border border-black/60"
+            [style.left.%]="chartX(rec.actual)" [style.top.%]="chartY(rec.actual)"
+            [style.background-color]="chartColor(rec)"
+            [title]="rec.pitch.name + ' ' + rec.speedKmh + 'km/h → ' + rec.judge"></span>
+          }
         </div>
-        }
+        <div class="flex-1 min-w-[180px]">
+          <div class="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-white/50 mb-3">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#facc15]"></span>ストライク</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#38bdf8]"></span>ボール</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#fb923c]"></span>ファウル</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#4ade80]"></span>アウト</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#f43f5e]"></span>被安打</span>
+          </div>
+          <div class="max-h-[110px] overflow-y-auto pr-1 space-y-1">
+            @for (rec of pitchLog(); track $index; let i = $index) {
+            <div class="flex items-center gap-2 text-[11px] text-white/60">
+              <span class="text-white/30 w-6 text-right">{{i + 1}}</span>
+              <span class="w-20 font-bold" [style.color]="rec.pitch.color">{{rec.pitch.name}}</span>
+              <span class="font-oswald w-16">{{rec.speedKmh}}km/h</span>
+              <span>{{rec.judge}}</span>
+            </div>
+            }
+          </div>
+        </div>
       </div>
     </div>
     }
@@ -309,7 +358,7 @@
     }
 
     50% {
-      transform: scale(1.2);
+      transform: scale(1.1);
     }
 
     100% {
@@ -318,44 +367,7 @@
     }
   }
 
-  @keyframes slide-up {
-    0% {
-      transform: translateY(20px);
-      opacity: 0;
-    }
-
-    100% {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  @keyframes bounce-custom {
-
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-
   .animate-scale-in {
-    animation: scale-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-  }
-
-  .animate-slide-up {
-    animation: slide-up 0.4s ease-out 0.2s forwards;
-    opacity: 0;
-  }
-
-  .animate-bounce-custom {
-    animation: bounce-custom 1s infinite;
-  }
-
-  .perspective-1000 {
-    perspective: 1000px;
+    animation: scale-in 0.35s ease-out forwards;
   }
 </style>
