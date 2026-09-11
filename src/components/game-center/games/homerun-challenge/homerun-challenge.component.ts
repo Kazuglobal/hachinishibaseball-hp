@@ -1,16 +1,34 @@
-import { Component, ChangeDetectionStrategy, signal, inject, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit, PLATFORM_ID, Inject, HostListener } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit, PLATFORM_ID, Inject, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GameScoreService } from '../../../../services/game-score.service';
 import { SEOService } from '../../../../services/seo.service';
+import {
+  FIELD,
+  PITCH_TYPES,
+  PitchType,
+  PitchTypeId,
+  ZonePoint,
+  breakOffsetAt,
+  pitchFlightTime,
+  rollPitchSpeed,
+  isStrike,
+  computeContact,
+  resolveBattedBall,
+  PlayResult,
+  PlayOutcome,
+  OUTCOME_LABEL,
+  BATTED_BALL_LABEL,
+  BattedBallTrajectory,
+  fenceDistanceAt,
+  clamp,
+  SWING_WINDOW_MS,
+  BAT_VERTICAL_WINDOW_CM,
+  BAT_HORIZONTAL_WINDOW_CM,
+} from '../../shared/baseball-physics';
 
-type GameState = 'ready' | 'pitching' | 'swing' | 'flying' | 'result' | 'gameover';
-
-interface BallResult {
-  type: 'homerun' | 'hit' | 'foul' | 'strike' | 'miss';
-  distance: number;
-}
+type GameState = 'ready' | 'windup' | 'pitching' | 'flying' | 'result' | 'gameover';
 
 interface Particle {
   x: number;
@@ -23,10 +41,23 @@ interface Particle {
   size: number;
 }
 
-interface TrailPoint {
-  x: number;
-  y: number;
-  alpha: number;
+interface TrailPoint { x: number; y: number; r: number; alpha: number; }
+
+/** 1球ごとの記録（配球チャート用） */
+interface PitchRecord {
+  location: ZonePoint;
+  pitch: PitchType;
+  speedKmh: number;
+  called: 'strike' | 'ball' | 'swing';
+}
+
+/** 打席結果の記録 */
+interface AtBatRecord {
+  outcome: PlayOutcome;
+  distance: number;
+  exitVelocityKmh: number;
+  launchAngleDeg: number;
+  barrel: boolean;
 }
 
 @Component({
@@ -40,56 +71,42 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   @ViewChild('gameCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
   private ctx!: CanvasRenderingContext2D;
-  private animationId: number = 0;
+  private animationId = 0;
   private isBrowser: boolean;
   private resizeHandler?: () => void;
   private resizeObserver?: ResizeObserver;
+  private pendingTimeouts: number[] = [];
 
   private seoService = inject(SEOService);
   private gameScoreService = inject(GameScoreService);
 
-  // ゲーム状態
+  // ====================================================================
+  // ゲーム進行（実際の野球と同じ打席／カウント制）
+  // ====================================================================
   gameState = signal<GameState>('ready');
-  currentBall = signal(0);
-  totalBalls = 10;
+  /** 何打席目か */
+  atBat = signal(0);
+  readonly totalAtBats = 5;
+  balls = signal(0);
+  strikes = signal(0);
+  outs = signal(0);
   score = signal(0);
-  results = signal<BallResult[]>([]);
+  atBatResults = signal<AtBatRecord[]>([]);
+  pitchLog = signal<PitchRecord[]>([]);
 
-  // キャンバスサイズ
-  private canvasWidth = 0;
-  private canvasHeight = 0;
-
-  // ボールの3D位置（z=奥行き）
-  private ballX = 0;
-  private ballY = 0;
-  private ballZ = 0; // 0=投手、1000=バッター
-  private ballVx = 0;
-  private ballVy = 0;
-  private ballVz = 0;
-
-  // 打球の飛行
-  private hitBallX = 0;
-  private hitBallY = 0;
-  private hitBallZ = 0;
-  private hitBallVx = 0;
-  private hitBallVy = 0;
-  private hitBallVz = 0;
-
-  // ボールの軌跡
-  private ballTrail: TrailPoint[] = [];
-
-  // パーティクル
-  private particles: Particle[] = [];
-
-  // バッター
-  private batAngle = 0;
-  private isSwinging = false;
-  private swingStartTime = 0;
-
-  // 現在のプレイ
-  currentResult = signal<BallResult | null>(null);
-  showResultMessage = signal(false);
+  /** 打球データ（トラッキング表示用） */
+  lastPlay = signal<PlayResult | null>(null);
+  lastOutcomeLabel = signal('');
+  /** 判定の補足（見逃し / 空振り など） */
+  lastOutcomeSub = signal('');
   swingTiming = signal<'perfect' | 'good' | 'early' | 'late' | null>(null);
+  showResultMessage = signal(false);
+
+  /** 現在の投球情報 */
+  currentPitchType = signal<PitchType | null>(null);
+  currentPitchSpeed = signal(0);
+  /** 投球後に球種を開示する（投球前は伏せる） */
+  revealPitch = signal(false);
 
   // ゲームオーバー
   nickname = '';
@@ -98,6 +115,51 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   highScore = signal(0);
   nicknameError = signal<string | null>(null);
 
+  // ====================================================================
+  // 投球の状態
+  // ====================================================================
+  private pitch!: PitchType;
+  private pitchSpeedKmh = 0;
+  private pitchLocation: ZonePoint = { x: 0, y: 0 };
+  private pitchStartMs = 0;
+  private pitchFlightMs = 0;
+  /** リリースまでの溜め（ワインドアップ） */
+  private windupMs = 0;
+  /** 投球の進行度 0〜1 */
+  private pitchProgress = 0;
+  /** 打者を通過してから判定するまでの猶予 */
+  private passedPlate = false;
+  /** この1球の判定が確定したか（確定後のスイング入力を無効にする） */
+  private pitchDecided = false;
+
+  // スイング
+  /** バットが振り始めてからミートポイントに到達するまでの時間（実際の打者と同じ約130ms） */
+  private readonly BAT_LAG_MS = 130;
+  private swingStartMs = 0;
+  private isSwinging = false;
+  private swingResolved = false;
+
+  /** ミートポイント（ストライクゾーン正規化座標） */
+  meetX = signal(0);
+  meetY = signal(0);
+
+  // 打球
+  private flightTraj: BattedBallTrajectory | null = null;
+  private flightSpray = 0;
+  private flightStartMs = 0;
+  private flightDone = false;
+
+  // 演出
+  private particles: Particle[] = [];
+  private ballTrail: TrailPoint[] = [];
+  private frameCount = 0;
+  private screenShakeX = 0;
+  private screenShakeY = 0;
+  private screenShakeIntensity = 0;
+  private impactFlashAlpha = 0;
+  private slowMotionFactor = 1;
+  private batAngle = -Math.PI * 0.75;
+
   // サウンド
   private swingSound?: HTMLAudioElement;
   private homerunSound?: HTMLAudioElement;
@@ -105,1967 +167,549 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
   private foulSound?: HTMLAudioElement;
   private missSound?: HTMLAudioElement;
   private bgm?: HTMLAudioElement;
-  // アニメーション用
-  private frameCount = 0;
-  private slowMotion = false;
-  private slowMotionFactor = 1;
-  private flyingTimeoutId: number | null = null;
-  private resultTimeoutId: number | null = null;
 
-  // Iteration 2: Game Feel Enhancement
-  private screenShakeX = 0;
-  private screenShakeY = 0;
-  private screenShakeIntensity = 0;
-  private impactFlashAlpha = 0;
-  private motionBlurAlpha = 0;
-  private comboCount = 0;
-  private lastHitType: BallResult['type'] | null = null;
-
-  // ====================================
-  // Mobile Layout Optimization Settings
-  // ====================================
-  // モバイル判定（画面幅768px未満をモバイルとする）
+  // ====================================================================
+  // 画面・カメラ（捕手の後方から投手を見る実際の中継カメラ位置）
+  // ====================================================================
+  private canvasWidth = 0;
+  private canvasHeight = 0;
   private isMobile = false;
   private readonly MOBILE_BREAKPOINT = 768;
 
-  // PC向けデフォルト設定
-  private readonly PC_CONFIG = {
-    // 投球速度の基本値と変動幅
-    PITCH_BASE_SPEED: 12,
-    PITCH_SPEED_VARIANCE: 8,
-    PITCH_SPEED_INCREMENT: 0.5, // 球数ごとの速度増加
+  /**
+   * カメラ設定。実際の中継の「バックネット裏・望遠レンズ」の画角を再現する。
+   * 本塁の9m後方・高さ1.7mから望遠で見ることで、
+   * 打者が画面を占有しすぎず、投手も十分な大きさで見える自然な構図になる。
+   */
+  private readonly CAM_BACK = 9.0;
+  private readonly CAM_HEIGHT = 1.7;
+  /** リリースポイント: 投手板の1.4m前、高さ1.85m、三塁側に0.35m（右投手） */
+  private readonly RELEASE = { x: -0.35, y: 1.85, z: FIELD.MOUND_TO_PLATE - 1.4 };
+  /** 打者の立ち位置（右打者は三塁側＝カメラから見て左） */
+  private readonly BATTER_X = -0.85;
 
-    // ボールサイズ倍率
-    BALL_SIZE_MULTIPLIER: 1.0,
-
-    // 最適タイミングゾーン（ballZ値）
-    OPTIMAL_ZONE: 850,
-    OPTIMAL_ZONE_TOLERANCE: 50, // パーフェクト判定の許容範囲
-
-    // カメラ・視点設定
-    PERSPECTIVE_MULTIPLIER: 1.0,
-    PITCHER_Y_POSITION: 0.42,  // 投手のY位置（画面高さに対する割合）
-    BATTER_Y_POSITION: 0.85,   // バッターのY位置
-
-    // Iteration 1: ボール軌跡の視認性設定
-    BALL_TRAIL_LENGTH: 15,      // トレイルの長さ（ポイント数）
-    BALL_TRAIL_OPACITY: 0.6,    // トレイルの不透明度
-    BALL_TRAIL_SIZE_MULT: 1.0,  // トレイルサイズ倍率
-    SHOW_SPEED_INDICATOR: false, // 速度インジケータ表示
-
-    // Iteration 2: タイミングフィードバック設定
-    TIMING_BAR_HEIGHT_MULT: 1.0,  // タイミングバー高さ倍率
-    SWING_BUTTON_SIZE_MULT: 1.0,  // スイングボタン領域倍率
-    SHOW_SWING_HINT: false,       // スイングヒント非表示（PC不要）
-
-    // Iteration 3: 最終ポリッシュと微調整
-    SHOW_HIT_ZONE: false,         // ヒットゾーン非表示（PC不要）
-    FIRST_PLAY_GUIDE: false,      // 初回ガイド非表示（PC不要）
-  };
-
-  // モバイル向け調整設定
-  // ※ボールを見やすく、タイミングを取りやすくするための調整
-  private readonly MOBILE_CONFIG = {
-    // 投球速度（PC版の約70%に減速して反応時間を確保）
-    PITCH_BASE_SPEED: 8,
-    PITCH_SPEED_VARIANCE: 5,
-    PITCH_SPEED_INCREMENT: 0.3,
-
-    // ボールサイズ（PC版の1.3倍で視認性向上）
-    BALL_SIZE_MULTIPLIER: 1.3,
-
-    // 最適タイミングゾーン（より広めに設定して操作性向上）
-    OPTIMAL_ZONE: 850,
-    OPTIMAL_ZONE_TOLERANCE: 70,
-
-    // カメラ・視点設定（投手を少し遠くに配置して軌道を見やすく）
-    PERSPECTIVE_MULTIPLIER: 0.85,
-    PITCHER_Y_POSITION: 0.35,  // 投手を上（遠く）に
-    BATTER_Y_POSITION: 0.88,   // バッターを下（手前）に
-
-    // Iteration 1: ボール軌跡の視認性設定（モバイル強化）
-    BALL_TRAIL_LENGTH: 25,      // 長めのトレイルで軌道を追いやすく
-    BALL_TRAIL_OPACITY: 0.8,    // より濃いトレイル
-    BALL_TRAIL_SIZE_MULT: 1.5,  // 太めのトレイル
-    SHOW_SPEED_INDICATOR: true, // 速度インジケータを表示してタイミング補助
-
-    // Iteration 2: タイミングフィードバック設定（モバイル強化）
-    TIMING_BAR_HEIGHT_MULT: 1.3,  // タイミングバーを太くして視認性向上
-    SWING_BUTTON_SIZE_MULT: 1.2,  // スイングボタン領域を拡大
-    SHOW_SWING_HINT: true,        // 「TAP!」ヒント表示
-
-    // Iteration 3: 最終ポリッシュと微調整
-    SHOW_HIT_ZONE: true,          // ヒットゾーン可視化
-    FIRST_PLAY_GUIDE: true,       // 初回プレイガイド表示
-  };
-
-  // 現在適用中の設定（実行時に切り替え）
-  private gameConfig = this.PC_CONFIG;
+  private focal = 0;
+  private horizonY = 0;
 
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
-  @HostListener('window:keydown', ['$event'])
-  onKeyDown(event: KeyboardEvent): void {
-    // プレイ中（投球中）以外（ニックネーム入力など）ではスペースキーを横取りしない
-    if (this.gameState() !== 'pitching') return;
-
-    if (event.code === 'Space' || event.key === ' ') {
-      event.preventDefault();
-      this.swing();
-    }
-  }
-
+  // ====================================================================
+  // ライフサイクル
+  // ====================================================================
   ngOnInit(): void {
     this.seoService.updateSEO({
       title: 'ホームランチャレンジ | 八戸西高校 野球部OB会',
-      description: 'タイミングを合わせてホームランを打て！10球中何本ホームランを打てるかチャレンジ！',
-      keywords: '野球ゲーム,ホームラン,バッティング,ミニゲーム',
+      description: '球種と コースを見極めてタイミングを合わせろ！打球初速・角度・飛距離を再現した本格バッティング。',
+      keywords: '野球ゲーム,ホームラン,バッティング,ミニゲーム,打球初速,打球角度',
       url: 'https://hachinohenishibaseball.com/game/homerun'
     });
     this.highScore.set(this.gameScoreService.getHighScore('homerun'));
-    if (this.isBrowser) {
-      this.initSounds();
-    }
+    if (this.isBrowser) this.initSounds();
   }
 
   ngAfterViewInit(): void {
     if (!this.isBrowser) return;
-
     const canvas = this.canvasRef?.nativeElement;
-    if (canvas) {
-      this.ctx = canvas.getContext('2d')!;
+    if (!canvas) return;
 
-      // 初期サイズ設定（少し遅延を入れて確実にコンテナサイズを取得）
-      setTimeout(() => {
-        this.resizeCanvas();
-        this.drawReadyScreen();
-      }, 0);
+    this.ctx = canvas.getContext('2d')!;
+    setTimeout(() => {
+      this.resizeCanvas();
+      this.drawReadyScreen();
+    }, 0);
 
-      // ウィンドウリサイズ監視
-      this.resizeHandler = () => this.resizeCanvas();
-      window.addEventListener('resize', this.resizeHandler);
+    this.resizeHandler = () => this.resizeCanvas();
+    window.addEventListener('resize', this.resizeHandler);
 
-      // ResizeObserverでコンテナのサイズ変更を監視
-      const container = canvas.parentElement;
-      if (container && typeof ResizeObserver !== 'undefined') {
-        this.resizeObserver = new ResizeObserver(() => {
-          this.resizeCanvas();
-        });
-        this.resizeObserver.observe(container);
-      }
+    const container = canvas.parentElement;
+    if (container && typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => this.resizeCanvas());
+      this.resizeObserver.observe(container);
     }
   }
 
   ngOnDestroy(): void {
-    if (this.animationId) {
-      cancelAnimationFrame(this.animationId);
-    }
-    if (this.isBrowser && this.resizeHandler) {
-      window.removeEventListener('resize', this.resizeHandler);
-    }
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-    }
-    if (this.flyingTimeoutId !== null) {
-      clearTimeout(this.flyingTimeoutId);
-      this.flyingTimeoutId = null;
-    }
-    if (this.resultTimeoutId !== null) {
-      clearTimeout(this.resultTimeoutId);
-      this.resultTimeoutId = null;
-    }
+    if (this.animationId) cancelAnimationFrame(this.animationId);
+    if (this.isBrowser && this.resizeHandler) window.removeEventListener('resize', this.resizeHandler);
+    this.resizeObserver?.disconnect();
+    this.clearTimeouts();
     this.stopBgm();
   }
 
-  private resizeCanvas(): void {
-    if (!this.isBrowser) return;
+  private clearTimeouts(): void {
+    this.pendingTimeouts.forEach(id => clearTimeout(id));
+    this.pendingTimeouts = [];
+  }
 
-    const canvas = this.canvasRef?.nativeElement;
-    if (!canvas) return;
+  private later(fn: () => void, ms: number): void {
+    const id = window.setTimeout(() => {
+      this.pendingTimeouts = this.pendingTimeouts.filter(t => t !== id);
+      fn();
+    }, ms);
+    this.pendingTimeouts.push(id);
+  }
 
-    const container = canvas.parentElement;
-    if (container) {
-      // コンテナの実際のサイズを取得
-      const containerWidth = container.clientWidth || container.offsetWidth;
-      const containerHeight = container.clientHeight || container.offsetHeight;
+  // ====================================================================
+  // 入力
+  // ====================================================================
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    const state = this.gameState();
+    if (state !== 'pitching' && state !== 'windup') return;
 
-      // モバイル判定を更新
-      const wasMobile = this.isMobile;
-      this.isMobile = window.innerWidth < this.MOBILE_BREAKPOINT;
-
-      // モードが変わった場合は設定を切り替え
-      if (wasMobile !== this.isMobile) {
-        this.gameConfig = this.isMobile ? this.MOBILE_CONFIG : this.PC_CONFIG;
-        // デバッグ用ログ
-        console.log(`[HomerunChallenge] Mode changed to: ${this.isMobile ? 'MOBILE' : 'PC'}`);
-        console.log('[HomerunChallenge] Current config:', this.gameConfig);
-      }
-
-      // アスペクト比を維持しながらサイズを設定
-      const aspectRatio = 16 / 10; // aspect-[16/10]に合わせる
-      let width = containerWidth;
-      let height = width / aspectRatio;
-
-      // コンテナの高さを超えないように調整
-      if (height > containerHeight) {
-        height = containerHeight;
-        width = height * aspectRatio;
-      }
-
-      // 実際のピクセルサイズを設定（高DPIディスプレイ対応）
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-
-      // CSSサイズを設定
-      canvas.style.width = width + 'px';
-      canvas.style.height = height + 'px';
-
-      // コンテキストのスケールをリセットしてから調整
-      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-      this.ctx.scale(dpr, dpr);
-
-      // 内部サイズを保存
-      this.canvasWidth = width;
-      this.canvasHeight = height;
-
-      // ゲーム状態に応じて再描画
-      const state = this.gameState();
-      if (state === 'ready') {
-        this.drawReadyScreen();
-      } else if (state === 'pitching' || state === 'swing' || state === 'flying' || state === 'result' || state === 'gameover') {
-        // ゲーム中は次のフレームで再描画される
-      }
+    if (event.code === 'Space' || event.key === ' ') {
+      event.preventDefault();
+      this.swing();
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.meetY.update(v => clamp(v + 0.25, -1.6, 1.6));
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.meetY.update(v => clamp(v - 0.25, -1.6, 1.6));
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      this.meetX.update(v => clamp(v - 0.25, -1.6, 1.6));
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      this.meetX.update(v => clamp(v + 0.25, -1.6, 1.6));
     }
   }
 
+  /** キャンバス上のタップ位置でミートポイントを決めて同時にスイング */
+  onCanvasPointer(event: MouseEvent | TouchEvent): void {
+    const state = this.gameState();
+    if ((state !== 'pitching' && state !== 'windup') || this.pitchDecided) return;
+
+    const canvas = this.canvasRef?.nativeElement;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+
+    let clientX: number, clientY: number;
+    if (event instanceof MouseEvent) {
+      clientX = event.clientX;
+      clientY = event.clientY;
+    } else {
+      const t = event.touches[0] || event.changedTouches[0];
+      if (!t) return;
+      event.preventDefault();
+      clientX = t.clientX;
+      clientY = t.clientY;
+    }
+
+    const p = this.screenToZone(clientX - rect.left, clientY - rect.top);
+    this.meetX.set(clamp(p.x, -1.6, 1.6));
+    this.meetY.set(clamp(p.y, -1.6, 1.6));
+    this.swing();
+  }
+
+  /** タップせずに見送る */
+  takePitch(): void {
+    // 見送りは何もしない（ボールが通過したときに自動判定される）
+  }
+
+  swing(): void {
+    const state = this.gameState();
+    if ((state !== 'pitching' && state !== 'windup') || this.isSwinging || this.pitchDecided) return;
+
+    this.isSwinging = true;
+    this.swingResolved = false;
+    this.swingStartMs = performance.now();
+    this.playSound(this.swingSound);
+    this.addSwingParticles();
+  }
+
+  // ====================================================================
+  // ゲーム進行
+  // ====================================================================
   startGame(): void {
-    // 連打による多重起動防止
     if (this.gameState() !== 'ready' && this.gameState() !== 'gameover') return;
 
-    this.gameState.set('ready');
-    this.currentBall.set(0);
+    this.clearTimeouts();
+    this.atBat.set(0);
     this.score.set(0);
-    this.results.set([]);
+    this.outs.set(0);
+    this.atBatResults.set([]);
+    this.pitchLog.set([]);
     this.savedRank.set(0);
     this.scoreSaved.set(false);
-    // コンボ状態を新しいゲームに持ち越さないようリセット
-    this.comboCount = 0;
-    this.lastHitType = null;
+    this.nicknameError.set(null);
+    this.lastPlay.set(null);
     this.playBgm();
+    this.nextAtBat();
+  }
+
+  private nextAtBat(): void {
+    if (this.atBat() >= this.totalAtBats) {
+      this.endGame();
+      return;
+    }
+    this.atBat.update(v => v + 1);
+    this.balls.set(0);
+    this.strikes.set(0);
+    this.meetX.set(0);
+    this.meetY.set(0);
     this.nextPitch();
   }
 
   private nextPitch(): void {
-    if (this.currentBall() >= this.totalBalls) {
-      this.endGame();
+    this.ensureCanvasSize();
+
+    this.showResultMessage.set(false);
+    this.lastPlay.set(null);
+    this.swingTiming.set(null);
+    this.revealPitch.set(false);
+    this.isSwinging = false;
+    this.swingResolved = false;
+    this.passedPlate = false;
+    this.pitchDecided = false;
+    this.pitchProgress = 0;
+    this.particles = [];
+    this.ballTrail = [];
+    this.batAngle = -Math.PI * 0.75;
+    this.slowMotionFactor = 1;
+    this.flightTraj = null;
+    this.flightDone = false;
+
+    const selected = this.selectPitch();
+    this.pitch = selected.pitch;
+    this.pitchLocation = selected.location;
+    this.pitchSpeedKmh = rollPitchSpeed(this.pitch);
+    this.pitchFlightMs = pitchFlightTime(this.pitchSpeedKmh) * 1000;
+
+    this.currentPitchType.set(this.pitch);
+    this.currentPitchSpeed.set(this.pitchSpeedKmh);
+
+    // ワインドアップ（実際の投球動作と同じくリリースまで間がある）
+    this.windupMs = 600 + Math.random() * 500;
+    this.pitchStartMs = performance.now() + this.windupMs;
+
+    this.gameState.set('windup');
+    this.startLoop();
+  }
+
+  /**
+   * 投手の配球AI。実際の投手と同じく、カウントによって
+   * 「ストライクを取りにいく球」と「振らせにいくボール球」を投げ分ける。
+   */
+  private selectPitch(): { pitch: PitchType; location: ZonePoint } {
+    const b = this.balls();
+    const s = this.strikes();
+    const difficulty = (this.atBat() - 1) / Math.max(1, this.totalAtBats - 1); // 0〜1
+
+    // 追い込んだら変化球中心、ボール先行ならストレート中心
+    const ahead = s >= 2 && b <= 1;
+    const behind = b >= 2 && s <= 1;
+
+    const pool: PitchTypeId[] = ahead
+      ? ['slider', 'forkball', 'curve', 'changeup', 'slider', 'fastball']
+      : behind
+        ? ['fastball', 'fastball', 'shoot', 'slider']
+        : ['fastball', 'fastball', 'slider', 'curve', 'changeup', 'forkball', 'shoot'];
+
+    const pitch = PITCH_TYPES[pool[Math.floor(Math.random() * pool.length)]];
+
+    // コース: 追い込んだらボール球で誘う、ボール先行なら甘めに
+    let location: ZonePoint;
+    if (ahead && Math.random() < 0.55) {
+      // 誘い球（ゾーンのすぐ外）
+      const edge = 1.05 + Math.random() * 0.45;
+      location = Math.random() < 0.5
+        ? { x: (Math.random() < 0.5 ? -1 : 1) * edge, y: (Math.random() - 0.5) * 1.6 }
+        : { x: (Math.random() - 0.5) * 1.6, y: (Math.random() < 0.5 ? -1 : 1) * edge };
+    } else if (behind) {
+      // ストライクを取りにいく（甘め）
+      location = { x: (Math.random() - 0.5) * 1.0, y: (Math.random() - 0.5) * 1.0 };
+    } else {
+      // 通常: 後半ほどコーナーを突く
+      const spread = 0.6 + difficulty * 0.7;
+      location = { x: (Math.random() - 0.5) * 2 * spread, y: (Math.random() - 0.5) * 2 * spread };
+    }
+    return { pitch, location };
+  }
+
+  private startLoop(): void {
+    if (this.animationId) cancelAnimationFrame(this.animationId);
+    const loop = () => {
+      this.frameCount++;
+      const state = this.gameState();
+      if (state !== 'windup' && state !== 'pitching' && state !== 'flying') return;
+
+      this.updateEffects();
+      if (state === 'windup' || state === 'pitching') {
+        this.updatePitch();
+      } else if (state === 'flying') {
+        this.updateFlight();
+      }
+      this.updateParticles();
+      this.drawGame();
+      this.animationId = requestAnimationFrame(loop);
+    };
+    loop();
+  }
+
+  private updatePitch(): void {
+    const now = performance.now();
+
+    if (this.gameState() === 'windup') {
+      if (now >= this.pitchStartMs) {
+        this.gameState.set('pitching');
+      } else {
+        // ワインドアップ中でも早打ちできる（早すぎれば当然タイミングを外す）
+        this.resolveSwingIfDue(now);
+        return;
+      }
+    }
+
+    this.pitchProgress = clamp((now - this.pitchStartMs) / this.pitchFlightMs, 0, 1.6);
+
+    // 軌跡
+    if (this.pitchProgress <= 1.05 && this.frameCount % 2 === 0) {
+      const pos = this.ballScreenPos(this.pitchProgress);
+      this.ballTrail.push({ x: pos.x, y: pos.y, r: pos.r, alpha: 1 });
+      if (this.ballTrail.length > 18) this.ballTrail.shift();
+    }
+    this.ballTrail.forEach(t => (t.alpha *= 0.93));
+
+    this.resolveSwingIfDue(now);
+
+    // 本塁通過後の見送り判定
+    if (!this.passedPlate && this.pitchProgress >= 1 && !this.isSwinging && !this.pitchDecided) {
+      this.passedPlate = true;
+      this.onTakenPitch();
+    }
+  }
+
+  /** バットがミートポイントに到達したタイミングで当たり判定を行う */
+  private resolveSwingIfDue(now: number): void {
+    if (!this.isSwinging || this.swingResolved || this.pitchDecided) return;
+
+    const elapsed = now - this.swingStartMs;
+    // バットの振り抜きアニメーション
+    this.batAngle = -Math.PI * 0.75 + Math.PI * 1.15 * this.easeOutQuad(clamp(elapsed / 180, 0, 1));
+
+    if (elapsed < this.BAT_LAG_MS) return;
+
+    this.swingResolved = true;
+    this.pitchDecided = true;
+    const contactTimeMs = this.swingStartMs + this.BAT_LAG_MS;
+    const plateTimeMs = this.pitchStartMs + this.pitchFlightMs;
+    // ＋が振り遅れ、－が早すぎ
+    const timingErrorMs = contactTimeMs - plateTimeMs;
+
+    // ミートポイントとボールのズレ（cm換算）
+    const zoneHalfWidthCm = (FIELD.ZONE_WIDTH / 2) * 100;
+    const zoneHalfHeightCm = ((FIELD.ZONE_TOP - FIELD.ZONE_BOTTOM) / 2) * 100;
+    const horizontalMissCm = (this.meetX() - this.pitchLocation.x) * zoneHalfWidthCm;
+    const verticalMissCm = (this.meetY() - this.pitchLocation.y) * zoneHalfHeightCm;
+
+    // タッチ操作は指で狙う分だけ精度が落ちるため、モバイルは判定を少し甘くする
+    const assist = this.isMobile ? 0.68 : 1;
+
+    const contact = computeContact({
+      timingErrorMs: timingErrorMs * assist,
+      verticalMissCm: verticalMissCm * assist,
+      horizontalMissCm: horizontalMissCm * assist,
+      pitchSpeedKmh: this.pitchSpeedKmh,
+      power: 1.0,
+    });
+
+    this.revealPitch.set(true);
+    this.logPitch('swing');
+
+    const absTiming = Math.abs(timingErrorMs);
+    this.swingTiming.set(
+      contact.whiff
+        ? (timingErrorMs > 0 ? 'late' : 'early')
+        : absTiming <= SWING_WINDOW_MS * 0.22 ? 'perfect'
+          : absTiming <= SWING_WINDOW_MS * 0.5 ? 'good'
+            : timingErrorMs > 0 ? 'late' : 'early'
+    );
+
+    if (contact.whiff) {
+      this.playSound(this.missSound);
+      this.screenShakeIntensity = 3;
+      this.addStrike('空振り');
       return;
     }
 
-    // キャンバスサイズがまだ取得できていない場合のガード
-    // （初回描画前に startGame()/nextPitch() が呼ばれると width/height が 0 のことがある）
-    if (this.canvasWidth <= 0 || this.canvasHeight <= 0) {
-      // 可能なら実際の要素サイズで再計算
-      if (this.isBrowser && this.canvasRef?.nativeElement) {
-        this.resizeCanvas();
-      }
+    const play = resolveBattedBall(contact);
+    this.lastPlay.set(play);
+    this.impactFlash(play.outcome);
+    this.addContactParticles(play.outcome);
 
-      // それでも 0 の場合はデフォルトサイズを使用して、ボールが (0,0) にならないようにする
-      const DEFAULT_WIDTH = 800;
-      const DEFAULT_HEIGHT = 450;
-      if (this.canvasWidth <= 0) {
-        this.canvasWidth = DEFAULT_WIDTH;
-      }
-      if (this.canvasHeight <= 0) {
-        this.canvasHeight = DEFAULT_HEIGHT;
-      }
+    if (play.outcome === 'foul') {
+      this.playSound(this.foulSound);
+      this.onFoul(play);
+      return;
     }
 
-    this.currentBall.update(v => v + 1);
-    this.currentResult.set(null);
-    this.showResultMessage.set(false);
-    this.swingTiming.set(null);
-    this.ballTrail = [];
-    this.particles = [];
-    this.isSwinging = false;
-    this.batAngle = -Math.PI / 4;
-    this.slowMotion = false;
-    this.slowMotionFactor = 1;
-
-    // ボール初期位置（投手マウンド - configの位置設定を使用）
-    this.ballX = this.canvasWidth / 2;
-    this.ballY = this.canvasHeight * this.gameConfig.PITCHER_Y_POSITION;
-    this.ballZ = 0;
-
-    // 投球速度（configから取得 - モバイル時は遅めに設定）
-    const speed = this.gameConfig.PITCH_BASE_SPEED
-      + Math.random() * this.gameConfig.PITCH_SPEED_VARIANCE
-      + (this.currentBall() * this.gameConfig.PITCH_SPEED_INCREMENT);
-    this.ballVz = speed;
-    this.ballVx = (Math.random() - 0.5) * 2;
-    this.ballVy = (Math.random() - 0.5) * 1;
-
-    this.gameState.set('pitching');
-    this.animateGame();
+    // インプレー: 打球の飛翔を描画
+    this.playSound(play.outcome === 'homerun' ? this.homerunSound : this.hitSound);
+    this.startFlight(play);
   }
 
-  private animateGame(): void {
-    this.frameCount++;
+  private logPitch(called: 'strike' | 'ball' | 'swing'): void {
+    this.pitchLog.update(log => [
+      ...log,
+      { location: { ...this.pitchLocation }, pitch: this.pitch, speedKmh: this.pitchSpeedKmh, called },
+    ]);
+  }
 
-    const state = this.gameState();
-    if (state !== 'pitching' && state !== 'swing' && state !== 'flying') return;
+  /** 見送った場合の球審の判定 */
+  private onTakenPitch(): void {
+    this.pitchDecided = true;
+    this.revealPitch.set(true);
+    const strike = isStrike(this.pitchLocation);
+    this.logPitch(strike ? 'strike' : 'ball');
 
-    // スローモーション処理
-    const deltaMultiplier = this.slowMotion ? this.slowMotionFactor : 1;
+    if (strike) {
+      this.swingTiming.set(null);
+      this.addStrike('見逃し');
+    } else {
+      this.balls.update(b => b + 1);
+      if (this.balls() >= 4) {
+        this.finishAtBat('walk', 'フォアボール', 120, '四球で出塁');
+      } else {
+        this.showCall('ボール', '');
+        this.later(() => this.nextPitch(), 900);
+      }
+    }
+  }
 
-    // スクリーンシェイク更新
-    this.updateScreenShake();
+  private addStrike(label: string): void {
+    this.strikes.update(s => s + 1);
+    if (this.strikes() >= 3) {
+      this.finishAtBat('strikeout', '三振', 0, label);
+    } else {
+      this.showCall('ストライク', label);
+      this.later(() => this.nextPitch(), 900);
+    }
+  }
 
-    // インパクトフラッシュ減衰
-    if (this.impactFlashAlpha > 0) {
-      this.impactFlashAlpha *= 0.85;
-      if (this.impactFlashAlpha < 0.01) this.impactFlashAlpha = 0;
+  private onFoul(play: PlayResult): void {
+    // 実際のルール通り、2ストライクからのファウルはカウントしない
+    if (this.strikes() < 2) this.strikes.update(s => s + 1);
+    this.showCall('ファウル', this.strikes() >= 2 ? 'カウントは変わりません' : '');
+    this.later(() => this.nextPitch(), 1100);
+  }
+
+  private startFlight(play: PlayResult): void {
+    this.flightTraj = play.trajectory;
+    this.flightSpray = play.sprayAngleDeg;
+    this.flightStartMs = performance.now();
+    this.flightDone = false;
+    this.ballTrail = [];
+    this.gameState.set('flying');
+    // 会心の当たりはスローモーション演出
+    this.slowMotionFactor = play.outcome === 'homerun' || play.barrel ? 0.45 : 1;
+  }
+
+  private updateFlight(): void {
+    if (!this.flightTraj) { this.finishFlight(); return; }
+
+    const elapsed = (performance.now() - this.flightStartMs) / 1000 * this.slowMotionFactor;
+    // 打球が遠ざかるにつれてスローを解除
+    if (this.slowMotionFactor < 1) this.slowMotionFactor = Math.min(1, this.slowMotionFactor + 0.006);
+
+    if (elapsed >= this.flightTraj.hangTime) {
+      this.finishFlight();
+      return;
     }
 
-    // モーションブラー減衰
-    if (this.motionBlurAlpha > 0 && !this.slowMotion) {
-      this.motionBlurAlpha *= 0.9;
-      if (this.motionBlurAlpha < 0.01) this.motionBlurAlpha = 0;
+    const pos = this.battedBallScreenPos(elapsed);
+    if (pos && this.frameCount % 2 === 0) {
+      this.ballTrail.push({ x: pos.x, y: pos.y, r: pos.r, alpha: 1 });
+      if (this.ballTrail.length > 40) this.ballTrail.shift();
+    }
+    this.ballTrail.forEach(t => (t.alpha *= 0.97));
+
+    const play = this.lastPlay();
+    if (play?.outcome === 'homerun' && this.frameCount % 4 === 0 && pos) {
+      this.addFireworkParticles(pos.x, pos.y);
+    }
+  }
+
+  private finishFlight(): void {
+    if (this.flightDone) return;
+    this.flightDone = true;
+    const play = this.lastPlay();
+    if (!play) { this.nextAtBat(); return; }
+
+    const points: Record<PlayOutcome, number> = {
+      homerun: 1000 + Math.round(play.distance * 12),
+      triple: 700,
+      double: 500,
+      single: 300,
+      out: 20,
+      foul: 0,
+      strikeout: 0,
+      walk: 120,
+    };
+    const bonus = play.barrel ? 300 : 0;
+    const sub = play.battedType ? `${BATTED_BALL_LABEL[play.battedType]}・${play.hangTime}秒滞空` : '';
+    this.finishAtBat(play.outcome, OUTCOME_LABEL[play.outcome], points[play.outcome] + bonus, sub);
+  }
+
+  private finishAtBat(outcome: PlayOutcome, label: string, points: number, sub = ''): void {
+    const play = this.lastPlay();
+    this.score.update(s => s + points);
+    this.lastOutcomeLabel.set(label);
+    this.lastOutcomeSub.set(sub);
+    this.showResultMessage.set(true);
+
+    this.atBatResults.update(r => [...r, {
+      outcome,
+      distance: play?.distance ?? 0,
+      exitVelocityKmh: play?.exitVelocityKmh ?? 0,
+      launchAngleDeg: play?.launchAngleDeg ?? 0,
+      barrel: play?.barrel ?? false,
+    }]);
+
+    if (outcome === 'out' || outcome === 'strikeout') {
+      this.outs.update(o => o + 1);
     }
 
-    if (state === 'pitching' || state === 'swing') {
-      this.updatePitching(deltaMultiplier);
-    } else if (state === 'flying') {
-      this.updateFlying(deltaMultiplier);
-    }
-
-    this.updateParticles(deltaMultiplier);
+    this.gameState.set('result');
+    if (this.animationId) cancelAnimationFrame(this.animationId);
     this.drawGame();
 
-    this.animationId = requestAnimationFrame(() => this.animateGame());
+    this.later(() => {
+      this.showResultMessage.set(false);
+      this.nextAtBat();
+    }, outcome === 'homerun' ? 2600 : 1900);
   }
 
-  private updateScreenShake(): void {
-    if (this.screenShakeIntensity > 0.1) {
-      this.screenShakeX = (Math.random() - 0.5) * this.screenShakeIntensity;
-      this.screenShakeY = (Math.random() - 0.5) * this.screenShakeIntensity;
-      this.screenShakeIntensity *= 0.88;
-    } else {
-      this.screenShakeX = 0;
-      this.screenShakeY = 0;
-      this.screenShakeIntensity = 0;
-    }
-  }
-
-  private triggerImpactEffects(type: BallResult['type']): void {
-    if (type === 'homerun') {
-      this.screenShakeIntensity = 25;
-      this.impactFlashAlpha = 0.8;
-      this.motionBlurAlpha = 0.5;
-    } else if (type === 'hit') {
-      this.screenShakeIntensity = 12;
-      this.impactFlashAlpha = 0.4;
-      this.motionBlurAlpha = 0.3;
-    } else if (type === 'foul') {
-      this.screenShakeIntensity = 6;
-      this.impactFlashAlpha = 0.2;
-    }
-  }
-
-  private updatePitching(delta: number): void {
-    // ボール移動
-    this.ballZ += this.ballVz * delta;
-    this.ballX += this.ballVx * delta;
-    this.ballY += this.ballVy * delta;
-
-    // 軌跡追加
-    if (this.frameCount % 2 === 0) {
-      this.ballTrail.push({
-        x: this.ballX,
-        y: this.ballY,
-        alpha: 1
-      });
-      if (this.ballTrail.length > 15) {
-        this.ballTrail.shift();
-      }
-    }
-
-    // 軌跡フェード
-    this.ballTrail.forEach(t => t.alpha *= 0.92);
-
-    // バットスイングアニメーション
-    if (this.isSwinging) {
-      const elapsed = Date.now() - this.swingStartTime;
-      const swingDuration = 150;
-
-      if (elapsed < swingDuration) {
-        const progress = elapsed / swingDuration;
-        this.batAngle = -Math.PI / 4 + (Math.PI * 0.9) * this.easeOutQuad(progress);
-      } else {
-        this.batAngle = Math.PI * 0.65;
-
-        // スイング完了時の判定
-        if (!this.currentResult()) {
-          this.checkSwingResult();
-        }
-      }
-    }
-
-    // ボールがバッターを通過
-    if (this.ballZ > 1000 && !this.currentResult()) {
-      this.handleResult('strike', 0, 'late');
-    }
-  }
-
-  private updateFlying(delta: number): void {
-    // 打球の飛行物理
-    this.hitBallX += this.hitBallVx * delta;
-    this.hitBallY += this.hitBallVy * delta;
-    this.hitBallZ += this.hitBallVz * delta;
-
-    // 重力
-    this.hitBallVy += 0.3 * delta;
-
-    // スローモーション徐々に解除
-    if (this.slowMotion) {
-      this.slowMotionFactor = Math.min(1, this.slowMotionFactor + 0.02);
-      if (this.slowMotionFactor >= 1) {
-        this.slowMotion = false;
-      }
-    }
-
-    // 軌跡追加
-    if (this.frameCount % 2 === 0) {
-      this.ballTrail.push({
-        x: this.hitBallX,
-        y: this.hitBallY,
-        alpha: 1
-      });
-      if (this.ballTrail.length > 20) {
-        this.ballTrail.shift();
-      }
-    }
-    this.ballTrail.forEach(t => t.alpha *= 0.9);
-
-    // ホームランの場合パーティクル追加
-    if (this.currentResult()?.type === 'homerun' && this.frameCount % 3 === 0) {
-      this.addFireworkParticles(this.hitBallX, this.hitBallY);
-    }
-
-    // 飛行終了判定
-    if (this.hitBallZ > 2000 || this.hitBallY > this.canvasHeight + 100) {
-      cancelAnimationFrame(this.animationId);
-      this.showResultMessage.set(true);
-      this.gameState.set('result');
-
-      if (this.flyingTimeoutId !== null) {
-        clearTimeout(this.flyingTimeoutId);
-      }
-      this.flyingTimeoutId = window.setTimeout(() => {
-        this.showResultMessage.set(false);
-        this.nextPitch();
-        this.flyingTimeoutId = null;
-      }, 2000);
-    }
-  }
-
-  private updateParticles(delta: number): void {
-    this.particles = this.particles.filter(p => {
-      p.x += p.vx * delta;
-      p.y += p.vy * delta;
-      p.vy += 0.2 * delta; // 重力
-      p.life -= delta;
-      return p.life > 0;
-    });
-  }
-
-  swing(): void {
-    if (this.gameState() !== 'pitching' || this.isSwinging) return;
-
-    this.playSound(this.swingSound);
-    this.isSwinging = true;
-    this.swingStartTime = Date.now();
-    this.gameState.set('swing');
-
-    // スイング開始パーティクル
-    this.addSwingParticles();
-  }
-
-  private checkSwingResult(): void {
-    // タイミング判定（ballZ: 0=投手, 1000=バッター）
-    // configから最適ゾーンと許容範囲を取得（モバイルは広めに設定）
-    const optimalZone = this.gameConfig.OPTIMAL_ZONE;
-    const perfectTolerance = this.gameConfig.OPTIMAL_ZONE_TOLERANCE;
-    const diff = Math.abs(this.ballZ - optimalZone);
-
-    // 各判定ゾーンの閾値（perfectToleranceを基準にスケール）
-    const goodThreshold = perfectTolerance * 2;      // パーフェクトの2倍
-    const hitThreshold = perfectTolerance * 3.6;     // パーフェクトの3.6倍
-    const foulThreshold = perfectTolerance * 5.6;    // パーフェクトの5.6倍
-
-    let type: BallResult['type'];
-    let distance: number;
-    let timing: 'perfect' | 'good' | 'early' | 'late';
-
-    if (diff <= perfectTolerance) {
-      // パーフェクト
-      type = 'homerun';
-      distance = 120 + Math.floor(Math.random() * 30);
-      timing = 'perfect';
-      this.slowMotion = true;
-      this.slowMotionFactor = 0.3;
-    } else if (diff <= goodThreshold) {
-      // グッド
-      type = Math.random() > 0.3 ? 'homerun' : 'hit';
-      distance = type === 'homerun' ? 100 + Math.floor(Math.random() * 20) : 80 + Math.floor(Math.random() * 30);
-      timing = 'good';
-    } else if (diff <= hitThreshold) {
-      // ヒット/ファウル
-      type = Math.random() > 0.5 ? 'hit' : 'foul';
-      distance = type === 'hit' ? 50 + Math.floor(Math.random() * 40) : 20 + Math.floor(Math.random() * 30);
-      timing = this.ballZ < optimalZone ? 'early' : 'late';
-    } else if (diff <= foulThreshold) {
-      // ファウル
-      type = 'foul';
-      distance = 10 + Math.floor(Math.random() * 20);
-      timing = this.ballZ < optimalZone ? 'early' : 'late';
-    } else {
-      // 空振り
-      type = 'miss';
-      distance = 0;
-      timing = this.ballZ < optimalZone ? 'early' : 'late';
-    }
-
-    this.handleResult(type, distance, timing);
-  }
-
-  private handleResult(type: BallResult['type'], distance: number, timing: 'perfect' | 'good' | 'early' | 'late'): void {
-    const result: BallResult = { type, distance };
-    this.currentResult.set(result);
-    this.swingTiming.set(timing);
-    this.results.update(r => [...r, result]);
-
-    // インパクトエフェクト発動
-    this.triggerImpactEffects(type);
-
-    // コンボ管理
-    if (type === 'homerun' || type === 'hit') {
-      if (this.lastHitType === 'homerun' || this.lastHitType === 'hit') {
-        this.comboCount++;
-      } else {
-        this.comboCount = 1;
-      }
-      this.lastHitType = type;
-    } else {
-      this.comboCount = 0;
-      this.lastHitType = null;
-    }
-
-    // スコア計算 & サウンド（コンボボーナス付き）
-    const comboMultiplier = 1 + (this.comboCount > 1 ? (this.comboCount - 1) * 0.2 : 0);
-
-    if (type === 'homerun') {
-      const bonusScore = Math.floor(distance * 10 * comboMultiplier);
-      this.score.update(s => s + bonusScore);
-      this.addHomerunParticles();
-      this.playSound(this.homerunSound);
-    } else if (type === 'hit') {
-      const bonusScore = Math.floor(distance * 5 * comboMultiplier);
-      this.score.update(s => s + bonusScore);
-      this.playSound(this.hitSound);
-    } else if (type === 'foul') {
-      this.playSound(this.foulSound);
-    } else if (type === 'strike' || type === 'miss') {
-      this.playSound(this.missSound);
-    }
-
-    // 打球飛行開始
-    if (type === 'homerun' || type === 'hit') {
-      this.startBallFlight(type, distance);
-    } else {
-      // ファウル、空振り、見逃しの場合
-      this.showResultMessage.set(true);
-      this.gameState.set('result');
-
-      if (this.resultTimeoutId !== null) {
-        clearTimeout(this.resultTimeoutId);
-      }
-      this.resultTimeoutId = window.setTimeout(() => {
-        this.showResultMessage.set(false);
-        this.nextPitch();
-        this.resultTimeoutId = null;
-      }, 1500);
-    }
-  }
-
-  private initSounds(): void {
-    // 実際の音声ファイルは assets/sounds 配下に配置してください
-    this.swingSound = new Audio('assets/sounds/bat-swing.mp3');
-    this.swingSound.volume = 0.6;
-
-    this.homerunSound = new Audio('assets/sounds/homerun.mp3');
-    this.homerunSound.volume = 0.8;
-
-    this.hitSound = new Audio('assets/sounds/hit.mp3');
-    this.hitSound.volume = 0.7;
-
-    this.foulSound = new Audio('assets/sounds/foul.mp3');
-    this.foulSound.volume = 0.6;
-
-    this.missSound = new Audio('assets/sounds/miss.mp3');
-    this.missSound.volume = 0.6;
-
-    // BGM
-    try {
-      this.bgm = new Audio('assets/sounds/background-music.mp3');
-      this.bgm.loop = true;
-      this.bgm.volume = 0.4;
-      this.bgm.addEventListener('error', () => {
-        // ファイルが見つからない場合はBGMを無効化
-        this.bgm = undefined;
-      });
-    } catch {
-      // 初期化エラーは無視
-      this.bgm = undefined;
-    }
-  }
-
-  private playSound(sound?: HTMLAudioElement): void {
-    if (!this.isBrowser || !sound) return;
-    try {
-      sound.currentTime = 0;
-      void sound.play();
-    } catch {
-      // 自動再生ブロックなどは無視
-    }
-  }
-
-  private playBgm(): void {
-    if (!this.isBrowser || !this.bgm) return;
-    try {
-      void this.bgm.play();
-    } catch {
-      // 自動再生ブロックなどは無視
-    }
-  }
-
-  private stopBgm(): void {
-    if (!this.bgm) return;
-    this.bgm.pause();
-    this.bgm.currentTime = 0;
-  }
-
-  private startBallFlight(type: BallResult['type'], distance: number): void {
-    this.gameState.set('flying');
-    this.ballTrail = [];
-
-    // 打球初期位置（バッター位置）
-    this.hitBallX = this.canvasWidth / 2;
-    this.hitBallY = this.canvasHeight * 0.75;
-    this.hitBallZ = 0;
-
-    // 打球速度
-    const power = type === 'homerun' ? 1.2 : 0.8;
-    this.hitBallVx = (Math.random() - 0.5) * 8;
-    this.hitBallVy = -12 * power;
-    this.hitBallVz = 15 * power;
-  }
-
-  private drawGame(): void {
-    if (!this.ctx) return;
-
-    const ctx = this.ctx;
-
-    // スクリーンシェイク適用
-    ctx.save();
-    ctx.translate(this.screenShakeX, this.screenShakeY);
-
-    // 背景（野球場）
-    this.drawStadium();
-
-    const state = this.gameState();
-
-    if (state === 'pitching' || state === 'swing') {
-      // 投球中
-      this.drawPitcher();
-
-      // Iteration 3: モバイル用ヒットゾーン可視化（ボールが来る前に目標表示）
-      if (this.gameConfig.SHOW_HIT_ZONE) {
-        this.drawHitZone();
-      }
-
-      this.drawBallTrail();
-      this.drawBall3D(this.ballX, this.ballY, this.ballZ);
-      this.drawBatter();
-    } else if (state === 'flying') {
-      // 打球飛行中
-      this.drawBallTrail();
-      this.drawFlyingBall();
-    }
-
-    // パーティクル
-    this.drawParticles();
-
-    // タイミングインジケーター
-    if (state === 'pitching' || state === 'swing') {
-      this.drawTimingIndicator();
-
-      // モバイル: 速度インジケーター（ボールの接近を視覚的に表示）
-      if (this.gameConfig.SHOW_SPEED_INDICATOR) {
-        this.drawSpeedIndicator();
-      }
-    }
-
-    // コンボ表示
-    if (this.comboCount >= 2 && (state === 'flying' || this.showResultMessage())) {
-      this.drawComboDisplay();
-    }
-
-    // モーションブラー効果
-    if (this.motionBlurAlpha > 0) {
-      ctx.fillStyle = `rgba(0,0,0,${this.motionBlurAlpha * 0.3})`;
-      ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
-
-      // ラジアルブラー代わりに放射状のライン
-      if (this.slowMotion && this.motionBlurAlpha > 0.2) {
-        ctx.strokeStyle = `rgba(255,255,255,${this.motionBlurAlpha * 0.1})`;
-        ctx.lineWidth = 2;
-        const centerX = this.canvasWidth / 2;
-        const centerY = this.canvasHeight * 0.7;
-        for (let i = 0; i < 20; i++) {
-          const angle = (i / 20) * Math.PI * 2;
-          ctx.beginPath();
-          ctx.moveTo(centerX + Math.cos(angle) * 50, centerY + Math.sin(angle) * 30);
-          ctx.lineTo(centerX + Math.cos(angle) * 200, centerY + Math.sin(angle) * 120);
-          ctx.stroke();
-        }
-      }
-    }
-
-    // インパクトフラッシュ
-    if (this.impactFlashAlpha > 0) {
-      ctx.fillStyle = `rgba(255,255,255,${this.impactFlashAlpha})`;
-      ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
-    }
-
-    ctx.restore();
-  }
-
-  private drawComboDisplay(): void {
-    const ctx = this.ctx;
-    const w = this.canvasWidth;
-
-    // コンボ背景
-    const comboY = 60;
-    const pulseScale = 1 + Math.sin(this.frameCount * 0.2) * 0.05;
-
-    ctx.save();
-    ctx.translate(w - 80, comboY);
-    ctx.scale(pulseScale, pulseScale);
-
-    // グラデーション背景
-    const gradient = ctx.createLinearGradient(-40, -20, 40, 20);
-    gradient.addColorStop(0, 'rgba(255,100,0,0.9)');
-    gradient.addColorStop(0.5, 'rgba(255,50,0,0.95)');
-    gradient.addColorStop(1, 'rgba(200,0,0,0.9)');
-    ctx.fillStyle = gradient;
-
-    // 角丸四角形
-    ctx.beginPath();
-    ctx.roundRect(-50, -25, 100, 50, 10);
-    ctx.fill();
-
-    // 枠線
-    ctx.strokeStyle = 'rgba(255,200,0,0.8)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // テキスト
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 14px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('COMBO', 0, -8);
-
-    ctx.font = 'bold 20px Oswald, Arial';
-    ctx.fillStyle = '#ffcc00';
-    ctx.fillText(`×${this.comboCount}`, 0, 12);
-
-    ctx.restore();
-  }
-
-  private drawStadium(): void {
-    const ctx = this.ctx;
-    const w = this.canvasWidth;
-    const h = this.canvasHeight;
-
-    // 空（グラデーション - より深みのある夜空）
-    const skyGradient = ctx.createLinearGradient(0, 0, 0, h * 0.4);
-    skyGradient.addColorStop(0, '#0a0a18');
-    skyGradient.addColorStop(0.3, '#12122a');
-    skyGradient.addColorStop(0.6, '#1a1a3e');
-    skyGradient.addColorStop(1, '#0f2847');
-    ctx.fillStyle = skyGradient;
-    ctx.fillRect(0, 0, w, h * 0.4);
-
-    // 星（より多く、より美しく）
-    ctx.fillStyle = '#ffffff';
-    for (let i = 0; i < 80; i++) {
-      const x = (i * 137.5 + this.frameCount * 0.01) % w;
-      const y = (i * 89.3) % (h * 0.35);
-      const size = 0.3 + (i % 5) * 0.4;
-      const twinkle = Math.sin(this.frameCount * 0.08 + i * 0.7) * 0.4 + 0.6;
-      ctx.globalAlpha = twinkle * (i % 3 === 0 ? 1 : 0.6);
-      ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-
-    // スタジアム照明塔（左右）
-    this.drawLightTower(w * 0.08, h * 0.05);
-    this.drawLightTower(w * 0.92, h * 0.05);
-    this.drawLightTower(w * 0.25, h * 0.08);
-    this.drawLightTower(w * 0.75, h * 0.08);
-
-    // 電光掲示板（センター）
-    this.drawScoreboard(w / 2, h * 0.12);
-
-    // 観客席（外野 - より立体的に）
-    const standGradient = ctx.createLinearGradient(0, h * 0.2, 0, h * 0.5);
-    standGradient.addColorStop(0, '#3a3a4a');
-    standGradient.addColorStop(0.5, '#2a2a3a');
-    standGradient.addColorStop(1, '#1a1a28');
-    ctx.fillStyle = standGradient;
-    ctx.beginPath();
-    ctx.moveTo(0, h * 0.4);
-    ctx.quadraticCurveTo(w / 2, h * 0.22, w, h * 0.4);
-    ctx.lineTo(w, h * 0.52);
-    ctx.quadraticCurveTo(w / 2, h * 0.34, 0, h * 0.52);
-    ctx.closePath();
-    ctx.fill();
-
-    // 観客席の段（立体感）
-    for (let row = 0; row < 4; row++) {
-      ctx.strokeStyle = `rgba(255,255,255,${0.05 - row * 0.01})`;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      const yOffset = h * 0.35 + row * 12;
-      ctx.moveTo(0, yOffset);
-      ctx.quadraticCurveTo(w / 2, yOffset - 8, w, yOffset);
-      ctx.stroke();
-    }
-
-    // 観客のペンライト/スマホライト（波打つ演出）
-    for (let i = 0; i < 120; i++) {
-      const col = i % 30;
-      const row = Math.floor(i / 30);
-      const x = (w * 0.05) + col * (w * 0.9 / 30);
-      const baseY = h * 0.28 + row * 10;
-      const waveOffset = Math.sin(this.frameCount * 0.05 + col * 0.3) * 3;
-      const y = baseY + waveOffset;
-
-      const intensity = Math.sin(this.frameCount * 0.15 + i * 0.3);
-      if (intensity > 0.2) {
-        const colors = ['#ffcc00', '#ff6600', '#ffffff', '#00ff88', '#ff66cc', '#66ccff'];
-        ctx.fillStyle = colors[i % colors.length];
-        ctx.globalAlpha = 0.4 + intensity * 0.4;
-        ctx.beginPath();
-        ctx.arc(x, y, 1.5 + intensity, 0, Math.PI * 2);
-        ctx.fill();
-
-        // グロー効果
-        if (intensity > 0.7) {
-          ctx.globalAlpha = 0.2;
-          ctx.beginPath();
-          ctx.arc(x, y, 4, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-    }
-    ctx.globalAlpha = 1;
-
-    // 照明効果（フィールドへの光）
-    this.drawFieldLighting();
-
-    // フェンス（ホームランライン - よりリアルに）
-    const fenceGradient = ctx.createLinearGradient(0, h * 0.48, 0, h * 0.52);
-    fenceGradient.addColorStop(0, '#ffdd44');
-    fenceGradient.addColorStop(0.5, '#ffcc00');
-    fenceGradient.addColorStop(1, '#cc9900');
-    ctx.strokeStyle = fenceGradient;
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.moveTo(0, h * 0.5);
-    ctx.quadraticCurveTo(w / 2, h * 0.34, w, h * 0.5);
-    ctx.stroke();
-
-    // フェンス下の広告帯
-    ctx.fillStyle = '#1a4a8a';
-    ctx.beginPath();
-    ctx.moveTo(0, h * 0.5);
-    ctx.quadraticCurveTo(w / 2, h * 0.34, w, h * 0.5);
-    ctx.lineTo(w, h * 0.54);
-    ctx.quadraticCurveTo(w / 2, h * 0.38, 0, h * 0.54);
-    ctx.closePath();
-    ctx.fill();
-
-    // フィールド（芝生 - よりリアルな色合い）
-    const fieldGradient = ctx.createLinearGradient(0, h * 0.54, 0, h);
-    fieldGradient.addColorStop(0, '#1a5a20');
-    fieldGradient.addColorStop(0.2, '#228B22');
-    fieldGradient.addColorStop(0.5, '#2a9a32');
-    fieldGradient.addColorStop(1, '#1a7a22');
-    ctx.fillStyle = fieldGradient;
-    ctx.beginPath();
-    ctx.moveTo(0, h * 0.54);
-    ctx.quadraticCurveTo(w / 2, h * 0.38, w, h * 0.54);
-    ctx.lineTo(w, h);
-    ctx.lineTo(0, h);
-    ctx.closePath();
-    ctx.fill();
-
-    // 芝生のストライプ（より詳細に）
-    for (let i = 0; i < 15; i++) {
-      const alpha = i % 2 === 0 ? 0.06 : 0.02;
-      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-      const startY = h * 0.55 + i * 12;
-      const curve = 8 - i * 0.3;
-      ctx.beginPath();
-      ctx.moveTo(w * 0.15, startY);
-      ctx.quadraticCurveTo(w / 2, startY - curve, w * 0.85, startY);
-      ctx.lineTo(w * 0.88, startY + 12);
-      ctx.quadraticCurveTo(w / 2, startY + 12 - curve * 0.8, w * 0.12, startY + 12);
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    // ダイヤモンド（内野）のライン
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(w / 2, h * 0.88);
-    ctx.lineTo(w * 0.35, h * 0.7);
-    ctx.moveTo(w / 2, h * 0.88);
-    ctx.lineTo(w * 0.65, h * 0.7);
-    ctx.stroke();
-
-    // 投手マウンド（よりリアルに）
-    const moundGradient = ctx.createRadialGradient(w / 2, h * 0.46, 0, w / 2, h * 0.46, 40);
-    moundGradient.addColorStop(0, '#d4b896');
-    moundGradient.addColorStop(0.7, '#c4a484');
-    moundGradient.addColorStop(1, '#a08060');
-    ctx.fillStyle = moundGradient;
-    ctx.beginPath();
-    ctx.ellipse(w / 2, h * 0.46, 40, 14, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ピッチャープレート
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(w / 2 - 10, h * 0.455, 20, 3);
-
-    // ホームベース（よりリアルに）
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = 5;
-    ctx.beginPath();
-    ctx.moveTo(w / 2, h * 0.87);
-    ctx.lineTo(w / 2 - 12, h * 0.90);
-    ctx.lineTo(w / 2 - 12, h * 0.93);
-    ctx.lineTo(w / 2 + 12, h * 0.93);
-    ctx.lineTo(w / 2 + 12, h * 0.90);
-    ctx.closePath();
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    // バッターボックス（両側）
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(w / 2 + 20, h * 0.84, 45, 70);
-    ctx.strokeRect(w / 2 - 65, h * 0.84, 45, 70);
-
-    // キャッチャーボックス
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.strokeRect(w / 2 - 25, h * 0.94, 50, 30);
-  }
-
-  private drawLightTower(x: number, y: number): void {
-    const ctx = this.ctx;
-    const h = this.canvasHeight;
-
-    // 照明塔の支柱
-    ctx.fillStyle = '#2a2a2a';
-    ctx.fillRect(x - 3, y, 6, h * 0.15);
-
-    // 照明パネル
-    ctx.fillStyle = '#3a3a3a';
-    ctx.fillRect(x - 20, y - 5, 40, 12);
-
-    // ライト（複数）
-    const lightOn = Math.sin(this.frameCount * 0.02 + x) > -0.5;
-    if (lightOn) {
-      for (let i = 0; i < 5; i++) {
-        const lx = x - 15 + i * 8;
-
-        // ライトの光源
-        ctx.fillStyle = '#ffffee';
-        ctx.beginPath();
-        ctx.arc(lx, y, 3, 0, Math.PI * 2);
-        ctx.fill();
-
-        // レンズフレア効果
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle = '#ffffaa';
-        ctx.beginPath();
-        ctx.arc(lx, y, 8, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.globalAlpha = 0.1;
-        ctx.beginPath();
-        ctx.arc(lx, y, 15, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-      }
-
-      // 光線（フィールドへ）
-      ctx.globalAlpha = 0.03;
-      ctx.fillStyle = '#ffffee';
-      ctx.beginPath();
-      ctx.moveTo(x - 20, y + 5);
-      ctx.lineTo(x - 80, h * 0.6);
-      ctx.lineTo(x + 80, h * 0.6);
-      ctx.lineTo(x + 20, y + 5);
-      ctx.closePath();
-      ctx.fill();
-      ctx.globalAlpha = 1;
-    }
-  }
-
-  private drawScoreboard(x: number, y: number): void {
-    const ctx = this.ctx;
-    const w = 120;
-    const h = 40;
-
-    // スコアボードの枠
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(x - w / 2, y - h / 2, w, h);
-
-    // 枠線
-    ctx.strokeStyle = '#4a4a4a';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x - w / 2, y - h / 2, w, h);
-
-    // LEDディスプレイ風の背景
-    ctx.fillStyle = '#0a0a0a';
-    ctx.fillRect(x - w / 2 + 5, y - h / 2 + 5, w - 10, h - 10);
-
-    // スコア表示
-    const fontSize = 14;
-    ctx.font = `bold ${fontSize}px "Courier New", monospace`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    // BALL表示
-    ctx.fillStyle = '#00ff00';
-    ctx.fillText(`BALL: ${this.currentBall()}/${this.totalBalls}`, x - 30, y - 5);
-
-    // SCORE表示
-    ctx.fillStyle = '#ffcc00';
-    ctx.fillText(`${this.score()}`, x + 35, y - 5);
-
-    // 点滅効果
-    if (this.frameCount % 60 < 30) {
-      ctx.fillStyle = '#ff0000';
-      ctx.beginPath();
-      ctx.arc(x + w / 2 - 12, y - h / 2 + 10, 3, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  private drawFieldLighting(): void {
-    const ctx = this.ctx;
-    const w = this.canvasWidth;
-    const h = this.canvasHeight;
-
-    // フィールドへの照明効果（グラデーション）
-    const lightGradient = ctx.createRadialGradient(w / 2, h * 0.3, 0, w / 2, h * 0.5, w * 0.6);
-    lightGradient.addColorStop(0, 'rgba(255,255,240,0.08)');
-    lightGradient.addColorStop(0.5, 'rgba(255,255,220,0.03)');
-    lightGradient.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = lightGradient;
-    ctx.fillRect(0, 0, w, h);
-  }
-
-  private drawPitcher(): void {
-    const ctx = this.ctx;
-    const x = this.canvasWidth / 2;
-    // configから投手のY位置を取得（モバイルは上=遠くに配置して軌道を見やすく）
-    const y = this.canvasHeight * this.gameConfig.PITCHER_Y_POSITION;
-
-    // 投球モーションのフェーズ
-    const pitchProgress = Math.min(1, this.ballZ / 200);
-    const windupAngle = Math.sin(this.frameCount * 0.15) * 0.1;
-
-    ctx.save();
-    ctx.translate(x, y);
-
-    // 足（踏み出し）
-    ctx.fillStyle = '#1a1a1a';
-    const legKick = pitchProgress < 0.3 ? Math.sin(pitchProgress * Math.PI / 0.3) * 15 : 0;
-    ctx.beginPath();
-    ctx.ellipse(-8, 25 - legKick, 8, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(8, 25, 8, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 体（ユニフォーム風）
-    const bodyGradient = ctx.createLinearGradient(-15, -25, 15, 25);
-    bodyGradient.addColorStop(0, '#1e3a5f');
-    bodyGradient.addColorStop(0.5, '#2a4a7f');
-    bodyGradient.addColorStop(1, '#1e3a5f');
-    ctx.fillStyle = bodyGradient;
-    ctx.beginPath();
-    ctx.ellipse(0, 0 + windupAngle * 10, 15, 25, windupAngle, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 背番号
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 10px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('18', 0, 5);
-
-    // 頭（キャップ付き）
-    ctx.fillStyle = '#f5deb3';
-    ctx.beginPath();
-    ctx.arc(0, -30, 12, 0, Math.PI * 2);
-    ctx.fill();
-
-    // キャップ
-    ctx.fillStyle = '#1e3a5f';
-    ctx.beginPath();
-    ctx.ellipse(0, -38, 14, 8, 0, Math.PI, Math.PI * 2);
-    ctx.fill();
-    ctx.fillRect(-14, -38, 28, 5);
-
-    // キャップのつば
-    ctx.beginPath();
-    ctx.moveTo(0, -38);
-    ctx.lineTo(15, -35);
-    ctx.lineTo(15, -32);
-    ctx.lineTo(0, -35);
-    ctx.closePath();
-    ctx.fill();
-
-    // 腕（投球モーション - よりダイナミックに）
-    const armPhase = pitchProgress < 0.5 ? pitchProgress * 2 : 1;
-    const armAngle = -Math.PI / 4 + armPhase * Math.PI * 0.8;
-    const armLength = 25;
-
-    ctx.strokeStyle = '#f5deb3';
-    ctx.lineWidth = 8;
-    ctx.lineCap = 'round';
-
-    // 左腕（グラブ側）
-    ctx.beginPath();
-    ctx.moveTo(-12, -15);
-    ctx.lineTo(-12 - Math.cos(armAngle - 0.5) * 20, -15 + Math.sin(armAngle - 0.5) * 15);
-    ctx.stroke();
-
-    // 右腕（投げる側 - メイン）
-    ctx.beginPath();
-    ctx.moveTo(12, -15);
-    const elbowX = 12 + Math.cos(armAngle) * armLength * 0.6;
-    const elbowY = -15 + Math.sin(armAngle) * armLength * 0.4;
-    ctx.lineTo(elbowX, elbowY);
-    ctx.stroke();
-
-    // 前腕（リリースポイント）
-    const forearmAngle = armAngle + Math.sin(pitchProgress * Math.PI) * 0.5;
-    ctx.beginPath();
-    ctx.moveTo(elbowX, elbowY);
-    ctx.lineTo(elbowX + Math.cos(forearmAngle) * armLength * 0.5, elbowY + Math.sin(forearmAngle) * armLength * 0.3);
-    ctx.stroke();
-
-    ctx.restore();
-  }
-
-  private drawBatter(): void {
-    const ctx = this.ctx;
-    const x = this.canvasWidth / 2 + 50;
-    // configからバッターのY位置を取得（モバイルは下=手前に配置して距離感を確保）
-    const y = this.canvasHeight * this.gameConfig.BATTER_Y_POSITION;
-
-    ctx.save();
-    ctx.translate(x, y);
-
-    // スイングによる体の回転
-    const bodyRotation = this.isSwinging ? this.easeOutQuad(Math.min(1, (Date.now() - this.swingStartTime) / 150)) * 0.3 : 0;
-    ctx.rotate(bodyRotation);
-
-    // 足
-    ctx.fillStyle = '#1a1a1a';
-    ctx.beginPath();
-    ctx.ellipse(-12, 30, 10, 6, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(12, 30, 10, 6, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ユニフォーム（パンツ）
-    const pantsGradient = ctx.createLinearGradient(-18, 0, 18, 35);
-    pantsGradient.addColorStop(0, '#1e3a5f');
-    pantsGradient.addColorStop(1, '#152a4f');
-    ctx.fillStyle = pantsGradient;
-    ctx.beginPath();
-    ctx.moveTo(-18, 0);
-    ctx.lineTo(-15, 30);
-    ctx.lineTo(15, 30);
-    ctx.lineTo(18, 0);
-    ctx.closePath();
-    ctx.fill();
-
-    // 体（ユニフォーム）
-    const bodyGradient = ctx.createLinearGradient(-18, -35, 18, 0);
-    bodyGradient.addColorStop(0, '#ffffff');
-    bodyGradient.addColorStop(0.5, '#e8e8e8');
-    bodyGradient.addColorStop(1, '#d0d0d0');
-    ctx.fillStyle = bodyGradient;
-    ctx.beginPath();
-    ctx.ellipse(0, -20, 18, 30, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 背番号
-    ctx.fillStyle = '#1e3a5f';
-    ctx.font = 'bold 14px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('7', 0, -15);
-
-    // 頭
-    ctx.fillStyle = '#f5deb3';
-    ctx.beginPath();
-    ctx.arc(0, -55, 14, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ヘルメット（よりリアルに）
-    const helmetGradient = ctx.createRadialGradient(-5, -62, 0, 0, -55, 20);
-    helmetGradient.addColorStop(0, '#3a5a8f');
-    helmetGradient.addColorStop(0.5, '#1e3a5f');
-    helmetGradient.addColorStop(1, '#0e2a4f');
-    ctx.fillStyle = helmetGradient;
-    ctx.beginPath();
-    ctx.ellipse(0, -62, 16, 12, 0, Math.PI, Math.PI * 2);
-    ctx.fill();
-
-    // ヘルメットの耳当て
-    ctx.beginPath();
-    ctx.ellipse(-14, -52, 5, 10, -0.3, 0, Math.PI * 2);
-    ctx.fill();
-
-    // フェイスガード
-    ctx.strokeStyle = '#2a2a2a';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(-8, -50);
-    ctx.quadraticCurveTo(-5, -45, 8, -50);
-    ctx.stroke();
-
-    ctx.restore();
-
-    // バット（体の回転とは別に描画）
-    this.drawBat(x, y);
-  }
-
-  private drawBat(x: number, y: number): void {
-    const ctx = this.ctx;
-    const batBaseX = x - 15;
-    const batBaseY = y - 45;
-    const batLength = 75;
-
-    ctx.save();
-    ctx.translate(batBaseX, batBaseY);
-    ctx.rotate(this.batAngle);
-
-    // バットの影（よりリアルに）
-    ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    ctx.beginPath();
-    ctx.moveTo(3, 6);
-    ctx.lineTo(batLength + 3, -4);
-    ctx.lineTo(batLength + 3, 6);
-    ctx.lineTo(3, 14);
-    ctx.closePath();
-    ctx.fill();
-
-    // バット本体（より詳細なグラデーション）
-    const batGradient = ctx.createLinearGradient(0, -10, 0, 10);
-    batGradient.addColorStop(0, '#F4A460');
-    batGradient.addColorStop(0.2, '#DEB887');
-    batGradient.addColorStop(0.5, '#F5DEB3');
-    batGradient.addColorStop(0.8, '#DEB887');
-    batGradient.addColorStop(1, '#8B4513');
-    ctx.fillStyle = batGradient;
-
-    // バットの形状（よりリアルに）
-    ctx.beginPath();
-    ctx.moveTo(0, -3);
-    ctx.quadraticCurveTo(batLength * 0.3, -6, batLength * 0.6, -9);
-    ctx.lineTo(batLength, -11);
-    ctx.lineTo(batLength + 5, 0);
-    ctx.lineTo(batLength, 11);
-    ctx.lineTo(batLength * 0.6, 9);
-    ctx.quadraticCurveTo(batLength * 0.3, 6, 0, 3);
-    ctx.closePath();
-    ctx.fill();
-
-    // グリップ（左側）
-    ctx.fillStyle = '#2a2a2a';
-    ctx.beginPath();
-    ctx.moveTo(-5, -4);
-    ctx.lineTo(15, -5);
-    ctx.lineTo(15, 5);
-    ctx.lineTo(-5, 4);
-    ctx.closePath();
-    ctx.fill();
-
-    // グリップのテープライン
-    ctx.strokeStyle = '#1a1a1a';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 6; i++) {
-      ctx.beginPath();
-      ctx.moveTo(i * 3, -4);
-      ctx.lineTo(i * 3, 4);
-      ctx.stroke();
-    }
-
-    // バットのハイライト
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(20, -4);
-    ctx.quadraticCurveTo(batLength * 0.5, -7, batLength - 10, -8);
-    ctx.stroke();
-
-    ctx.restore();
-
-    // スイングエフェクト（より派手に）
-    if (this.isSwinging && this.batAngle > 0) {
-      const swingAlpha = Math.min(0.6, (this.batAngle / Math.PI) * 0.8);
-
-      // スイング軌跡（複数）
-      for (let i = 0; i < 3; i++) {
-        ctx.strokeStyle = `rgba(255,255,255,${swingAlpha * (1 - i * 0.3)})`;
-        ctx.lineWidth = 4 - i;
-        ctx.beginPath();
-        ctx.arc(batBaseX, batBaseY, batLength - i * 5, this.batAngle - 0.4 - i * 0.1, this.batAngle);
-        ctx.stroke();
-      }
-
-      // スイング風切り音エフェクト
-      ctx.strokeStyle = `rgba(200,220,255,${swingAlpha * 0.5})`;
-      ctx.lineWidth = 2;
-      for (let i = 0; i < 5; i++) {
-        const angle = this.batAngle - 0.3 + i * 0.08;
-        const len = batLength * (0.6 + i * 0.1);
-        ctx.beginPath();
-        ctx.moveTo(batBaseX + Math.cos(angle) * len, batBaseY + Math.sin(angle) * len);
-        ctx.lineTo(batBaseX + Math.cos(angle) * (len + 15), batBaseY + Math.sin(angle) * (len + 15));
-        ctx.stroke();
-      }
-    }
-  }
-
-  private drawBall3D(x: number, y: number, z: number): void {
-    const ctx = this.ctx;
-
-    // 遠近法でサイズ調整（z=0で小さく、z=1000で大きく）
-    // configのPERSPECTIVE_MULTIPLIERで調整（モバイルは遠近感を抑えて見やすく）
-    const basePerspective = 0.5 + (z / 1000) * 1.5;
-    const perspective = basePerspective * this.gameConfig.PERSPECTIVE_MULTIPLIER;
-
-    // ボールサイズ（configのBALL_SIZE_MULTIPLIERで調整 - モバイルは大きめ）
-    const baseSize = 8 + perspective * 14;
-    const size = baseSize * this.gameConfig.BALL_SIZE_MULTIPLIER;
-
-    // 位置調整（遠近法）
-    const perspectiveX = this.canvasWidth / 2 + (x - this.canvasWidth / 2) * perspective;
-    const perspectiveY = this.canvasHeight * this.gameConfig.PITCHER_Y_POSITION + (y - this.canvasHeight * 0.35 + z * 0.35) * perspective;
-
-    // 影（地面に落ちる影）
-    const shadowY = perspectiveY + size + 8;
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.ellipse(perspectiveX + 2, shadowY, size * 0.9, size * 0.25, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ボール本体（よりリアルなグラデーション）
-    const ballGradient = ctx.createRadialGradient(
-      perspectiveX - size * 0.35, perspectiveY - size * 0.35, 0,
-      perspectiveX, perspectiveY, size
-    );
-    ballGradient.addColorStop(0, '#ffffff');
-    ballGradient.addColorStop(0.3, '#f8f8f8');
-    ballGradient.addColorStop(0.7, '#e8e8e8');
-    ballGradient.addColorStop(1, '#cccccc');
-    ctx.fillStyle = ballGradient;
-    ctx.beginPath();
-    ctx.arc(perspectiveX, perspectiveY, size, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ボールの縁（立体感）
-    ctx.strokeStyle = 'rgba(150,150,150,0.3)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.arc(perspectiveX, perspectiveY, size, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // 縫い目（よりリアルな回転）
-    const rotation = this.frameCount * 0.25;
-    const seamColor = '#C41E3A';
-    ctx.strokeStyle = seamColor;
-    ctx.lineWidth = Math.max(1.5, size * 0.12);
-    ctx.lineCap = 'round';
-
-    // 左側の縫い目
-    ctx.beginPath();
-    for (let i = 0; i < 8; i++) {
-      const angle = rotation + i * 0.4;
-      const px = perspectiveX - size * 0.3 + Math.cos(angle) * size * 0.25;
-      const py = perspectiveY + Math.sin(angle) * size * 0.4;
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-
-    // 右側の縫い目
-    ctx.beginPath();
-    for (let i = 0; i < 8; i++) {
-      const angle = rotation + Math.PI + i * 0.4;
-      const px = perspectiveX + size * 0.3 + Math.cos(angle) * size * 0.25;
-      const py = perspectiveY + Math.sin(angle) * size * 0.4;
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-
-    // ハイライト（光の反射）
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.beginPath();
-    ctx.arc(perspectiveX - size * 0.3, perspectiveY - size * 0.3, size * 0.2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  private drawFlyingBall(): void {
-    const ctx = this.ctx;
-
-    // 遠近法
-    const perspective = Math.max(0.3, 1 - this.hitBallZ / 2500);
-    const size = 20 * perspective;
-    const x = this.hitBallX;
-    const y = this.hitBallY;
-
-    // 影（地面）
-    const shadowY = this.canvasHeight * 0.85;
-    const shadowSize = size * (1 + (shadowY - y) / 200);
-    ctx.fillStyle = 'rgba(0,0,0,0.2)';
-    ctx.beginPath();
-    ctx.ellipse(x, shadowY, shadowSize, shadowSize * 0.3, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ボール
-    if (size > 2) {
-      const ballGradient = ctx.createRadialGradient(
-        x - size * 0.3, y - size * 0.3, 0,
-        x, y, size
-      );
-      ballGradient.addColorStop(0, '#ffffff');
-      ballGradient.addColorStop(1, '#cccccc');
-      ctx.fillStyle = ballGradient;
-      ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 縫い目
-      if (size > 5) {
-        ctx.strokeStyle = '#C41E3A';
-        ctx.lineWidth = Math.max(1, size * 0.1);
-        ctx.beginPath();
-        ctx.arc(x - size * 0.2, y, size * 0.4, 0.5, 2.5);
-        ctx.stroke();
-      }
-    }
-  }
-
-  private drawBallTrail(): void {
-    const ctx = this.ctx;
-
-    // configから軌跡設定を取得（モバイルはより見やすく）
-    const maxTrailLength = this.gameConfig.BALL_TRAIL_LENGTH;
-    const baseOpacity = this.gameConfig.BALL_TRAIL_OPACITY;
-    const sizeMult = this.gameConfig.BALL_TRAIL_SIZE_MULT;
-
-    // 軌跡を指定の長さに制限
-    const visibleTrail = this.ballTrail.slice(-maxTrailLength);
-
-    visibleTrail.forEach((point, i) => {
-      const alpha = point.alpha * baseOpacity * (i / visibleTrail.length);
-      if (alpha < 0.05) return;
-
-      // モバイルではより太い軌跡で視認性向上
-      const trailSize = (3 + i * 0.4) * sizeMult;
-
-      // グラデーション効果（後ろに行くほど薄く、細く）
-      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, trailSize, 0, Math.PI * 2);
-      ctx.fill();
-
-      // モバイル時は軌跡にグローを追加
-      if (this.isMobile && alpha > 0.2) {
-        ctx.fillStyle = `rgba(255,200,100,${alpha * 0.3})`;
-        ctx.beginPath();
-        ctx.arc(point.x, point.y, trailSize * 1.5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    });
-  }
-
-  // Iteration 1: 速度インジケーター（モバイル専用）
-  // ボールの接近進捗を円形で表示してタイミング補助
-  private drawSpeedIndicator(): void {
-    const ctx = this.ctx;
-    const w = this.canvasWidth;
-    const h = this.canvasHeight;
-
-    // ボールの進捗（0〜1）
-    const progress = Math.min(1, this.ballZ / 1000);
-
-    // インジケーターの位置（画面左上）
-    const indicatorX = 50;
-    const indicatorY = h * 0.25;
-    const radius = 25;
-
-    // 背景円
-    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(indicatorX, indicatorY, radius, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // 進捗円（プログレスが増すにつれて色が変化）
-    const progressColor = progress < 0.5
-      ? `rgba(100,200,255,${0.5 + progress})`
-      : progress < 0.8
-        ? `rgba(255,200,100,${0.5 + progress * 0.5})`
-        : `rgba(255,100,100,${0.8 + progress * 0.2})`;
-
-    ctx.strokeStyle = progressColor;
-    ctx.lineWidth = 5;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.arc(indicatorX, indicatorY, radius, -Math.PI / 2, -Math.PI / 2 + progress * Math.PI * 2);
-    ctx.stroke();
-
-    // 中央のパーセンテージ表示
-    ctx.fillStyle = progressColor;
-    ctx.font = 'bold 12px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`${Math.floor(progress * 100)}%`, indicatorX, indicatorY);
-
-    // PERFECT到達が近い時のパルスエフェクト
-    if (progress > 0.75 && progress < 0.95) {
-      const pulse = Math.sin(this.frameCount * 0.3) * 0.3 + 0.7;
-      ctx.strokeStyle = `rgba(0,255,100,${pulse * 0.5})`;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(indicatorX, indicatorY, radius + 8 + pulse * 5, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-  }
-
-  // Iteration 3: ヒットゾーン可視化（モバイル専用）
-  // バッター位置にターゲットゾーンを表示してスイングタイミングを補助
-  private drawHitZone(): void {
-    const ctx = this.ctx;
-    const w = this.canvasWidth;
-    const h = this.canvasHeight;
-
-    // ボールの進捗
-    const progress = Math.min(1, this.ballZ / 1000);
-
-    // ヒットゾーンの位置（バッター前）
-    const zoneX = w / 2;
-    const zoneY = h * this.gameConfig.BATTER_Y_POSITION - 30;
-
-    // ゾーンの半径（ボール接近で小さくなる）
-    const radius = 30 + (1 - progress) * 20;
-    const innerRadius = radius * 0.4;
-
-    // 不透明度（ボールが来るまで薄く、接近で濃く）
-    const alpha = Math.min(0.5, progress * 0.6);
-
-    // 外円（ターゲットリング）
-    ctx.strokeStyle = `rgba(255,255,100,${alpha})`;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(zoneX, zoneY, radius, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // PERFECTゾーン付近で緑にグロー
-    if (progress > 0.7 && progress < 0.95) {
-      const pulse = Math.sin(this.frameCount * 0.25) * 0.3 + 0.5;
-      ctx.strokeStyle = `rgba(0,255,100,${pulse})`;
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(zoneX, zoneY, innerRadius + pulse * 5, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-
-    // 十字線（スイートスポット）
-    ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.6})`;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(zoneX - innerRadius, zoneY);
-    ctx.lineTo(zoneX + innerRadius, zoneY);
-    ctx.moveTo(zoneX, zoneY - innerRadius);
-    ctx.lineTo(zoneX, zoneY + innerRadius);
-    ctx.stroke();
-  }
-
-  private drawTimingIndicator(): void {
-    const ctx = this.ctx;
-    const w = this.canvasWidth;
-    const h = this.canvasHeight;
-
-    // タイミングバー（configで高さ調整 - モバイルは太め）
-    const barWidth = w * 0.65;
-    const barHeight = 16 * this.gameConfig.TIMING_BAR_HEIGHT_MULT;
-    const barX = (w - barWidth) / 2;
-    const barY = h - 35 - (barHeight - 16) / 2; // 太さ分上に調整
-
-    // 外枠の影
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.beginPath();
-    ctx.roundRect(barX - 8, barY - 8, barWidth + 16, barHeight + 16, 8);
-    ctx.fill();
-
-    // 外枠
-    const frameGradient = ctx.createLinearGradient(barX, barY - 6, barX, barY + barHeight + 6);
-    frameGradient.addColorStop(0, '#4a4a6a');
-    frameGradient.addColorStop(0.5, '#3a3a5a');
-    frameGradient.addColorStop(1, '#2a2a4a');
-    ctx.fillStyle = frameGradient;
-    ctx.beginPath();
-    ctx.roundRect(barX - 6, barY - 6, barWidth + 12, barHeight + 12, 6);
-    ctx.fill();
-
-    // ゾーン定義（グラデーション付き）
-    const zones = [
-      { start: 0, end: 0.25, color1: '#cc3333', color2: '#aa2222', label: 'EARLY' },
-      { start: 0.25, end: 0.42, color1: '#cc8833', color2: '#aa6622', label: '' },
-      { start: 0.42, end: 0.5, color1: '#33cc55', color2: '#22aa44', label: 'GOOD' },
-      { start: 0.5, end: 0.58, color1: '#00ffaa', color2: '#00dd88', label: 'PERFECT' },
-      { start: 0.58, end: 0.75, color1: '#cc8833', color2: '#aa6622', label: '' },
-      { start: 0.75, end: 1, color1: '#cc3333', color2: '#aa2222', label: 'LATE' },
-    ];
-
-    zones.forEach(zone => {
-      const zoneGradient = ctx.createLinearGradient(0, barY, 0, barY + barHeight);
-      zoneGradient.addColorStop(0, zone.color1);
-      zoneGradient.addColorStop(1, zone.color2);
-      ctx.fillStyle = zoneGradient;
-      ctx.fillRect(
-        barX + barWidth * zone.start,
-        barY,
-        barWidth * (zone.end - zone.start),
-        barHeight
-      );
-    });
-
-    // PERFECTゾーンのグロー
-    const perfectStart = barX + barWidth * 0.5;
-    const perfectWidth = barWidth * 0.08;
-    const glowIntensity = 0.3 + Math.sin(this.frameCount * 0.15) * 0.15;
-
-    ctx.shadowColor = '#00ffaa';
-    ctx.shadowBlur = 15 + Math.sin(this.frameCount * 0.15) * 5;
-    ctx.fillStyle = `rgba(0,255,170,${glowIntensity})`;
-    ctx.fillRect(perfectStart, barY - 2, perfectWidth, barHeight + 4);
-    ctx.shadowBlur = 0;
-
-    // 現在位置マーカー
-    const progress = Math.min(1, this.ballZ / 1000);
-    const markerX = barX + barWidth * progress;
-
-    // マーカーの脈動
-    const pulse = 1 + Math.sin(this.frameCount * 0.3) * 0.1;
-
-    // マーカーの影
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.beginPath();
-    ctx.moveTo(markerX, barY - 12);
-    ctx.lineTo(markerX - 8 * pulse, barY - 2);
-    ctx.lineTo(markerX + 8 * pulse, barY - 2);
-    ctx.closePath();
-    ctx.fill();
-
-    // マーカー本体
-    const markerGradient = ctx.createLinearGradient(markerX - 8, 0, markerX + 8, 0);
-    markerGradient.addColorStop(0, '#ffffff');
-    markerGradient.addColorStop(0.5, '#ffffcc');
-    markerGradient.addColorStop(1, '#ffffff');
-    ctx.fillStyle = markerGradient;
-    ctx.beginPath();
-    ctx.moveTo(markerX, barY - 14);
-    ctx.lineTo(markerX - 7 * pulse, barY - 3);
-    ctx.lineTo(markerX + 7 * pulse, barY - 3);
-    ctx.closePath();
-    ctx.fill();
-
-    // マーカーライン
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(markerX - 2, barY, 4, barHeight);
-
-    // 下マーカー
-    ctx.beginPath();
-    ctx.moveTo(markerX, barY + barHeight + 12);
-    ctx.lineTo(markerX - 7 * pulse, barY + barHeight + 3);
-    ctx.lineTo(markerX + 7 * pulse, barY + barHeight + 3);
-    ctx.closePath();
-    ctx.fill();
-
-    // ラベル（アニメーション付き）
-    const labelFontSize = Math.max(9, Math.min(w / 45, 12));
-    ctx.font = `bold ${labelFontSize}px Arial`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-
-    // EARLY
-    ctx.fillStyle = 'rgba(255,100,100,0.9)';
-    ctx.fillText('EARLY', barX + barWidth * 0.125, barY - 16);
-
-    // PERFECT（グロー付き）
-    const perfectGlow = Math.sin(this.frameCount * 0.12) * 0.3 + 0.7;
-    ctx.fillStyle = `rgba(0,255,170,${perfectGlow})`;
-    ctx.shadowColor = '#00ffaa';
-    ctx.shadowBlur = 8;
-    ctx.fillText('PERFECT', barX + barWidth * 0.54, barY - 16);
-    ctx.shadowBlur = 0;
-
-    // LATE
-    ctx.fillStyle = 'rgba(255,100,100,0.9)';
-    ctx.fillText('LATE', barX + barWidth * 0.875, barY - 16);
-
-    // Iteration 2: モバイル用スイングヒント表示
-    if (this.gameConfig.SHOW_SWING_HINT) {
-      const progress = Math.min(1, this.ballZ / 1000);
-
-      // PERFECTゾーンに近づいたらヒント表示
-      if (progress > 0.6 && progress < 0.95) {
-        const hintPulse = Math.sin(this.frameCount * 0.4) * 0.3 + 0.7;
-        const hintY = barY - 50;
-
-        // 「TAP!」テキスト（脈動アニメーション）
-        ctx.font = `bold ${24 * hintPulse}px Oswald, Arial`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-
-        // グロー効果
-        ctx.shadowColor = progress > 0.75 ? '#00ff88' : '#ffaa00';
-        ctx.shadowBlur = 15 * hintPulse;
-        ctx.fillStyle = progress > 0.75
-          ? `rgba(0,255,136,${hintPulse})`
-          : `rgba(255,200,100,${hintPulse * 0.8})`;
-        ctx.fillText('TAP!', w / 2, hintY);
-        ctx.shadowBlur = 0;
-      }
-    }
-  }
-
-  private drawParticles(): void {
-    const ctx = this.ctx;
-
-    this.particles.forEach(p => {
-      const alpha = p.life / p.maxLife;
-      ctx.fillStyle = p.color.replace('1)', `${alpha})`);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
-      ctx.fill();
-    });
-  }
-
-  private addSwingParticles(): void {
-    const x = this.canvasWidth / 2 + 30;
-    const y = this.canvasHeight * 0.8;
-
-    for (let i = 0; i < 8; i++) {
-      this.particles.push({
-        x: x + Math.random() * 40,
-        y: y + Math.random() * 30 - 15,
-        vx: (Math.random() - 0.5) * 8,
-        vy: (Math.random() - 0.5) * 8,
-        life: 20,
-        maxLife: 20,
-        color: 'rgba(255,255,255,1)',
-        size: 3 + Math.random() * 3
-      });
-    }
-  }
-
-  private addHomerunParticles(): void {
-    const x = this.canvasWidth / 2;
-    const y = this.canvasHeight * 0.7;
-
-    // メイン爆発パーティクル（増量＆強化）
-    for (let i = 0; i < 50; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 6 + Math.random() * 14;
-      const colors = [
-        'rgba(255,215,0,1)',   // ゴールド
-        'rgba(255,100,0,1)',   // オレンジ
-        'rgba(255,50,50,1)',   // レッド
-        'rgba(255,255,255,1)', // ホワイト
-        'rgba(255,150,0,1)',   // ダークオレンジ
-        'rgba(255,255,100,1)'  // イエロー
-      ];
-      this.particles.push({
-        x,
-        y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 8,
-        life: 50 + Math.random() * 30,
-        maxLife: 80,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        size: 5 + Math.random() * 6
-      });
-    }
-
-    // 星型の輝きパーティクル
-    for (let i = 0; i < 20; i++) {
-      const angle = (i / 20) * Math.PI * 2;
-      const speed = 8 + Math.random() * 6;
-      this.particles.push({
-        x,
-        y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 4,
-        life: 30 + Math.random() * 20,
-        maxLife: 50,
-        color: 'rgba(255,255,255,1)',
-        size: 3 + Math.random() * 3
-      });
-    }
-
-    // 虹色の放射パーティクル
-    const rainbowColors = [
-      'rgba(255,0,0,1)', 'rgba(255,127,0,1)', 'rgba(255,255,0,1)',
-      'rgba(0,255,0,1)', 'rgba(0,0,255,1)', 'rgba(75,0,130,1)', 'rgba(148,0,211,1)'
-    ];
-    for (let i = 0; i < 14; i++) {
-      const angle = (i / 14) * Math.PI * 2;
-      this.particles.push({
-        x,
-        y,
-        vx: Math.cos(angle) * 12,
-        vy: Math.sin(angle) * 8 - 10,
-        life: 40,
-        maxLife: 40,
-        color: rainbowColors[i % rainbowColors.length],
-        size: 6
-      });
-    }
-  }
-
-  private addFireworkParticles(x: number, y: number): void {
-    // より豪華な連続花火
-    for (let i = 0; i < 6; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 3 + Math.random() * 5;
-      const colors = [
-        'rgba(255,215,0,1)',
-        'rgba(255,100,0,1)',
-        'rgba(255,255,255,1)',
-        'rgba(255,50,150,1)',
-        'rgba(50,200,255,1)'
-      ];
-      this.particles.push({
-        x,
-        y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 2,
-        life: 25,
-        maxLife: 25,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        size: 3 + Math.random() * 3
-      });
-    }
-  }
-
-  private drawReadyScreen(): void {
-    if (!this.ctx) return;
-
-    const ctx = this.ctx;
-    const w = this.canvasWidth;
-    const h = this.canvasHeight;
-
-    // 背景
-    this.drawStadium();
-
-    // オーバーレイ
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(0, 0, w, h);
-
-    // フォントサイズをcanvasサイズに応じて調整
-    const baseFontSize = Math.min(w / 12, h / 8);
-    const titleFontSize = Math.max(20, Math.min(baseFontSize * 1.2, 32));
-    const subtitleFontSize = Math.max(12, Math.min(baseFontSize * 0.5, 16));
-    const instructionFontSize = Math.max(10, Math.min(baseFontSize * 0.4, 14));
-
-    // タイトル
-    ctx.fillStyle = '#FFD700';
-    ctx.font = `bold ${titleFontSize}px "Oswald", Arial`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('⚾ HOMERUN CHALLENGE ⚾', w / 2, h / 2 - h * 0.15);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = `${subtitleFontSize}px "Noto Sans JP", Arial`;
-    ctx.fillText('タイミングよくスイングしてホームランを狙え！', w / 2, h / 2);
-    ctx.font = `${instructionFontSize}px Arial`;
-    ctx.fillStyle = '#aaaaaa';
-    ctx.fillText('画面タップ or スペースキー でスイング', w / 2, h / 2 + h * 0.15);
-  }
-
-  private easeOutQuad(t: number): number {
-    return t * (2 - t);
+  private showCall(text: string, sub: string): void {
+    this.lastOutcomeLabel.set(text);
+    this.lastOutcomeSub.set(sub);
+    this.showResultMessage.set(true);
+    this.later(() => this.showResultMessage.set(false), 800);
   }
 
   private endGame(): void {
     this.gameState.set('gameover');
+    if (this.animationId) cancelAnimationFrame(this.animationId);
     this.stopBgm();
   }
 
   saveScore(): void {
-    const rawNickname = this.nickname ?? '';
-    // 前後の空白をトリムし、制御文字を除去
-    const trimmed = rawNickname.trim();
-    const sanitized = trimmed.replace(/[\u0000-\u001F\u007F]/g, '');
+    if (this.scoreSaved()) return;
 
-    // バリデーション: 空/空白のみは禁止
+    const trimmed = (this.nickname ?? '').trim();
+    // 制御文字を除去
+    const sanitized = trimmed.replace(/[ -]/g, '');
+
     if (!sanitized) {
       this.nicknameError.set('ニックネームを入力してください。');
       return;
     }
-
-    // バリデーション: 長さ 1〜20 文字
-    if (sanitized.length < 1 || sanitized.length > 20) {
+    if (sanitized.length > 20) {
       this.nicknameError.set('ニックネームは1〜20文字で入力してください。');
       return;
     }
 
-    // 成功時は、クリーンな値を状態に反映してエラーをクリア
     this.nickname = sanitized;
     this.nicknameError.set(null);
 
@@ -2075,53 +719,1039 @@ export class HomerunChallengeComponent implements OnInit, AfterViewInit, OnDestr
     this.highScore.set(this.gameScoreService.getHighScore('homerun'));
   }
 
-  getResultMessage(type: string): string {
-    switch (type) {
-      case 'homerun': return '🎉 HOMERUN!!';
-      case 'hit': return '👍 HIT!';
-      case 'foul': return '⚠️ FOUL';
-      case 'strike': return '❌ STRIKE';
-      case 'miss': return '💨 SWING & MISS';
-      default: return '';
+  // ====================================================================
+  // 3D投影（本塁後方のカメラ）
+  // ====================================================================
+  private setupCamera(): void {
+    // ストライクゾーンが画面幅の11%（モバイルは14%）に写るように焦点距離を決める。
+    // この比率が実際の中継映像の「打者の大きさ:ゾーンの大きさ」とほぼ一致する。
+    this.focal = (this.canvasWidth * (this.isMobile ? 0.17 : 0.11)) * this.CAM_BACK / FIELD.ZONE_WIDTH;
+    this.horizonY = this.canvasHeight * 0.30;
+  }
+
+  /** ワールド座標（x=左右, y=高さ, z=本塁からの距離）を画面座標へ */
+  private project(x: number, y: number, z: number): { x: number; y: number; scale: number } {
+    const depth = Math.max(0.35, z + this.CAM_BACK);
+    const scale = this.focal / depth;
+    return {
+      x: this.canvasWidth / 2 + x * scale,
+      y: this.horizonY - (y - this.CAM_HEIGHT) * scale,
+      scale,
+    };
+  }
+
+  /** ストライクゾーン正規化座標 → ワールド座標（本塁上） */
+  private zoneToWorld(p: ZonePoint): { x: number; y: number } {
+    return {
+      x: p.x * (FIELD.ZONE_WIDTH / 2),
+      y: (FIELD.ZONE_TOP + FIELD.ZONE_BOTTOM) / 2 + p.y * ((FIELD.ZONE_TOP - FIELD.ZONE_BOTTOM) / 2),
+    };
+  }
+
+  /** 画面座標 → ストライクゾーン正規化座標（タップ位置の解釈） */
+  private screenToZone(sx: number, sy: number): ZonePoint {
+    const scale = this.focal / this.CAM_BACK;
+    const worldX = (sx - this.canvasWidth / 2) / scale;
+    const worldY = this.CAM_HEIGHT - (sy - this.horizonY) / scale;
+    const midHeight = (FIELD.ZONE_TOP + FIELD.ZONE_BOTTOM) / 2;
+    return {
+      x: worldX / (FIELD.ZONE_WIDTH / 2),
+      y: (worldY - midHeight) / ((FIELD.ZONE_TOP - FIELD.ZONE_BOTTOM) / 2),
+    };
+  }
+
+  /** 投球の進行度から画面上のボール位置と半径を求める */
+  private ballScreenPos(progress: number): { x: number; y: number; r: number; z: number } {
+    const p = clamp(progress, 0, 1.4);
+    const target = this.zoneToWorld(this.pitchLocation);
+    const brk = breakOffsetAt(this.pitch, Math.min(1, p));
+
+    // リリース点から本塁へ直線補間
+    const z = this.RELEASE.z * (1 - p);
+    const baseX = this.RELEASE.x + (target.x - this.RELEASE.x) * p;
+    const baseY = this.RELEASE.y + (target.y - this.RELEASE.y) * p;
+
+    // 重力による弧（始点と終点が決まった放物線は直線より上を通る）。
+    // 到達時間0.44秒なら中間点で約24cm浮いて見える＝実際の「投球は落ちながら来る」見え方になる。
+    const T = this.pitchFlightMs / 1000;
+    const gravityArc = (9.81 / 2) * T * T * p * (1 - p);
+
+    const proj = this.project(baseX + brk.x, baseY + brk.y + gravityArc, Math.max(-1.5, z));
+    // ボール直径7.3cm
+    const r = Math.max(2.2, (0.0366 * proj.scale));
+    return { x: proj.x, y: proj.y, r, z };
+  }
+
+  /** 打球の経過秒数から画面位置を求める */
+  private battedBallScreenPos(t: number): { x: number; y: number; r: number } | null {
+    const traj = this.flightTraj;
+    if (!traj) return null;
+    const path = traj.path;
+    let idx = path.findIndex(pt => pt.t >= t);
+    if (idx < 0) idx = path.length - 1;
+    const pt = path[idx];
+
+    const rad = (this.flightSpray * Math.PI) / 180;
+    const worldX = pt.d * Math.sin(rad);
+    const worldZ = pt.d * Math.cos(rad);
+    const proj = this.project(worldX, pt.h, worldZ);
+    return { x: proj.x, y: proj.y, r: Math.max(1.5, 0.0366 * proj.scale) };
+  }
+
+  // ====================================================================
+  // 描画
+  // ====================================================================
+  private drawGame(): void {
+    if (!this.ctx || this.canvasWidth <= 0) return;
+    const ctx = this.ctx;
+
+    ctx.save();
+    ctx.translate(this.screenShakeX, this.screenShakeY);
+
+    this.drawField();
+
+    const state = this.gameState();
+
+    if (state === 'windup' || state === 'pitching') {
+      this.drawPitcher();
+      this.drawStrikeZone();
+      this.drawMeetCursor();
+      this.drawBallTrail();
+      this.drawPitchedBall();
+      this.drawBatterForeground();
+      this.drawPitchHud();
+    } else if (state === 'flying') {
+      this.drawFenceMarker();
+      this.drawBallTrail();
+      this.drawFlyingBall();
+      this.drawBatterForeground();
+      this.drawTrackingHud();
+    } else {
+      this.drawPitcher();
+      this.drawStrikeZone();
+      this.drawBatterForeground();
+    }
+
+    this.drawParticles();
+    this.drawCountBoard();
+
+    if (this.impactFlashAlpha > 0) {
+      ctx.fillStyle = `rgba(255,255,255,${this.impactFlashAlpha})`;
+      ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+    }
+    ctx.restore();
+  }
+
+  /** 球場（本塁後方からの視点） */
+  private drawField(): void {
+    const ctx = this.ctx;
+    const w = this.canvasWidth;
+    const h = this.canvasHeight;
+    const horizon = this.horizonY;
+
+    // 夜空
+    const sky = ctx.createLinearGradient(0, 0, 0, horizon);
+    sky.addColorStop(0, '#070712');
+    sky.addColorStop(0.6, '#131331');
+    sky.addColorStop(1, '#1b2a4a');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, w, horizon + 1);
+
+    // 星
+    ctx.fillStyle = '#ffffff';
+    for (let i = 0; i < 60; i++) {
+      const x = (i * 137.5) % w;
+      const y = (i * 71.3) % (horizon * 0.8);
+      const twinkle = Math.sin(this.frameCount * 0.06 + i) * 0.4 + 0.6;
+      ctx.globalAlpha = twinkle * 0.7;
+      ctx.beginPath();
+      ctx.arc(x, y, 0.6 + (i % 3) * 0.35, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // 照明塔
+    this.drawLightTower(w * 0.1, horizon * 0.18);
+    this.drawLightTower(w * 0.9, horizon * 0.18);
+
+    // 外野スタンド
+    const stand = ctx.createLinearGradient(0, horizon * 0.55, 0, horizon);
+    stand.addColorStop(0, '#3a3a4c');
+    stand.addColorStop(1, '#191926');
+    ctx.fillStyle = stand;
+    ctx.fillRect(0, horizon * 0.58, w, horizon * 0.42);
+
+    // 観客のざわめき（光の点）
+    for (let i = 0; i < 90; i++) {
+      const col = i % 30;
+      const row = Math.floor(i / 30);
+      const x = (w / 30) * col + (row % 2) * (w / 60);
+      const y = horizon * 0.63 + row * horizon * 0.11;
+      const intensity = Math.sin(this.frameCount * 0.12 + i * 0.4);
+      if (intensity > 0.3) {
+        ctx.fillStyle = ['#ffcc00', '#ffffff', '#ff9944'][i % 3];
+        ctx.globalAlpha = 0.25 + intensity * 0.3;
+        ctx.beginPath();
+        ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // 外野フェンス（水平線のすぐ下）
+    ctx.fillStyle = '#123a6b';
+    ctx.fillRect(0, horizon - 6, w, 8);
+    ctx.fillStyle = 'rgba(255,221,68,0.9)';
+    ctx.fillRect(0, horizon - 7, w, 2);
+
+    // 芝生（遠近感のあるグラデーション）
+    const grass = ctx.createLinearGradient(0, horizon, 0, h);
+    grass.addColorStop(0, '#17491d');
+    grass.addColorStop(0.35, '#1f6b26');
+    grass.addColorStop(1, '#2e9236');
+    ctx.fillStyle = grass;
+    ctx.fillRect(0, horizon, w, h - horizon);
+
+    // 芝目のストライプ（奥ほど細くなる＝遠近感）
+    for (let i = 0; i < 12; i++) {
+      const t0 = i / 12, t1 = (i + 0.5) / 12;
+      const y0 = horizon + (h - horizon) * Math.pow(t0, 1.9);
+      const y1 = horizon + (h - horizon) * Math.pow(t1, 1.9);
+      ctx.fillStyle = `rgba(255,255,255,${0.035})`;
+      ctx.fillRect(0, y0, w, Math.max(1, y1 - y0));
+    }
+
+    // 内野の土（本塁周り）
+    const dirt = this.project(0, 0, 5);
+    const dirtNear = this.project(0, 0, 0);
+    ctx.fillStyle = '#8a6a45';
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    ctx.lineTo(w, h);
+    ctx.lineTo(w, dirtNear.y);
+    ctx.quadraticCurveTo(w / 2, dirt.y, 0, dirtNear.y);
+    ctx.closePath();
+    ctx.fill();
+
+    // 投手マウンド（直径5.49m・高さ25cm の実寸）
+    const moundFront = this.project(0, 0, FIELD.MOUND_TO_PLATE - 2.74);
+    const moundBack = this.project(0, 0, FIELD.MOUND_TO_PLATE + 2.74);
+    const moundTop = this.project(0, 0.25, FIELD.MOUND_TO_PLATE);
+    const moundScale = moundTop.scale;
+    const rx = 2.74 * moundScale;
+    const cy = (moundFront.y + moundBack.y) / 2;
+    const ry = Math.max(3, (moundFront.y - moundBack.y) / 2);
+
+    const moundGrad = ctx.createLinearGradient(0, cy - ry, 0, cy + ry);
+    moundGrad.addColorStop(0, '#7d5f3d');
+    moundGrad.addColorStop(0.45, '#9c7a52');
+    moundGrad.addColorStop(1, '#6d5234');
+    ctx.fillStyle = moundGrad;
+    ctx.beginPath();
+    ctx.ellipse(moundTop.x, cy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // 芝との境目をぼかす
+    ctx.strokeStyle = 'rgba(30,70,30,0.35)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 投手板（ピッチャープレート 61cm×15cm）
+    ctx.fillStyle = '#f4f4f4';
+    ctx.fillRect(moundTop.x - 0.305 * moundScale, moundTop.y - 0.04 * moundScale, 0.61 * moundScale, Math.max(1.5, 0.08 * moundScale));
+
+    // 本塁ベース
+    const plate = this.project(0, 0, 0.4);
+    const ps = plate.scale;
+    ctx.fillStyle = '#f2f2f2';
+    ctx.beginPath();
+    ctx.moveTo(plate.x - 0.216 * ps, plate.y - 0.05 * ps);
+    ctx.lineTo(plate.x + 0.216 * ps, plate.y - 0.05 * ps);
+    ctx.lineTo(plate.x + 0.216 * ps, plate.y + 0.05 * ps);
+    ctx.lineTo(plate.x, plate.y + 0.16 * ps);
+    ctx.lineTo(plate.x - 0.216 * ps, plate.y + 0.05 * ps);
+    ctx.closePath();
+    ctx.fill();
+
+    // 照明のフィールドへの反射
+    const light = ctx.createRadialGradient(w / 2, horizon, 0, w / 2, horizon, w * 0.7);
+    light.addColorStop(0, 'rgba(255,255,235,0.10)');
+    light.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = light;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  private drawLightTower(x: number, y: number): void {
+    const ctx = this.ctx;
+    ctx.fillStyle = '#242430';
+    ctx.fillRect(x - 2, y, 4, this.horizonY - y);
+    ctx.fillStyle = '#33333f';
+    ctx.fillRect(x - 16, y - 6, 32, 10);
+    for (let i = 0; i < 4; i++) {
+      const lx = x - 11 + i * 7.5;
+      ctx.fillStyle = '#fffff0';
+      ctx.beginPath();
+      ctx.arc(lx, y - 1, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.18;
+      ctx.beginPath();
+      ctx.arc(lx, y - 1, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
     }
   }
 
-  getResultColor(type: string): string {
-    switch (type) {
-      case 'homerun': return 'text-yellow-400';
-      case 'hit': return 'text-green-400';
-      case 'foul': return 'text-orange-400';
-      case 'strike': return 'text-red-400';
-      case 'miss': return 'text-gray-400';
-      default: return '';
+  /** 投手（ワインドアップからリリースまでのモーション） */
+  private drawPitcher(): void {
+    const ctx = this.ctx;
+    // 投手は投手板（マウンドの頂上）に立つ
+    const mound = this.project(0, 0.25, FIELD.MOUND_TO_PLATE);
+    const s = mound.scale;
+    const x = mound.x;
+    const groundY = mound.y;
+
+    const now = performance.now();
+    // -1〜0 がワインドアップ、0〜1 がリリース後
+    const phase = this.gameState() === 'windup'
+      ? -clamp((this.pitchStartMs - now) / this.windupMs, 0, 1)
+      : clamp(this.pitchProgress, 0, 1);
+
+    // 身長1.8m
+    const bodyH = 1.8 * s;
+    const lean = phase < 0 ? Math.sin((1 + phase) * Math.PI * 0.5) * 0.12 : 0.22;
+
+    ctx.save();
+    ctx.translate(x, groundY);
+    ctx.rotate(-lean * 0.3);
+
+    // 脚（軸足と踏み出し足）
+    const legLift = phase < -0.35 ? Math.sin((phase + 1) * Math.PI) * 0.5 : 0;
+    const stride = phase >= 0 ? 0.55 : 0.18 + Math.max(0, 1 + phase) * 0.2;
+    ctx.strokeStyle = '#e8e8ec';
+    ctx.lineWidth = Math.max(3, 0.17 * s);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(0.05 * s, 0);
+    ctx.lineTo(0.02 * s, -bodyH * 0.48);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-stride * s, -legLift * bodyH * 0.35);
+    ctx.lineTo(-0.05 * s, -bodyH * 0.48);
+    ctx.stroke();
+
+    // 胴体（ユニフォーム）
+    const body = ctx.createLinearGradient(-0.3 * s, -bodyH, 0.3 * s, -bodyH * 0.4);
+    body.addColorStop(0, '#f2f2f5');
+    body.addColorStop(1, '#c3c8d2');
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.ellipse(0, -bodyH * 0.66, 0.3 * s, 0.26 * s, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // 背番号
+    ctx.fillStyle = '#1e3a5f';
+    ctx.font = `bold ${Math.max(6, 0.2 * s)}px Oswald, Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('18', 0, -bodyH * 0.66);
+    ctx.textBaseline = 'alphabetic';
+
+    // 投球腕（ワインドアップ → リリース）
+    const armAngle = phase < 0
+      ? -Math.PI * 0.95 + (1 + phase) * Math.PI * 0.5
+      : -Math.PI * 0.45 + Math.min(1, phase * 3) * Math.PI * 0.7;
+    ctx.strokeStyle = '#f1d7b5';
+    ctx.lineWidth = Math.max(2, 0.13 * s);
+    ctx.beginPath();
+    ctx.moveTo(0.14 * s, -bodyH * 0.82);
+    ctx.lineTo(0.14 * s + Math.cos(armAngle) * 0.62 * s, -bodyH * 0.82 + Math.sin(armAngle) * 0.62 * s);
+    ctx.stroke();
+    // グラブ側の腕
+    ctx.beginPath();
+    ctx.moveTo(-0.14 * s, -bodyH * 0.82);
+    ctx.lineTo(-0.48 * s, -bodyH * (phase < 0 ? 0.78 : 0.55));
+    ctx.stroke();
+    // グラブ
+    ctx.fillStyle = '#5a3a1c';
+    ctx.beginPath();
+    ctx.arc(-0.52 * s, -bodyH * (phase < 0 ? 0.78 : 0.55), 0.13 * s, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 頭・帽子
+    ctx.fillStyle = '#f1d7b5';
+    ctx.beginPath();
+    ctx.arc(0, -bodyH * 0.99, 0.155 * s, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1e3a5f';
+    ctx.beginPath();
+    ctx.ellipse(0, -bodyH * 1.03, 0.175 * s, 0.11 * s, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(-0.175 * s, -bodyH * 1.03, 0.35 * s, Math.max(1, 0.05 * s));
+    ctx.restore();
+  }
+
+  /** ストライクゾーン（本塁上の枠） */
+  private drawStrikeZone(): void {
+    const ctx = this.ctx;
+    const tl = this.project(-FIELD.ZONE_WIDTH / 2, FIELD.ZONE_TOP, 0);
+    const br = this.project(FIELD.ZONE_WIDTH / 2, FIELD.ZONE_BOTTOM, 0);
+    const x = tl.x, y = tl.y, w = br.x - tl.x, h = br.y - tl.y;
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 4]);
+    ctx.strokeRect(x, y, w, h);
+    ctx.setLineDash([]);
+
+    // 3×3の分割線
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < 3; i++) {
+      ctx.beginPath();
+      ctx.moveTo(x + (w / 3) * i, y);
+      ctx.lineTo(x + (w / 3) * i, y + h);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, y + (h / 3) * i);
+      ctx.lineTo(x + w, y + (h / 3) * i);
+      ctx.stroke();
     }
+    ctx.restore();
+  }
+
+  /** ミートポイントのカーソル（バットの芯が通る位置） */
+  private drawMeetCursor(): void {
+    const ctx = this.ctx;
+    const world = this.zoneToWorld({ x: this.meetX(), y: this.meetY() });
+    const p = this.project(world.x, world.y, 0);
+    // バットの有効範囲を楕円で可視化（内外22cm × 上下9cm）
+    const scale = p.scale;
+    const rx = (BAT_HORIZONTAL_WINDOW_CM / 100) * scale;
+    const ry = (BAT_VERTICAL_WINDOW_CM / 100) * scale;
+
+    ctx.save();
+    const pulse = 0.55 + Math.sin(this.frameCount * 0.12) * 0.15;
+    ctx.strokeStyle = `rgba(255,215,0,${pulse})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y, rx, ry, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = `rgba(255,215,0,${pulse * 0.25})`;
+    ctx.fill();
+
+    // 中心の十字
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(p.x - 7, p.y); ctx.lineTo(p.x + 7, p.y);
+    ctx.moveTo(p.x, p.y - 7); ctx.lineTo(p.x, p.y + 7);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  private drawPitchedBall(): void {
+    if (this.gameState() === 'windup') return;
+    const p = this.pitchProgress;
+    if (p > 1.25) return;
+
+    const ctx = this.ctx;
+    const pos = this.ballScreenPos(p);
+
+    // 縫い目つきのボール
+    const grad = ctx.createRadialGradient(pos.x - pos.r * 0.3, pos.y - pos.r * 0.3, pos.r * 0.1, pos.x, pos.y, pos.r);
+    grad.addColorStop(0, '#ffffff');
+    grad.addColorStop(0.75, '#f0f0e8');
+    grad.addColorStop(1, '#c9c9bd');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, pos.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (pos.r > 5) {
+      ctx.strokeStyle = '#d32f2f';
+      ctx.lineWidth = Math.max(1, pos.r * 0.12);
+      const spin = this.frameCount * 0.35;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, pos.r * 0.72, spin, spin + Math.PI * 0.7);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, pos.r * 0.72, spin + Math.PI, spin + Math.PI * 1.7);
+      ctx.stroke();
+    }
+
+    // 遠くにある間はグロー（実際の中継でもボールは光って見える）
+    if (pos.r < 7) {
+      ctx.globalAlpha = 0.4;
+      ctx.fillStyle = '#ffffcc';
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, pos.r + 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  private drawFlyingBall(): void {
+    const traj = this.flightTraj;
+    if (!traj) return;
+    const ctx = this.ctx;
+    const elapsed = (performance.now() - this.flightStartMs) / 1000 * this.slowMotionFactor;
+    const pos = this.battedBallScreenPos(elapsed);
+    if (!pos) return;
+
+    // 地面に落ちる影（奥行きの手がかり）
+    const idx = Math.min(traj.path.length - 1, Math.max(0, traj.path.findIndex(pt => pt.t >= elapsed)));
+    const pt = traj.path[idx < 0 ? traj.path.length - 1 : idx];
+    const rad = (this.flightSpray * Math.PI) / 180;
+    const shadow = this.project(pt.d * Math.sin(rad), 0, pt.d * Math.cos(rad));
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    ctx.beginPath();
+    ctx.ellipse(shadow.x, shadow.y, Math.max(1.5, 0.0366 * shadow.scale * 1.6), Math.max(0.8, 0.0366 * shadow.scale * 0.6), 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, pos.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = '#fff3b0';
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, pos.r + 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  /** 打球が向かう方向のフェンス位置を表示（本塁打かどうかが見て分かる） */
+  private drawFenceMarker(): void {
+    const ctx = this.ctx;
+    const rad = (this.flightSpray * Math.PI) / 180;
+    const fence = fenceDistanceAt(this.flightSpray);
+    const base = this.project(fence * Math.sin(rad), 0, fence * Math.cos(rad));
+    const top = this.project(fence * Math.sin(rad), FIELD.FENCE_HEIGHT, fence * Math.cos(rad));
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,215,0,0.85)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(base.x - 40, base.y);
+    ctx.lineTo(base.x + 40, base.y);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,215,0,0.35)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(base.x - 40, top.y, 80, base.y - top.y);
+
+    ctx.fillStyle = 'rgba(255,215,0,0.95)';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`フェンス ${Math.round(fence)}m`, base.x, top.y - 6);
+    ctx.restore();
+  }
+
+  /** 手前に見える打者（バックネット裏カメラの構図では画面左に大きく写る） */
+  private drawBatterForeground(): void {
+    const ctx = this.ctx;
+    // 右打者は本塁の三塁側（カメラから見て左）
+    const stand = this.project(this.BATTER_X, 0, 0);
+    const s = stand.scale;
+
+    ctx.save();
+
+    const swingT = this.isSwinging ? clamp((performance.now() - this.swingStartMs) / 200, 0, 1) : 0;
+    ctx.translate(stand.x, stand.y);
+    ctx.rotate(this.easeOutQuad(swingT) * 0.06);
+
+    const bodyH = 1.75 * s;
+
+    // 影
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 0.4 * s, 0.1 * s, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 脚（ユニフォームのパンツ）
+    ctx.strokeStyle = '#e6e6ea';
+    ctx.lineWidth = Math.max(3, 0.15 * s);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-0.22 * s, -0.02 * s); ctx.lineTo(-0.1 * s, -bodyH * 0.45);
+    ctx.moveTo(0.24 * s, -0.02 * s); ctx.lineTo(0.09 * s, -bodyH * 0.45);
+    ctx.stroke();
+    // ストッキング
+    ctx.strokeStyle = '#16304f';
+    ctx.lineWidth = Math.max(2, 0.12 * s);
+    ctx.beginPath();
+    ctx.moveTo(-0.22 * s, -0.02 * s); ctx.lineTo(-0.18 * s, -bodyH * 0.16);
+    ctx.moveTo(0.24 * s, -0.02 * s); ctx.lineTo(0.2 * s, -bodyH * 0.16);
+    ctx.stroke();
+
+    // 胴体（ユニフォーム）
+    const body = ctx.createLinearGradient(-0.26 * s, -bodyH, 0.26 * s, -bodyH * 0.4);
+    body.addColorStop(0, '#ffffff');
+    body.addColorStop(1, '#bfc4cc');
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.ellipse(0, -bodyH * 0.63, 0.24 * s, 0.3 * s, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 背番号
+    ctx.fillStyle = '#1e3a5f';
+    ctx.font = `bold ${Math.max(7, 0.17 * s)}px Oswald, Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('7', 0, -bodyH * 0.62);
+    ctx.textBaseline = 'alphabetic';
+
+    // 腕（構え〜スイング）
+    const batPivotX = 0.1 * s;
+    const batPivotY = -bodyH * 0.8;
+    ctx.strokeStyle = '#f1d7b5';
+    ctx.lineWidth = Math.max(2, 0.08 * s);
+    ctx.beginPath();
+    ctx.moveTo(-0.12 * s, -bodyH * 0.78);
+    ctx.lineTo(batPivotX, batPivotY);
+    ctx.stroke();
+
+    // 頭・ヘルメット
+    ctx.fillStyle = '#f1d7b5';
+    ctx.beginPath();
+    ctx.arc(0, -bodyH * 0.95, 0.125 * s, 0, Math.PI * 2);
+    ctx.fill();
+    const helmet = ctx.createRadialGradient(-0.04 * s, -bodyH * 1.0, 0, 0, -bodyH * 0.96, 0.16 * s);
+    helmet.addColorStop(0, '#32557f');
+    helmet.addColorStop(1, '#12283f');
+    ctx.fillStyle = helmet;
+    ctx.beginPath();
+    ctx.arc(0, -bodyH * 0.965, 0.145 * s, Math.PI * 0.95, Math.PI * 2.05);
+    ctx.fill();
+    // 耳当て
+    ctx.beginPath();
+    ctx.ellipse(-0.13 * s, -bodyH * 0.93, 0.05 * s, 0.07 * s, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // バット（構えは肩に担ぐ、スイングで振り抜く）
+    const batAngle = this.isSwinging ? this.batAngle : -Math.PI * 0.62;
+    ctx.save();
+    ctx.translate(batPivotX, batPivotY);
+    ctx.rotate(batAngle);
+    const batLen = 0.84 * s; // 実際のバット長 約84cm
+    const batGrad = ctx.createLinearGradient(0, 0, batLen, 0);
+    batGrad.addColorStop(0, '#3a2410');
+    batGrad.addColorStop(0.2, '#c99a5b');
+    batGrad.addColorStop(1, '#efd0a0');
+    ctx.fillStyle = batGrad;
+    ctx.beginPath();
+    ctx.moveTo(0, -0.018 * s);
+    ctx.lineTo(batLen * 0.55, -0.03 * s);
+    ctx.lineTo(batLen, -0.035 * s);
+    ctx.lineTo(batLen, 0.035 * s);
+    ctx.lineTo(batLen * 0.55, 0.03 * s);
+    ctx.lineTo(0, 0.018 * s);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    // スイング軌跡
+    if (this.isSwinging && swingT > 0.05 && swingT < 1) {
+      ctx.strokeStyle = `rgba(255,255,255,${0.45 * (1 - swingT)})`;
+      ctx.lineWidth = Math.max(2, 0.05 * s);
+      ctx.beginPath();
+      ctx.arc(batPivotX, batPivotY, batLen * 0.9, batAngle - 0.9, batAngle);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  /** 投球中の情報（球種は投げ終わるまで伏せる） */
+  private drawPitchHud(): void {
+    const ctx = this.ctx;
+    const w = this.canvasWidth;
+    if (!this.revealPitch()) return;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.62)';
+    ctx.roundRect(w - 138, 12, 126, 46, 8);
+    ctx.fill();
+    ctx.fillStyle = this.pitch.color;
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(this.pitch.name, w - 75, 30);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 20px Oswald, Arial';
+    ctx.fillText(`${this.pitchSpeedKmh} km/h`, w - 75, 51);
+    ctx.restore();
+  }
+
+  /** 打球のトラッキングデータ（実際の中継のような表示） */
+  private drawTrackingHud(): void {
+    const play = this.lastPlay();
+    if (!play) return;
+    const ctx = this.ctx;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.roundRect(12, 12, 152, 74, 8);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,215,0,0.4)';
+    ctx.lineWidth = 1;
+    ctx.roundRect(12, 12, 152, 74, 8);
+    ctx.stroke();
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#9fb3c8';
+    ctx.font = '10px Arial';
+    ctx.fillText('打球初速', 22, 30);
+    ctx.fillText('打球角度', 22, 50);
+    ctx.fillText('推定飛距離', 22, 70);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 14px Oswald, Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${play.exitVelocityKmh} km/h`, 156, 30);
+    ctx.fillText(`${play.launchAngleDeg}°`, 156, 50);
+    ctx.fillText(`${play.distance} m`, 156, 70);
+
+    if (play.barrel) {
+      ctx.fillStyle = '#ffd700';
+      ctx.font = 'bold 11px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('★ BARREL', 22, 86);
+    }
+    ctx.restore();
+  }
+
+  /** ボールカウントボード（B-S-O） */
+  private drawCountBoard(): void {
+    const ctx = this.ctx;
+    const h = this.canvasHeight;
+    const x = 14;
+    const y = h - 58;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.roundRect(x, y, 106, 46, 8);
+    ctx.fill();
+
+    const labels: [string, number, number, string][] = [
+      ['B', this.balls(), 3, '#4ade80'],
+      ['S', this.strikes(), 2, '#facc15'],
+      ['O', this.outs(), 2, '#ef4444'],
+    ];
+    ctx.font = 'bold 11px Arial';
+    labels.forEach(([label, value, max, color], row) => {
+      const ly = y + 13 + row * 13;
+      ctx.fillStyle = '#cbd5e1';
+      ctx.textAlign = 'left';
+      ctx.fillText(label, x + 9, ly + 3);
+      for (let i = 0; i < max; i++) {
+        ctx.beginPath();
+        ctx.arc(x + 28 + i * 15, ly, 4.6, 0, Math.PI * 2);
+        ctx.fillStyle = i < value ? color : 'rgba(255,255,255,0.15)';
+        ctx.fill();
+      }
+    });
+    ctx.restore();
+  }
+
+  private drawBallTrail(): void {
+    const ctx = this.ctx;
+    this.ballTrail.forEach(t => {
+      ctx.globalAlpha = t.alpha * 0.45;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, Math.max(0.8, t.r * 0.7), 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  private drawParticles(): void {
+    const ctx = this.ctx;
+    this.particles.forEach(p => {
+      ctx.globalAlpha = p.life / p.maxLife;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  private drawReadyScreen(): void {
+    if (!this.ctx || this.canvasWidth <= 0) return;
+    this.setupCamera();
+    this.drawField();
+    this.drawPitcher();
+    this.drawStrikeZone();
+    this.drawBatterForeground();
+
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+    ctx.fillStyle = '#ffd700';
+    ctx.font = `bold ${Math.max(20, this.canvasWidth * 0.045)}px Oswald, Arial`;
+    ctx.textAlign = 'center';
+    ctx.fillText('HOMERUN CHALLENGE', this.canvasWidth / 2, this.canvasHeight * 0.42);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `${Math.max(11, this.canvasWidth * 0.021)}px Arial`;
+    ctx.fillText('打ちたい高さをタップ＝その位置でスイング', this.canvasWidth / 2, this.canvasHeight * 0.55);
+    ctx.fillText('ボール球は見送ればフォアボール', this.canvasWidth / 2, this.canvasHeight * 0.62);
+    ctx.restore();
+  }
+
+  // ====================================================================
+  // 演出
+  // ====================================================================
+  private updateEffects(): void {
+    if (this.screenShakeIntensity > 0.1) {
+      this.screenShakeX = (Math.random() - 0.5) * this.screenShakeIntensity;
+      this.screenShakeY = (Math.random() - 0.5) * this.screenShakeIntensity;
+      this.screenShakeIntensity *= 0.88;
+    } else {
+      this.screenShakeX = this.screenShakeY = this.screenShakeIntensity = 0;
+    }
+    if (this.impactFlashAlpha > 0) {
+      this.impactFlashAlpha *= 0.85;
+      if (this.impactFlashAlpha < 0.01) this.impactFlashAlpha = 0;
+    }
+  }
+
+  private impactFlash(outcome: PlayOutcome): void {
+    if (outcome === 'homerun') {
+      this.screenShakeIntensity = 22;
+      this.impactFlashAlpha = 0.7;
+    } else if (outcome === 'foul') {
+      this.screenShakeIntensity = 6;
+      this.impactFlashAlpha = 0.2;
+    } else {
+      this.screenShakeIntensity = 12;
+      this.impactFlashAlpha = 0.35;
+    }
+  }
+
+  private updateParticles(): void {
+    this.particles = this.particles.filter(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.22;
+      p.life -= 1;
+      return p.life > 0;
+    });
+  }
+
+  private addSwingParticles(): void {
+    const p = this.project(-0.4, 1.0, 0.2);
+    for (let i = 0; i < 8; i++) {
+      this.particles.push({
+        x: p.x, y: p.y,
+        vx: (Math.random() - 0.2) * 6,
+        vy: (Math.random() - 0.5) * 4,
+        life: 14, maxLife: 14,
+        color: 'rgba(255,255,255,0.55)',
+        size: 1.5 + Math.random() * 2,
+      });
+    }
+  }
+
+  private addContactParticles(outcome: PlayOutcome): void {
+    const world = this.zoneToWorld({ x: this.meetX(), y: this.meetY() });
+    const p = this.project(world.x, world.y, 0);
+    const count = outcome === 'homerun' ? 34 : 16;
+    const colors = outcome === 'homerun'
+      ? ['#ffd700', '#ff8c00', '#ffffff']
+      : ['#ffffff', '#d9e6ff'];
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count;
+      const speed = 2 + Math.random() * 6;
+      this.particles.push({
+        x: p.x, y: p.y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 22 + Math.random() * 14, maxLife: 36,
+        color: colors[i % colors.length],
+        size: 1.5 + Math.random() * 3,
+      });
+    }
+  }
+
+  private addFireworkParticles(x: number, y: number): void {
+    const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#ffffff'];
+    for (let i = 0; i < 6; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 1 + Math.random() * 3;
+      this.particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 20, maxLife: 20,
+        color: colors[i % colors.length],
+        size: 1.5 + Math.random() * 2,
+      });
+    }
+  }
+
+  // ====================================================================
+  // キャンバス
+  // ====================================================================
+  private ensureCanvasSize(): void {
+    if (this.canvasWidth > 0 && this.canvasHeight > 0) return;
+    if (this.isBrowser && this.canvasRef?.nativeElement) this.resizeCanvas();
+    if (this.canvasWidth <= 0) this.canvasWidth = 800;
+    if (this.canvasHeight <= 0) this.canvasHeight = 500;
+    this.setupCamera();
+  }
+
+  private resizeCanvas(): void {
+    if (!this.isBrowser) return;
+    const canvas = this.canvasRef?.nativeElement;
+    if (!canvas) return;
+    const container = canvas.parentElement;
+    if (!container) return;
+
+    this.isMobile = window.innerWidth < this.MOBILE_BREAKPOINT;
+
+    const containerWidth = container.clientWidth || container.offsetWidth;
+    const containerHeight = container.clientHeight || container.offsetHeight;
+    // モバイルは縦を厚くしてストライクゾーンを大きく表示する
+    const aspectRatio = this.isMobile ? 4 / 3 : 16 / 10;
+    let width = containerWidth;
+    let height = width / aspectRatio;
+    if (containerHeight > 0 && height > containerHeight) {
+      height = containerHeight;
+      width = height * aspectRatio;
+    }
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.ctx.scale(dpr, dpr);
+
+    this.canvasWidth = width;
+    this.canvasHeight = height;
+    this.setupCamera();
+
+    const state = this.gameState();
+    if (state === 'ready') this.drawReadyScreen();
+    else if (state === 'result' || state === 'gameover') this.drawGame();
+  }
+
+  // ====================================================================
+  // サウンド
+  // ====================================================================
+  private initSounds(): void {
+    const make = (src: string, volume: number) => {
+      try {
+        const a = new Audio(src);
+        a.volume = volume;
+        a.addEventListener('error', () => { /* ファイルが無い場合は無音 */ });
+        return a;
+      } catch { return undefined; }
+    };
+    this.swingSound = make('assets/sounds/bat-swing.mp3', 0.6);
+    this.homerunSound = make('assets/sounds/homerun.mp3', 0.8);
+    this.hitSound = make('assets/sounds/hit.mp3', 0.7);
+    this.foulSound = make('assets/sounds/foul.mp3', 0.6);
+    this.missSound = make('assets/sounds/miss.mp3', 0.6);
+    try {
+      this.bgm = new Audio('assets/sounds/background-music.mp3');
+      this.bgm.loop = true;
+      this.bgm.volume = 0.35;
+      this.bgm.addEventListener('error', () => { this.bgm = undefined; });
+    } catch { this.bgm = undefined; }
+  }
+
+  private playSound(sound?: HTMLAudioElement): void {
+    if (!this.isBrowser || !sound) return;
+    try {
+      sound.currentTime = 0;
+      // 音源が無い / 自動再生がブロックされた場合の Promise 拒否を握り潰す
+      sound.play()?.catch(() => { /* noop */ });
+    } catch { /* noop */ }
+  }
+
+  private playBgm(): void {
+    if (!this.isBrowser || !this.bgm) return;
+    try { this.bgm.play()?.catch(() => { /* noop */ }); } catch { /* noop */ }
+  }
+
+  private stopBgm(): void {
+    if (!this.bgm) return;
+    this.bgm.pause();
+    this.bgm.currentTime = 0;
+  }
+
+  private easeOutQuad(t: number): number {
+    return t * (2 - t);
+  }
+
+  // ====================================================================
+  // テンプレート用ヘルパー
+  // ====================================================================
+  homerunCount = computed(() => this.atBatResults().filter(r => r.outcome === 'homerun').length);
+  hitCount = computed(() => this.atBatResults().filter(r => ['single', 'double', 'triple', 'homerun'].includes(r.outcome)).length);
+  /** 打率（打数 = 打席数 − 四球） */
+  battingAverage = computed(() => {
+    const results = this.atBatResults();
+    const atBats = results.filter(r => r.outcome !== 'walk').length;
+    if (atBats === 0) return '.000';
+    const avg = this.hitCount() / atBats;
+    return avg.toFixed(3).replace(/^0/, '');
+  });
+  maxDistance = computed(() => Math.max(0, ...this.atBatResults().map(r => r.distance)));
+  maxExitVelocity = computed(() => Math.max(0, ...this.atBatResults().map(r => r.exitVelocityKmh)));
+
+  outcomeLabel(outcome: PlayOutcome): string {
+    return OUTCOME_LABEL[outcome];
+  }
+
+  outcomeMark(outcome: PlayOutcome): string {
+    switch (outcome) {
+      case 'homerun': return 'HR';
+      case 'triple': return '3B';
+      case 'double': return '2B';
+      case 'single': return 'H';
+      case 'walk': return 'BB';
+      case 'strikeout': return 'K';
+      default: return 'O';
+    }
+  }
+
+  outcomeClass(outcome: PlayOutcome): string {
+    switch (outcome) {
+      case 'homerun': return 'bg-gradient-to-br from-yellow-400 to-orange-500 border-yellow-300 text-black';
+      case 'triple':
+      case 'double': return 'bg-gradient-to-br from-emerald-500 to-emerald-700 border-emerald-400 text-white';
+      case 'single': return 'bg-gradient-to-br from-green-500 to-green-700 border-green-400 text-white';
+      case 'walk': return 'bg-gradient-to-br from-sky-500 to-sky-700 border-sky-400 text-white';
+      case 'strikeout': return 'bg-gradient-to-br from-red-600 to-red-800 border-red-400 text-white';
+      default: return 'bg-gradient-to-br from-gray-600 to-gray-800 border-gray-500 text-white';
+    }
+  }
+
+  battedTypeLabel(): string {
+    const play = this.lastPlay();
+    return play?.battedType ? BATTED_BALL_LABEL[play.battedType] : '';
   }
 
   getTimingMessage(): string {
     switch (this.swingTiming()) {
-      case 'perfect': return 'PERFECT!';
-      case 'good': return 'GOOD!';
-      case 'early': return 'EARLY';
-      case 'late': return 'LATE';
+      case 'perfect': return 'ジャストミート！';
+      case 'good': return 'ナイスバッティング';
+      case 'early': return '早すぎ（差し込まれず前で捉えた）';
+      case 'late': return '振り遅れ';
       default: return '';
     }
   }
 
-  getTimingColor(): string {
-    switch (this.swingTiming()) {
-      case 'perfect': return 'text-green-400';
-      case 'good': return 'text-blue-400';
-      case 'early': return 'text-orange-400';
-      case 'late': return 'text-orange-400';
-      default: return '';
-    }
+  /** 配球チャート用: ゾーン座標をパーセントに変換（-1.8〜1.8 を 0〜100%） */
+  chartX(p: ZonePoint): number {
+    return 50 + (p.x / 1.8) * 50;
   }
 
-  getHomerunCount(): number {
-    return this.results().filter(r => r.type === 'homerun').length;
-  }
-
-  getHitCount(): number {
-    return this.results().filter(r => r.type === 'hit').length;
+  chartY(p: ZonePoint): number {
+    return 50 - (p.y / 1.8) * 50;
   }
 }
