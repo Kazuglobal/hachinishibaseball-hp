@@ -65,6 +65,23 @@ if (!CANONICAL_RE.test(shellHtml)) {
   throw new Error(`generate-canonical-shells: no <link rel="canonical"> found in ${shellPath}`);
 }
 
+// Guard against a flash of unstyled content (FOUC). The app is a client-rendered
+// SPA whose shell body is just <app-root>, so build-time critical-CSS extraction
+// finds nothing to inline and instead defers the whole Tailwind bundle with
+// `media="print" onload="this.media='all'"`. Angular then renders the full DOM
+// before that CSS applies, and the raw, unstyled page shows for a moment.
+// The stylesheet must stay render-blocking - see `inlineCritical: false` in
+// angular.json. Fail the build if anything reintroduces the deferred form.
+const DEFERRED_STYLESHEET_RE = /<link[^>]*rel="stylesheet"[^>]*href="styles-[^"]*\.css"[^>]*media="print"/;
+
+if (DEFERRED_STYLESHEET_RE.test(shellHtml)) {
+  throw new Error(
+    'generate-canonical-shells: the app stylesheet is loaded with media="print" ' +
+      '(non-render-blocking), which causes a flash of unstyled content on first load. ' +
+      'Ensure optimization.styles.inlineCritical is false in angular.json.'
+  );
+}
+
 let count = 0;
 for (const route of routes) {
   const canonicalUrl = `${BASE_URL}${route}`;
