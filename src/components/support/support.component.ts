@@ -12,6 +12,9 @@ interface Donor {
   names: string[];
 }
 
+/** GAS側が success:false を返したことを示すエラー（メッセージは画面に表示してよい内容） */
+class ServerRejectedError extends Error {}
+
 @Component({
   selector: 'app-support',
   standalone: true,
@@ -154,9 +157,16 @@ export class SupportComponent implements OnInit, AfterViewInit {
 
       // レスポンスを確認
       if (response.ok) {
-        const result = await response.json();
+        const rawBody = await response.text();
+        let result: { success?: boolean; error?: string };
+        try {
+          result = JSON.parse(rawBody);
+        } catch {
+          // JSON以外（GASの認可エラー画面など）が返された
+          throw new Error('INVALID_RESPONSE');
+        }
         if (!result.success) {
-          throw new Error(result.error || '送信に失敗しました');
+          throw new ServerRejectedError(result.error || '送信に失敗しました');
         }
       } else {
         throw new Error('HTTPエラー: ' + response.status);
@@ -176,8 +186,17 @@ export class SupportComponent implements OnInit, AfterViewInit {
         remarks: ''
       };
     } catch (error) {
-      console.error('送信エラー:', error);
-      this.submitError.set('送信に失敗しました。しばらくしてから再度お試しください。');
+      if (!environment.production) {
+        console.error('送信エラー:', error instanceof Error ? error.message : 'Unknown error');
+      }
+      const detail = error instanceof ServerRejectedError
+        ? `（${error.message}）`
+        : error instanceof Error && error.message === 'INVALID_RESPONSE'
+          ? '（受付サーバーの応答が不正です。管理者へご連絡ください）'
+          : error instanceof TypeError
+            ? '（通信できませんでした。電波状況をご確認ください）'
+            : '';
+      this.submitError.set('送信に失敗しました。しばらくしてから再度お試しください。' + detail);
       this.cdr.markForCheck();
     } finally {
       this.isSubmitting.set(false);
