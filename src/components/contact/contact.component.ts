@@ -83,6 +83,7 @@ export class ContactComponent implements OnInit {
 
       // GAS Web Appに送信（application/x-www-form-urlencoded形式で送信）
       const formData = new URLSearchParams();
+      formData.append('formType', 'contact');
       formData.append('name', payload.name);
       formData.append('email', payload.email);
       formData.append('phone', payload.phone);

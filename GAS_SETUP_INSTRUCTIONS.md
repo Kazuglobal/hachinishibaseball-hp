@@ -8,7 +8,9 @@
 ### 1. Google Apps Scriptでプロジェクトを作成
 1. [Google Apps Script](https://script.google.com/)にアクセス
 2. 「新しいプロジェクト」をクリック
-3. `gas-script-fixed.js`の内容をコピー＆ペースト
+3. **`gas-unified-script.js`**（出欠フォーム・お問い合わせフォーム統合版）の内容をコピー＆ペースト
+   （フォームは同じURLに送信するため、旧 `gas-script-fixed.js` / `gas-contact-script.js` は使わず統合版に差し替えてください。出欠は「総会出欠」、お問い合わせは「お問い合わせ」シートに記録されます）
+   - スクリプトのプロパティ `NOTIFICATION_EMAIL`（通知先。未設定時は hachinishibaseball@gmail.com）、`SPREADSHEET_ID`（任意）を設定
 4. 「保存」をクリック
 
 ### 2. スプレッドシートを作成（重要）
