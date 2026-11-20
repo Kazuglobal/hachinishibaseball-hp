@@ -157,3 +157,17 @@ function doGet() {
   return ContentService.createTextOutput('OB会フォーム（出欠・お問い合わせ） - Google Apps Script is running!')
     .setMimeType(ContentService.MimeType.TEXT);
 }
+
+/**
+ * 【初回・コード更新後に1回だけ手動実行】権限の承認と動作確認用。
+ * エディタ上部の関数選択で「authorizeAndTest」を選び「実行」→ 権限を承認してください。
+ * シート作成とヘッダー行の確認まで行います（回答行は追加しません）。
+ */
+function authorizeAndTest() {
+  Object.keys(FORMS).forEach(function (k) { getSheet(FORMS[k]); });
+  LockService.getScriptLock().tryLock(1000);
+  LockService.getScriptLock().releaseLock();
+  Logger.log('メール残り送信可能数: ' + MailApp.getRemainingDailyQuota());
+  Logger.log('記録先: ' + getSpreadsheet().getUrl());
+  Logger.log('OK: 権限承認・シート確認が完了しました。「新しいバージョン」で再デプロイしてください。');
+}
