@@ -11,7 +11,7 @@ test.describe('総会出席フォーム', () => {
   test('フォームが正しく表示される', async ({ page }) => {
     // フォームの要素が表示されることを確認
     await expect(page.locator('h1.sr-only')).toContainText('八戸西高等学校野球部OB会');
-    await expect(page.getByText('2026年1月2日（金）に野球部OB会総会が開催されます')).toBeVisible();
+    await expect(page.getByText('令和9年1月2日（土）に野球部OB会 定時総会・懇親会が開催されます')).toBeVisible();
 
     // フォームフィールドの存在を確認
     await expect(page.locator('#name')).toBeVisible();
