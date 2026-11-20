@@ -131,12 +131,11 @@ export class SupportComponent implements OnInit, AfterViewInit {
         timestamp: new Date().toISOString()
       };
 
-      console.log('Sending data to GAS:', payload);
-      console.log('GAS URL:', this.GAS_WEB_APP_URL);
-
       // GAS Web Appに送信（application/x-www-form-urlencoded形式で送信）
       // この形式はGASで最も確実に動作します
       const formData = new URLSearchParams();
+      formData.append('formType', 'attendance');
+      formData.append('event', 'reiwa9-general-meeting');
       formData.append('name', payload.name);
       formData.append('period', payload.period);
       formData.append('email', payload.email);
@@ -156,7 +155,6 @@ export class SupportComponent implements OnInit, AfterViewInit {
       // レスポンスを確認
       if (response.ok) {
         const result = await response.json();
-        console.log('GAS response:', result);
         if (!result.success) {
           throw new Error(result.error || '送信に失敗しました');
         }
