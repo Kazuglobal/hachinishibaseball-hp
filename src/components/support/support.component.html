@@ -144,10 +144,22 @@
     <app-section-title mainTitle="OB会へのご参加" subTitle="野球部OB会総会について"></app-section-title>
 
     <div class="mt-10 max-w-3xl mx-auto text-[15px] leading-8 text-gray-800 bg-white/80 backdrop-blur p-6 md:p-8 rounded-lg shadow-sm">
-      <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-xl p-6 md:p-8 border border-[#002D62]/10 shadow-sm mb-8">
+      <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-xl p-4 sm:p-6 md:p-8 border border-[#002D62]/10 shadow-sm mb-8">
+        <!-- 総会バナー画像 -->
+        <div class="mb-6 rounded-xl overflow-hidden shadow-md border border-[#002D62]/15 bg-white">
+          <img 
+            ngSrc="/assets/images/general-meeting-banner-2027.jpg"
+            width="1600"
+            height="800"
+            alt="2027年 野球部OB会 定時総会・懇親会"
+            loading="lazy"
+            decoding="async"
+            [disableOptimizedSrcset]="true"
+            class="w-full h-auto object-cover">
+        </div>
         <div class="text-center mb-6">
           <p class="text-xs md:text-sm font-semibold text-[#002D62]/70 tracking-widest mb-2">令和9年 定時総会・懇親会のご案内</p>
-          <p class="text-lg md:text-xl font-bold text-[#002D62] mb-4">
+          <p class="text-lg md:text-xl font-bold text-[#002D62] mb-3">
             令和9年1月2日（土）に野球部OB会 定時総会・懇親会が開催されます
           </p>
           <p class="text-sm md:text-base text-gray-700">
@@ -156,14 +168,56 @@
           </p>
         </div>
 
-        <div class="bg-white rounded-lg p-4 md:p-6 mb-6 border border-gray-200">
-          <div class="space-y-3 text-sm md:text-base">
-            <p><span class="font-semibold text-[#002D62]">日時：</span>令和9年1月2日（土）　総会：午後3時～　懇親会：総会終了後</p>
-            <p><span class="font-semibold text-[#002D62]">場所：</span>八戸パークホテル</p>
-            <p><span class="font-semibold text-[#002D62]">懇親会会費：</span>7,000円（当日徴収）</p>
-            <p><span class="font-semibold text-[#002D62]">年会費：</span>5,000円（銀行振込、またはこのページ上部よりカード等でも納入いただけます）</p>
-            <p><span class="font-semibold text-[#002D62]">お問い合わせ：</span>八戸西高野球部OB会 会長 榎本 直行　<a href="tel:09086102693" class="underline">090-8610-2693</a></p>
-          </div>
+        <div class="bg-white rounded-lg p-4 sm:p-6 mb-6 border border-gray-200 shadow-sm">
+          <dl class="divide-y divide-gray-100 text-sm md:text-base">
+            <div class="py-2.5 sm:py-3 grid grid-cols-1 sm:grid-cols-[100px_1fr] gap-1 sm:gap-3 items-baseline first:pt-0">
+              <dt class="font-semibold text-[#002D62] flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#B31B1B]"></span>
+                日時
+              </dt>
+              <dd class="text-gray-800">
+                <span class="font-bold">令和9年1月2日（土）</span>
+                <span class="block sm:inline sm:ml-2 text-xs sm:text-sm text-gray-600">総会：午後3時〜 ／ 懇親会：総会終了後</span>
+              </dd>
+            </div>
+            <div class="py-2.5 sm:py-3 grid grid-cols-1 sm:grid-cols-[100px_1fr] gap-1 sm:gap-3 items-baseline">
+              <dt class="font-semibold text-[#002D62] flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#B31B1B]"></span>
+                場所
+              </dt>
+              <dd class="text-gray-800 font-medium">八戸パークホテル</dd>
+            </div>
+            <div class="py-2.5 sm:py-3 grid grid-cols-1 sm:grid-cols-[100px_1fr] gap-1 sm:gap-3 items-baseline">
+              <dt class="font-semibold text-[#002D62] flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#B31B1B]"></span>
+                懇親会会費
+              </dt>
+              <dd class="text-gray-800">
+                <span class="font-bold">7,000円</span>
+                <span class="text-xs sm:text-sm text-gray-600 ml-1">（当日徴収）</span>
+              </dd>
+            </div>
+            <div class="py-2.5 sm:py-3 grid grid-cols-1 sm:grid-cols-[100px_1fr] gap-1 sm:gap-3 items-baseline">
+              <dt class="font-semibold text-[#002D62] flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#B31B1B]"></span>
+                年会費
+              </dt>
+              <dd class="text-gray-800">
+                <span class="font-bold">5,000円</span>
+                <span class="text-xs sm:text-sm text-gray-600 ml-1">（銀行振込、または本ページ上部よりカード決済等でも納入いただけます）</span>
+              </dd>
+            </div>
+            <div class="py-2.5 sm:py-3 grid grid-cols-1 sm:grid-cols-[100px_1fr] gap-1 sm:gap-3 items-baseline last:pb-0">
+              <dt class="font-semibold text-[#002D62] flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#B31B1B]"></span>
+                お問い合わせ
+              </dt>
+              <dd class="text-gray-800">
+                <span>八戸西高野球部OB会 会長 榎本 直行</span>
+                <a href="tel:09086102693" class="ml-2 text-[#002D62] hover:text-[#B31B1B] underline font-medium">090-8610-2693</a>
+              </dd>
+            </div>
+          </dl>
         </div>
 
         <!-- 送信完了メッセージ -->

@@ -1,6 +1,31 @@
 <app-hero></app-hero>
 
 <main class="bg-[#F8F8F7] relative z-[5]">
+  <!-- 定時総会のお知らせ バナー広告 Section -->
+  <section 
+    id="general-meeting"
+    (visible)="meetingNoticeVisible.set(true)" 
+    [class.is-visible]="meetingNoticeVisible()"
+    class="fade-in-up pt-8 sm:pt-12 pb-2 px-4 sm:px-8 container mx-auto">
+    <div class="max-w-4xl mx-auto">
+      <a 
+        [routerLink]="['/support']" 
+        [fragment]="'participation'"
+        class="group block relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-[#002D62]/15 bg-white cursor-pointer"
+        aria-label="2027年 野球部OB会 定時総会・懇親会（日時：2027年1月2日（土）15:00〜、会場：パークホテル、参加会費：7,000円）出欠回答はこちら">
+        <img 
+          ngSrc="/assets/images/general-meeting-banner-2027.jpg"
+          width="1600"
+          height="800"
+          alt="2027年 野球部OB会 定時総会・懇親会 日時：2027年1月2日（土）15:00〜 会場：パークホテル（八戸市） 参加会費：7,000円 出欠回答はこちら"
+          priority
+          [disableOptimizedSrcset]="true"
+          class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.015]">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#002D62]/15 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+      </a>
+    </div>
+  </section>
+
   <!-- Message Section -->
   <section 
     id="message"
@@ -200,7 +225,7 @@
       <div class="mt-16 grid md:grid-cols-2 gap-8">
         @for (item of [
           {img: '/assets/images/koushien.jpg', title: '寄付のお願い', description: '会費納入で野球部を支援', link: '/support', fragment: 'credit', delay: ''}, 
-          {img: '/assets/images/obevent.png', title: 'OB会へのご参加', description: 'OB会員として活動に参加', link: '/support', fragment: 'participation', delay: 'delay-200'}
+          {img: '/assets/images/general-meeting-banner-2027.jpg', title: 'OB会へのご参加', description: '令和9年 定時総会・懇親会のご案内', link: '/support', fragment: 'participation', delay: 'delay-200'}
           ]; track item.title) {
           <a 
             [routerLink]="[item.link]" 
@@ -208,7 +233,7 @@
             [class.is-visible]="otherServiceVisible()"
             class="fade-in-up text-center {{item.delay}} group cursor-pointer block">
             <div class="relative overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-              <img ngSrc="{{item.img}}" width="800" height="600" alt="八戸西高等学校野球部 {{item.title}} - {{item.description}}" loading="lazy" decoding="async" class="w-full h-auto aspect-[4/3] object-cover group-hover:scale-110 transition-transform duration-300">
+              <img ngSrc="{{item.img}}" width="800" height="450" [disableOptimizedSrcset]="true" alt="八戸西高等学校野球部 {{item.title}} - {{item.description}}" loading="lazy" decoding="async" class="w-full h-auto aspect-[16/9] object-cover group-hover:scale-105 transition-transform duration-300">
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                 <p class="text-sm">{{item.description}}</p>
