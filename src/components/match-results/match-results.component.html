@@ -49,6 +49,17 @@
       <app-back-button
         class="mb-12 inline-block transform hover:scale-110 transition-transform duration-300"></app-back-button>
 
+      <!-- 年度切り替え -->
+      <div class="flex justify-center items-center gap-3 mb-8">
+        <button *ngFor="let s of seasons" (click)="switchSeason(s.key)"
+          class="px-6 py-2 rounded-full font-black tracking-widest text-sm transition-all duration-300 border"
+          [class.bg-slate-800]="selectedSeason() === s.key" [class.text-white]="selectedSeason() === s.key"
+          [class.border-slate-800]="selectedSeason() === s.key" [class.bg-white]="selectedSeason() !== s.key"
+          [class.text-slate-500]="selectedSeason() !== s.key" [class.border-slate-300]="selectedSeason() !== s.key">
+          {{ s.label }}
+        </button>
+      </div>
+
       <!-- タブナビゲーション -->
       <div class="flex justify-center mb-20 perspective-1000">
         <div appTilt [tiltScale]="1.1" [tiltMaxAngleX]="10" [tiltMaxAngleY]="10"
@@ -88,7 +99,7 @@
 
           <h3
             class="relative text-lg font-black font-oswald text-slate-800 mb-4 text-center transform-style-3d group-hover:translate-z-10 transition-transform duration-500">
-            <span class="inline-block border-b-2 border-blue-500 pb-0.5 px-3 tracking-widest text-xs">シーズン成績</span>
+            <span class="inline-block border-b-2 border-blue-500 pb-0.5 px-3 tracking-widest text-xs">{{ selectedSeasonLabel }} シーズン成績</span>
           </h3>
 
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
@@ -242,7 +253,7 @@
 
           <h3
             class="relative text-lg font-black font-oswald text-slate-800 mb-4 text-center transform-style-3d group-hover:translate-z-10 transition-transform duration-500">
-            <span class="inline-block border-b-2 border-red-500 pb-0.5 px-3 tracking-widest text-xs">公式戦成績</span>
+            <span class="inline-block border-b-2 border-red-500 pb-0.5 px-3 tracking-widest text-xs">{{ selectedSeasonLabel }} 公式戦成績</span>
           </h3>
 
           <div class="grid grid-cols-3 gap-4 relative z-10">
