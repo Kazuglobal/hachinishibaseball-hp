@@ -61,6 +61,9 @@ export class SupportComponent implements OnInit, AfterViewInit {
   ];
 
   // 2025年の支援者一覧
+  // 2024年の一覧は初期状態で非表示（ボタンで開閉）
+  showDonors2024 = signal(false);
+
   donors2025: Donor[] = [
     { period: '3期', names: ['西 志紀 様', '八田 恭章 様', '五戸 秀治 様'] },
     { period: '8期', names: ['西山 圭一 様'] },
