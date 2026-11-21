@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, CUSTOM_ELEMENTS_SCHEMA, OnInit, AfterViewInit, inject, signal, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
@@ -18,7 +18,7 @@ class ServerRejectedError extends Error {}
 @Component({
   selector: 'app-support',
   standalone: true,
-  imports: [CommonModule, FormsModule, SectionTitleComponent, BackButtonComponent, RouterLink],
+  imports: [CommonModule, FormsModule, SectionTitleComponent, BackButtonComponent, RouterLink, NgOptimizedImage],
   templateUrl: './support.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

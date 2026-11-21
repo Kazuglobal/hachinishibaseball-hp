@@ -1,133 +1,28 @@
 <app-hero></app-hero>
 
 <main class="bg-[#F8F8F7] relative z-[5]">
-  <!-- 定時総会のお知らせ Section -->
+  <!-- 定時総会のお知らせ バナー広告 Section -->
   <section 
     id="general-meeting"
     (visible)="meetingNoticeVisible.set(true)" 
     [class.is-visible]="meetingNoticeVisible()"
-    class="fade-in-up pt-10 sm:pt-14 pb-4 px-4 sm:px-8 container mx-auto">
+    class="fade-in-up pt-8 sm:pt-12 pb-2 px-4 sm:px-8 container mx-auto">
     <div class="max-w-4xl mx-auto">
-      <div class="bg-white rounded-2xl shadow-lg border border-[#002D62]/15 overflow-hidden transition-all duration-300 hover:shadow-xl">
-        <!-- ヘッダーバッジ帯 -->
-        <div class="bg-[#002D62] text-white px-5 sm:px-8 py-3.5 sm:py-4 flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-2.5 sm:gap-3">
-            <span class="bg-[#B31B1B] text-white text-[11px] sm:text-xs font-bold px-2.5 sm:px-3 py-1 rounded-full uppercase tracking-wider">
-              重要なお知らせ
-            </span>
-            <span class="text-xs sm:text-sm text-white/90 font-medium">
-              八戸西高校野球部OB会 定時総会・懇親会
-            </span>
-          </div>
-          <span class="text-xs text-white/80 hidden sm:inline-block">毎年1月2日開催</span>
-        </div>
-
-        <div class="p-5 sm:p-8 md:p-10">
-          <!-- 見出し（文節ごとのinline-blockで階段状の改行崩れを防止） -->
-          <div class="text-center mb-6 sm:mb-8">
-            <p class="text-xs sm:text-sm font-semibold text-[#002D62]/70 tracking-widest mb-2">令和9年（2027年）定時総会</p>
-            <h2 class="font-serif-jp text-xl sm:text-2xl md:text-3xl font-bold text-[#002D62] leading-snug">
-              <span class="inline-block">令和9年 野球部OB会</span>
-              <span class="inline-block">定時総会・懇親会のご案内</span>
-            </h2>
-            <div class="mt-3 flex items-center justify-center gap-2">
-              <div class="h-px bg-gradient-to-r from-transparent via-[#B31B1B] to-transparent w-10 sm:w-16"></div>
-              <div class="w-1.5 h-1.5 rounded-full bg-[#B31B1B]"></div>
-              <div class="h-px bg-gradient-to-r from-transparent via-[#B31B1B] to-transparent w-10 sm:w-16"></div>
-            </div>
-            <p class="mt-4 text-xs sm:text-sm md:text-base text-gray-700 leading-relaxed font-sans max-w-2xl mx-auto">
-              <span class="inline-block">新年の幕開けとともに、</span><span class="inline-block">同期・先輩・後輩の絆を深める</span><span class="inline-block">定時総会を開催いたします。</span><br class="hidden sm:inline">
-              <span class="inline-block">皆様お誘い合わせのうえ、</span><span class="inline-block">ぜひご出席くださいますよう</span><span class="inline-block">お願い申し上げます。</span>
-            </p>
-          </div>
-
-          <!-- 詳細案内テーブル（2カラムグリッドで日時・場所の階段落ちを解消） -->
-          <div class="bg-[#F8F9FA] rounded-xl p-4 sm:p-6 border border-gray-200/80 mb-6 sm:mb-8">
-            <dl class="divide-y divide-gray-200/80 text-xs sm:text-sm md:text-base">
-              <!-- 日時 -->
-              <div class="py-3 sm:py-3.5 grid grid-cols-1 sm:grid-cols-[110px_1fr] gap-1 sm:gap-4 items-baseline first:pt-0">
-                <dt class="font-bold text-[#002D62] flex items-center gap-2">
-                  <span class="w-1.5 h-1.5 rounded-full bg-[#B31B1B]"></span>
-                  <span>開催日時</span>
-                </dt>
-                <dd class="text-gray-800 leading-relaxed">
-                  <span class="font-bold text-sm sm:text-base md:text-lg">令和9年1月2日（土） 15:00〜</span>
-                  <span class="block sm:inline sm:ml-2 text-xs sm:text-sm text-gray-600">（総会終了後、懇親会を開催）</span>
-                </dd>
-              </div>
-
-              <!-- 場所 -->
-              <div class="py-3 sm:py-3.5 grid grid-cols-1 sm:grid-cols-[110px_1fr] gap-1 sm:gap-4 items-baseline">
-                <dt class="font-bold text-[#002D62] flex items-center gap-2">
-                  <span class="w-1.5 h-1.5 rounded-full bg-[#B31B1B]"></span>
-                  <span>開催場所</span>
-                </dt>
-                <dd class="text-gray-800 leading-relaxed">
-                  <span class="font-bold text-sm sm:text-base md:text-lg">八戸パークホテル</span>
-                  <span class="block sm:inline sm:ml-2 text-xs sm:text-sm text-gray-600">（八戸市）</span>
-                </dd>
-              </div>
-
-              <!-- 懇親会会費 -->
-              <div class="py-3 sm:py-3.5 grid grid-cols-1 sm:grid-cols-[110px_1fr] gap-1 sm:gap-4 items-baseline">
-                <dt class="font-bold text-[#002D62] flex items-center gap-2">
-                  <span class="w-1.5 h-1.5 rounded-full bg-[#B31B1B]"></span>
-                  <span>懇親会会費</span>
-                </dt>
-                <dd class="text-gray-800 leading-relaxed">
-                  <span class="font-bold text-sm sm:text-base md:text-lg text-gray-900">7,000円</span>
-                  <span class="block sm:inline sm:ml-2 text-xs sm:text-sm text-gray-600">（当日受付にて現金でお支払いください）</span>
-                </dd>
-              </div>
-
-              <!-- 年会費 -->
-              <div class="py-3 sm:py-3.5 grid grid-cols-1 sm:grid-cols-[110px_1fr] gap-1 sm:gap-4 items-baseline">
-                <dt class="font-bold text-[#002D62] flex items-center gap-2">
-                  <span class="w-1.5 h-1.5 rounded-full bg-[#B31B1B]"></span>
-                  <span>年会費</span>
-                </dt>
-                <dd class="text-gray-800 leading-relaxed">
-                  <span class="font-bold text-sm sm:text-base md:text-lg text-gray-900">5,000円</span>
-                  <span class="block sm:inline sm:ml-2 text-xs sm:text-sm text-gray-600">（銀行振込、または本サイトよりカード決済等でも納入いただけます）</span>
-                </dd>
-              </div>
-
-              <!-- お問い合わせ -->
-              <div class="py-3 sm:py-3.5 grid grid-cols-1 sm:grid-cols-[110px_1fr] gap-1 sm:gap-4 items-baseline last:pb-0">
-                <dt class="font-bold text-[#002D62] flex items-center gap-2">
-                  <span class="w-1.5 h-1.5 rounded-full bg-[#B31B1B]"></span>
-                  <span>お問い合わせ</span>
-                </dt>
-                <dd class="text-gray-800 leading-relaxed text-xs sm:text-sm md:text-base">
-                  <span>八戸西高野球部OB会 会長 榎本 直行</span>
-                  <a href="tel:09086102693" class="ml-2 text-[#002D62] hover:text-[#B31B1B] underline font-medium">090-8610-2693</a>
-                </dd>
-              </div>
-            </dl>
-          </div>
-
-          <!-- アクションボタン -->
-          <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 text-center">
-            <a 
-              [routerLink]="['/support']" 
-              [fragment]="'participation'"
-              class="w-full sm:w-auto group inline-flex items-center justify-center gap-2 bg-[#002D62] text-white font-bold py-3 sm:py-3.5 px-6 sm:px-8 rounded-xl hover:bg-blue-950 transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5 text-xs sm:text-sm md:text-base">
-              <span>出欠回答フォームはこちら</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </a>
-            <a 
-              [routerLink]="['/activity/ob-general-meeting-2027']"
-              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 border-2 border-[#002D62] text-[#002D62] font-bold py-2.5 sm:py-3 px-6 sm:px-8 rounded-xl hover:bg-[#002D62]/5 transition-all duration-300 text-xs sm:text-sm md:text-base">
-              <span>ご案内の詳細を見る</span>
-            </a>
-          </div>
-          <p class="mt-3 text-center text-[11px] sm:text-xs text-gray-500">
-            ※ 出席・欠席いずれの場合も上記出欠フォームよりご連絡をお願いいたします
-          </p>
-        </div>
-      </div>
+      <a 
+        [routerLink]="['/support']" 
+        [fragment]="'participation'"
+        class="group block relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-[#002D62]/15 bg-white cursor-pointer"
+        aria-label="2027年 野球部OB会 定時総会・懇親会（日時：2027年1月2日（土）15:00〜、会場：パークホテル、参加会費：7,000円）出欠回答はこちら">
+        <img 
+          ngSrc="/assets/images/general-meeting-banner-2027.jpg"
+          width="1600"
+          height="811"
+          alt="2027年 野球部OB会 定時総会・懇親会 日時：2027年1月2日（土）15:00〜 会場：パークホテル（八戸市） 参加会費：7,000円 出欠回答はこちら"
+          priority
+          [disableOptimizedSrcset]="true"
+          class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.015]">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#002D62]/15 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+      </a>
     </div>
   </section>
 

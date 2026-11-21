@@ -144,7 +144,19 @@
     <app-section-title mainTitle="OB会へのご参加" subTitle="野球部OB会総会について"></app-section-title>
 
     <div class="mt-10 max-w-3xl mx-auto text-[15px] leading-8 text-gray-800 bg-white/80 backdrop-blur p-6 md:p-8 rounded-lg shadow-sm">
-      <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-xl p-6 md:p-8 border border-[#002D62]/10 shadow-sm mb-8">
+      <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-xl p-4 sm:p-6 md:p-8 border border-[#002D62]/10 shadow-sm mb-8">
+        <!-- 総会バナー画像 -->
+        <div class="mb-6 rounded-xl overflow-hidden shadow-md border border-[#002D62]/15 bg-white">
+          <img 
+            ngSrc="/assets/images/general-meeting-banner-2027.jpg"
+            width="1600"
+            height="811"
+            alt="2027年 野球部OB会 定時総会・懇親会"
+            loading="lazy"
+            decoding="async"
+            [disableOptimizedSrcset]="true"
+            class="w-full h-auto object-cover">
+        </div>
         <div class="text-center mb-6">
           <p class="text-xs md:text-sm font-semibold text-[#002D62]/70 tracking-widest mb-2">令和9年 定時総会・懇親会のご案内</p>
           <p class="text-lg md:text-xl font-bold text-[#002D62] mb-3">
