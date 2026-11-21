@@ -54,6 +54,7 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  meetingNoticeVisible = signal(true);
   brandStoryVisible = signal(false);
   galleryVisible = signal(false);
   buildingHouseVisible = signal(false);
