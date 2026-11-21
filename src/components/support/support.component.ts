@@ -61,7 +61,13 @@ export class SupportComponent implements OnInit, AfterViewInit {
   ];
 
   // 2025年の支援者一覧
-  donors2025: Donor[] = [];
+  donors2025: Donor[] = [
+    { period: '3期', names: ['西 志紀 様', '八田 恭章 様', '五戸 秀治 様'] },
+    { period: '8期', names: ['西山 圭一 様'] },
+    { period: '20期', names: ['澤井 優聖 様'] },
+    { period: '31期', names: ['日当 裕一 様'] },
+    { period: '33期', names: ['上野 衆 様'] }
+  ];
 
   // OB会参加フォーム
   participationForm = {
