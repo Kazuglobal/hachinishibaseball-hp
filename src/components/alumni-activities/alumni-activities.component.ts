@@ -151,8 +151,8 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
     name: '竹本 祐瑛',
     team: 'JR東日本東北',
     position: '投手',
-    note: '4年目',
-    description: 'JR東日本東北で活躍する竹本祐瑛選手。4年目を迎え、チームの主力投手として活躍しています。',
+    note: '5年目',
+    description: 'JR東日本東北で活躍する竹本祐瑛選手。5年目を迎え、チームの主力投手として活躍しています。',
     message: '竹本祐瑛選手の更なる活躍を期待しています！',
     image: '/assets/images/takemoto.png',
     imageSource: 'nikkansports.com',
@@ -164,25 +164,20 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
 
   // 現役活躍OB情報
   activeAlumni: ActiveAlumni[] = [
-    { period: '34期', name: '長井 正哉', team: '北海道日本ハムファイターズ', position: 'トレーナー', note: '3年目' },
-    { period: '45期', name: '相前 雄一朗', team: '城西大学', position: '内野手', note: '4年' },
-    { period: '45期', name: '宮崎 一綺', team: '清和大学', position: '内野手', note: '4年' },
-    { period: '45期', name: '大釜 温斗', team: '清和大学', position: '捕手', note: '4年' },
-    { period: '45期', name: '藤本 楓都', team: '帝京平成大学', position: '捕手', note: '4年' },
-    { period: '45期', name: '村上 歩夢', team: '獨協大学', position: '外野手', note: '4年' },
-    { period: '45期', name: '平内 友悠', team: '青森中央学院大学', position: '投手', note: '4年' },
-    { period: '45期', name: '津嶋 優吉', team: '青森中央学院大学', position: '外野手', note: '4年' },
-    { period: '45期', name: '廣田 大和', team: '東北マークス', position: '投手', note: '4年目' },
-    { period: '45期', name: '桐山 大空', team: '青森中央学院大学', position: '内野手', note: '4年' },
-    { period: '46期', name: '椛木 聡斗', team: '札幌国際大学', position: '投手', note: '3年' },
-    { period: '47期', name: '吉田 知史', team: '札幌国際大学', position: '外野手', note: '2年' },
-    { period: '47期', name: '大平 翔琉', team: '青森中央学院大学', position: '外野手', note: '2年' },
-    { period: '47期', name: '村上 流聖', team: '清和大学', position: '内野手', note: '2年' },
-    { period: '47期', name: '小山石 花隠', team: '中央学院大学', position: 'マネージャー', note: '2年' },
-    { period: '48期', name: '工藤 柊也', team: '八戸工業大学', position: '投手', note: '1年' },
-    { period: '48期', name: '田中 咲多', team: '八戸工業大学', position: '捕手', note: '1年' },
-    { period: '48期', name: '田中 我空', team: '八戸工業大学', position: '外野手', note: '1年' },
-    { period: '48期', name: '大沢 瑛太郎', team: '東北学院大学', position: '投手', note: '1年' }
+    { period: '34期', name: '長井 正哉', team: '北海道日本ハムファイターズ', position: 'トレーナー', note: '4年目' },
+    { period: '45期', name: '廣田 大和', team: '東北マークス', position: '投手', note: '5年目' },
+    { period: '47期', name: '大平 翔琉', team: '青森中央学院大学', position: '外野手', note: '3年' },
+    { period: '47期', name: '村上 流聖', team: '清和大学', position: '内野手', note: '3年' },
+    { period: '48期', name: '工藤 柊也', team: '八戸工業大学', position: '投手', note: '2年' },
+    { period: '48期', name: '田中 咲多', team: '八戸工業大学', position: '捕手', note: '2年' },
+    { period: '48期', name: '田中 我空', team: '八戸工業大学', position: '外野手', note: '2年' },
+    { period: '48期', name: '大沢 瑛太郎', team: '東北学院大学', position: '投手', note: '2年' },
+    { period: '49期', name: '敦賀 伊吹', team: '東京国際大学', position: '内野手', note: '1年' },
+    { period: '49期', name: '福山 颯汰', team: '東日本国際大学', position: '捕手', note: '1年' },
+    { period: '49期', name: '佐々木 優斗', team: '札幌学院大学', position: '内野手', note: '1年' },
+    { period: '49期', name: '中村 龍澄', team: '札幌学院大学', position: '投手', note: '1年' },
+    { period: '49期', name: '小谷地 心', team: '札幌国際大学', position: '内野手', note: '1年' },
+    { period: '49期', name: '松村 快浬', team: '八戸工業大学', position: '外野手', note: '1年' }
   ];
 
   // OB情報カード（4人分）
