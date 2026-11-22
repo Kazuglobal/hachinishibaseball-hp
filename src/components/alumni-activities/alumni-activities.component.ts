@@ -211,8 +211,11 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
       name: '上野 衆',
       team: '株式会社創電工業',
       position: '代表',
-      achievement: 'souden-kougyou.site/',
-      image: '/assets/images/alumni-ueno.jpg'
+      achievement: 'soudenkougyou.com/',
+      image: '/assets/images/alumni-ueno.jpg',
+      links: [
+        { label: 'n-village.site/', url: 'https://n-village.site/' }
+      ]
     },
     {
       period: '34期',

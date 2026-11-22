@@ -408,7 +408,7 @@
                   </p>
                   @if(card.achievement) {
                     <a 
-                      [href]="'https://' + card.achievement" 
+                      [href]="card.achievement.startsWith('http') ? card.achievement : 'https://' + card.achievement" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       class="text-[9px] text-[#002D62] hover:underline break-all line-clamp-1">
@@ -474,7 +474,7 @@
               </p>
               @if(card.achievement) {
                 <a 
-                  [href]="'https://' + card.achievement" 
+                  [href]="card.achievement.startsWith('http') ? card.achievement : 'https://' + card.achievement" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   class="text-[10px] md:text-xs text-[#002D62] hover:underline break-all line-clamp-1 block">
