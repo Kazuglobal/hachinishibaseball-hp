@@ -48,7 +48,6 @@ export class SupportComponent implements OnInit, AfterViewInit {
     { period: '24期', names: ['齋藤 昌宏 様'] },
     { period: '25期', names: ['小川 貴史 様', '佐藤 泰正 様'] },
     { period: '26期', names: ['菅原 英人 様', '石倉 睦子 様'] },
-    { period: '27期', names: ['土嶺 直樹 様'] },
     { period: '29期', names: ['今川 泰伸 様'] },
     { period: '30期', names: ['小泉 章宏 様'] },
     { period: '32期', names: ['林野 智 様'] },
