@@ -31,7 +31,7 @@ export class SupportComponent implements OnInit, AfterViewInit {
   donors: Donor[] = [
     { period: '1期', names: ['今川 一 様', '大久保 雅人 様', '霞 牧広 様', '豊川 寛一 様', '田名部 秀代 様'] },
     { period: '2期', names: ['田名部 和人 様', '天間 昭悦 様', '佐藤 幸子 様', '大下 貴禎 様'] },
-    { period: '3期', names: ['笹山 浩之 様', '工藤 郁朗 様', '西 様', '三浦 俊司 様', '八田 恭章 様', '坂本 光慈 様', '貝吹 尚寿 様', '渡辺 雅人 様', '沼畑 伸光 様', '大山 茂 様'] },
+    { period: '3期', names: ['笹山 浩之 様', '工藤 郁朗 様', '西 志紀 様', '三浦 俊司 様', '八田 恭章 様', '坂本 光慈 様', '貝吹 尚寿 様', '渡辺 雅人 様', '沼畑 伸光 様', '大山 茂 様'] },
     { period: '5期', names: ['鈴木 徳彦 様'] },
     { period: '6期', names: ['中村 和浩 様'] },
     { period: '9期', names: ['菊地 武広 様', '高嶋 勝幸 様'] },
@@ -56,7 +56,7 @@ export class SupportComponent implements OnInit, AfterViewInit {
     { period: '41期', names: ['佐々木 琢磨 様'] },
     { period: '43期', names: ['三浦 颯斗 様'] },
     { period: '46期', names: ['三浦 滉斗 様', '菊地 凜 様'] },
-    { period: '48期', names: ['オキタユウヘイ 様', 'クドウシュンヤ 様', 'タナカガク 様', 'ヤマダコウダイ 様', 'コマサワリンキ 様'] }
+    { period: '48期', names: ['沖田 佑平 様', '工藤 柊也 様', '田中 我空 様', '山田 晃大 様', '駒澤 綸輝 様', '鳥谷部 凌輔 様'] }
   ];
 
   // 2025年の支援者一覧
@@ -64,11 +64,46 @@ export class SupportComponent implements OnInit, AfterViewInit {
   showDonors2024 = signal(false);
 
   donors2025: Donor[] = [
-    { period: '3期', names: ['西 志紀 様', '八田 恭章 様', '五戸 秀治 様'] },
+    { period: '1期', names: ['木村 光秀 様', '今川 一 様'] },
+    { period: '2期', names: ['天間 昭悦 様', '佐藤 幸子 様'] },
+    { period: '3期', names: ['西 志紀 様', '八田 恭章 様', '五戸 秀治 様', '貝吹 尚寿 様', '三浦 俊司 様', '沼畑 伸光 様'] },
     { period: '8期', names: ['西山 圭一 様'] },
+    { period: '9期', names: ['高嶋 勝幸 様', '菊地 武広 様'] },
+    { period: '10期', names: ['榎本 直行 様', '上村 賢悦 様'] },
+    { period: '11期', names: ['尾崎 昌孝 様'] },
+    { period: '12期', names: ['後村 英徳 様'] },
+    { period: '18期', names: ['松館 隆一 様'] },
     { period: '20期', names: ['澤井 優聖 様'] },
+    { period: '21期', names: ['中村 渉 様'] },
+    { period: '25期', names: ['佐藤 泰正 様'] },
+    { period: '30期', names: ['讃岐 洋平 様'] },
     { period: '31期', names: ['日当 裕一 様'] },
-    { period: '33期', names: ['上野 衆 様'] }
+    { period: '33期', names: ['上野 衆 様'] },
+    { period: '35期', names: ['石郷岡 浩紀 様'] },
+    { period: '46期', names: ['菊地 凛 様'] },
+    { period: '48期', names: ['田中 咲多 様'] },
+    {
+      period: '49期',
+      names: [
+        '佐々木 優斗 様',
+        '久野 太粋 様',
+        '向山 翔琉 様',
+        '荒木 絢斗 様',
+        '木村 駿介 様',
+        '福田 泰匡 様',
+        '類家 結仁 様',
+        '川崎 耀瑛 様',
+        '小谷地 心 様',
+        '高渕 柊汰 様',
+        '敦賀 伊吹 様',
+        '中塚 虎羽 様',
+        '中村 龍澄 様',
+        '福山 颯汰 様',
+        '松村 快裡 様',
+        '赤坂 和奏 様',
+        '笹倉 未羽 様'
+      ]
+    }
   ];
 
   // OB会参加フォーム
