@@ -64,7 +64,7 @@ export class SupportComponent implements OnInit, AfterViewInit {
   showDonors2024 = signal(false);
 
   donors2025: Donor[] = [
-    { period: '1期', names: ['木村 光秀 様', '今川 一 様'] },
+    { period: '1期', names: ['今川 一 様', '木村 光秀 様'] },
     { period: '2期', names: ['天間 昭悦 様', '佐藤 幸子 様'] },
     { period: '3期', names: ['西 志紀 様', '八田 恭章 様', '五戸 秀治 様', '貝吹 尚寿 様', '三浦 俊司 様', '沼畑 伸光 様'] },
     { period: '8期', names: ['西山 圭一 様'] },
