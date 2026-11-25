@@ -1,0 +1,5 @@
+/googlecde97c1db5a2382b.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/videos/*
+  Cache-Control: public, max-age=604800
