@@ -1,10 +1,29 @@
 <section class="pt-0 pb-20 container mx-auto px-4 sm:px-8">
+  <!-- 決済確認中オーバーレイ -->
+  @if (isFeeVerifying()) {
+    <div class="fixed inset-0 z-[90] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
+        <div class="w-12 h-12 mx-auto mb-4 border-4 border-[#002D62] border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-lg font-bold text-[#002D62]">会費のご納入を確認しています...</p>
+        <p class="text-xs text-gray-500 mt-2">完了後、感謝ムービーとネーム入りユニフォームを表示します</p>
+      </div>
+    </div>
+  }
+
   <!-- 会費納入のお願いセクション -->
   <div class="mt-12 md:mt-16" id="credit">
     <h1 class="sr-only">八戸西高等学校野球部OB会 ご支援のお願い</h1>
     <app-section-title mainTitle="ご支援のお願い" subTitle="会費納入のお願い"></app-section-title>
 
-    <div class="mt-10 max-w-4xl mx-auto text-[15px] leading-8 text-gray-800 bg-white/80 backdrop-blur p-4 sm:p-6 md:p-8 rounded-lg shadow-sm">
+    <div class="mt-10 max-w-5xl mx-auto text-[15px] leading-8 text-gray-800 bg-white/80 backdrop-blur p-4 sm:p-6 md:p-8 rounded-lg shadow-sm">
+      <!-- 通知バナー（Stripeキャンセル時など） -->
+      @if (feeStatusNotice()) {
+        <div class="mb-6 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl px-5 py-4 text-sm flex items-center justify-between gap-3">
+          <span>{{ feeStatusNotice() }}</span>
+          <button type="button" (click)="feeStatusNotice.set(null)" class="text-xs font-bold underline shrink-0">閉じる</button>
+        </div>
+      }
+
       <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-xl p-4 sm:p-6 md:p-8 border border-[#002D62]/10 shadow-sm mb-8">
         <div class="text-center mb-8">
           <p class="text-lg md:text-xl font-bold text-[#002D62] mb-4">
@@ -21,6 +40,9 @@
           <div class="bg-white rounded-lg p-6 shadow-sm">
             <h4 class="font-bold text-lg text-[#002D62] mb-4">納入金額</h4>
             <p class="text-3xl font-bold text-gray-800">年間 5,000円</p>
+            <p class="text-xs text-gray-500 mt-2">
+              オンラインで納入いただくと、感謝ムービーが流れ、お名前と卒期入りのミニチュアユニフォームが自動で掲載されます。
+            </p>
           </div>
           <div class="bg-white rounded-lg p-6 shadow-sm">
             <h4 class="font-bold text-lg text-[#002D62] mb-4">活用内容</h4>
@@ -33,64 +55,285 @@
           </div>
         </div>
 
-        <!-- 2025年の支援者一覧 -->
-        @if (donors2025.length > 0) {
-          <div class="mt-10 mb-8">
-            <h3 class="text-xl md:text-2xl font-bold text-[#002D62] mb-6 text-center">ご支援ありがとうございました！！</h3>
-            <p class="text-center text-gray-600 mb-3 text-sm md:text-base">2025年支援者一覧</p>
-            <p class="text-center text-gray-500 mb-6 text-xs md:text-sm">
-              納入済みにもかかわらずお名前の記載がない方がいらっしゃいましたら、
-              <a [routerLink]="['/contact']" class="text-[#002D62] font-semibold underline hover:no-underline">
-                こちらのお問い合わせフォーム
-              </a>
-              よりご一報ください。
-            </p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              @for (donor of donors2025; track donor.period) {
-                <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                  <h4 class="font-bold text-[#002D62] mb-2">{{donor.period}}</h4>
-                  <ul class="text-sm text-gray-700 space-y-1">
-                    @for (name of donor.names; track name) {
-                      <li>{{name}}</li>
-                    }
-                  </ul>
+        <!-- ========================================================= -->
+        <!-- オンライン納入者（自動反映ミニチュアユニフォーム）          -->
+        <!-- ========================================================= -->
+        <div id="uniform-wall" class="scroll-mt-24">
+          @if (onlineUniformDonors().length > 0) {
+            <div class="mt-8 mb-10 rounded-2xl bg-gradient-to-br from-[#002D62]/5 via-white to-[#B31B1B]/5 border border-[#002D62]/20 p-4 sm:p-6 shadow-sm">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
+                <div>
+                  <span class="inline-block px-2.5 py-0.5 rounded-full bg-[#B31B1B] text-white text-[11px] font-bold mb-1">
+                    LIVE・自動反映
+                  </span>
+                  <h3 class="text-lg sm:text-xl font-bold text-[#002D62]">
+                    オンライン会費納入者ユニフォーム（{{ onlineUniformDonors().length }}名）
+                  </h3>
+                  <p class="text-xs text-gray-600">
+                    会費納入が完了すると自動でユニフォームが掲載されます。タップすると感謝ムービーを再生できます。
+                  </p>
                 </div>
-              }
-            </div>
-          </div>
-        }
+                @if (membershipService.hasUserDemoPayments()) {
+                  <button
+                    type="button"
+                    (click)="clearDemoUniforms()"
+                    class="self-start sm:self-auto px-3 py-1.5 rounded-full text-xs font-semibold text-gray-500 hover:text-red-600 underline">
+                    デモ履歴をリセット
+                  </button>
+                }
+              </div>
 
-        <!-- 昨年の入金者一覧 -->
-        <div class="mt-10 mb-8">
-          <h3 class="text-xl md:text-2xl font-bold text-[#002D62] mb-6 text-center">ご支援ありがとうございました！！</h3>
-          <div class="text-center mb-4">
-            <button type="button" (click)="showDonors2024.set(!showDonors2024())"
-              class="px-4 py-2 rounded-full border border-[#002D62] text-[#002D62] text-sm font-semibold hover:bg-[#002D62] hover:text-white transition">
-              {{ showDonors2024() ? '2024年支援者一覧を閉じる' : '2024年支援者一覧を見る' }}
-            </button>
-          </div>
-          @if (showDonors2024()) {
-            <p class="text-center text-gray-600 mb-3 text-sm md:text-base">2024年支援者一覧</p>
-            <p class="text-center text-gray-500 mb-6 text-xs md:text-sm">
-              納入済みにもかかわらずお名前の記載がない方がいらっしゃいましたら、
-              <a [routerLink]="['/contact']" class="text-[#002D62] font-semibold underline hover:no-underline">
-                こちらのお問い合わせフォーム
-              </a>
-              よりご一報ください。
-            </p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              @for (donor of donors; track donor.period) {
-                <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                  <h4 class="font-bold text-[#002D62] mb-2">{{donor.period}}</h4>
-                  <ul class="text-sm text-gray-700 space-y-1">
-                    @for (name of donor.names; track name) {
-                      <li>{{name}}</li>
-                    }
-                  </ul>
-                </div>
-              }
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+                @for (item of onlineUniformDonors(); track item.id) {
+                  <button
+                    type="button"
+                    (click)="openCelebration(item)"
+                    class="text-left focus:outline-none focus:ring-2 focus:ring-[#002D62] rounded-2xl">
+                    <app-mini-uniform
+                      [name]="item.name"
+                      [period]="item.period"
+                      size="sm"
+                      [badge]="newlyAddedUniformId() === item.id ? 'NEW' : (item.isDemo ? 'デモ' : item.year + '年')"
+                      [interactive]="true"
+                      [highlighted]="newlyAddedUniformId() === item.id"
+                      [showHint]="true">
+                    </app-mini-uniform>
+                  </button>
+                }
+              </div>
             </div>
           }
+
+          <!-- ========================================================= -->
+          <!-- 2025年の支援者一覧（ミニチュアユニフォーム展示）            -->
+          <!-- ========================================================= -->
+          @if (uniformDonors2025.length > 0) {
+            <div class="mt-10 mb-10">
+              <div class="text-center mb-6">
+                <span class="inline-block px-3 py-0.5 rounded-full bg-[#002D62]/10 text-[#002D62] text-xs font-bold tracking-wider mb-2">
+                  2025 SUPPORTERS UNIFORM WALL
+                </span>
+                <h3 class="text-xl md:text-2xl font-bold text-[#002D62] mb-2">ご支援ありがとうございました！！</h3>
+                <p class="text-gray-700 font-semibold mb-2 text-sm md:text-base">
+                  2025年支援者一覧（{{ uniformDonors2025.length }}名）
+                </p>
+                <p class="text-gray-500 text-xs md:text-sm">
+                  納入済みにもかかわらずお名前の記載がない方がいらっしゃいましたら、
+                  <a [routerLink]="['/contact']" class="text-[#002D62] font-semibold underline hover:no-underline">
+                    こちらのお問い合わせフォーム
+                  </a>
+                  よりご一報ください。
+                </p>
+              </div>
+
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+                @for (item of uniformDonors2025; track item.id) {
+                  <button
+                    type="button"
+                    (click)="openCelebration(item)"
+                    class="text-left focus:outline-none focus:ring-2 focus:ring-[#002D62] rounded-2xl">
+                    <app-mini-uniform
+                      [name]="item.name"
+                      [period]="item.period"
+                      size="sm"
+                      [interactive]="true">
+                    </app-mini-uniform>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- ========================================================= -->
+          <!-- 2024年の支援者一覧（開閉式・ミニチュアユニフォーム展示）    -->
+          <!-- ========================================================= -->
+          <div class="mt-10 mb-8 pt-6 border-t border-[#002D62]/10">
+            <h3 class="text-xl md:text-2xl font-bold text-[#002D62] mb-5 text-center">ご支援ありがとうございました！！</h3>
+            <div class="text-center mb-4">
+              <button
+                type="button"
+                (click)="showDonors2024.set(!showDonors2024())"
+                class="px-5 py-2.5 rounded-full border-2 border-[#002D62] text-[#002D62] text-sm font-bold hover:bg-[#002D62] hover:text-white transition-colors shadow-sm">
+                {{ showDonors2024() ? '2024年支援者一覧を閉じる' : '2024年支援者ユニフォーム一覧を見る（' + uniformDonors2024.length + '名）' }}
+              </button>
+            </div>
+            @if (showDonors2024()) {
+              <p class="text-center text-gray-700 font-semibold mb-2 text-sm md:text-base">
+                2024年支援者一覧（{{ uniformDonors2024.length }}名）
+              </p>
+              <p class="text-center text-gray-500 mb-6 text-xs md:text-sm">
+                納入済みにもかかわらずお名前の記載がない方がいらっしゃいましたら、
+                <a [routerLink]="['/contact']" class="text-[#002D62] font-semibold underline hover:no-underline">
+                  こちらのお問い合わせフォーム
+                </a>
+                よりご一報ください。
+              </p>
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+                @for (item of uniformDonors2024; track item.id) {
+                  <button
+                    type="button"
+                    (click)="openCelebration(item)"
+                    class="text-left focus:outline-none focus:ring-2 focus:ring-[#002D62] rounded-2xl">
+                    <app-mini-uniform
+                      [name]="item.name"
+                      [period]="item.period"
+                      size="sm"
+                      [interactive]="true">
+                    </app-mini-uniform>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- クレジットカード決済（投げ銭制度と同じムービー＆自動反映） -->
+        <!-- ========================================================= -->
+        <div class="mt-10 bg-white rounded-2xl p-4 sm:p-6 md:p-8 border border-[#002D62]/15 shadow-sm overflow-hidden">
+          <div class="text-center mb-6">
+            <span class="inline-block px-3 py-0.5 rounded-full bg-[#B31B1B]/10 text-[#B31B1B] text-xs font-bold mb-2">
+              NEW・ムービー演出＆ユニフォーム自動掲載対応
+            </span>
+            <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-[#002D62] mb-2">
+              クレジットカードでのお支払い（年会費 ¥5,000）
+            </h3>
+            <p class="text-xs sm:text-sm md:text-base text-gray-600">
+              お名前と卒期をご入力のうえStripeで会費を納入いただくと、感謝ムービーが流れ、お名前と卒期入りのユニフォームが自動で表示されます。
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <!-- 入力フォーム -->
+            <div class="lg:col-span-7 space-y-4">
+              @if (feeFormError()) {
+                <div class="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-xl text-sm leading-relaxed">
+                  {{ feeFormError() }}
+                </div>
+              }
+
+              <!-- お名前 -->
+              <div>
+                <label for="fee-donor-name" class="block text-sm font-bold text-gray-700 mb-1.5">
+                  ユニフォームに表示するお名前 <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="fee-donor-name"
+                  type="text"
+                  maxlength="24"
+                  [ngModel]="feeDonorName()"
+                  (ngModelChange)="feeDonorName.set($event)"
+                  placeholder="例：山田 太郎"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none text-sm sm:text-base" />
+              </div>
+
+              <!-- 卒期 -->
+              <div>
+                <label for="fee-donor-period" class="block text-sm font-bold text-gray-700 mb-1.5">
+                  卒期 <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="fee-donor-period"
+                  type="text"
+                  maxlength="16"
+                  [ngModel]="feeDonorPeriod()"
+                  (ngModelChange)="feeDonorPeriod.set($event)"
+                  placeholder="例：32期"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none text-sm sm:text-base" />
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                  @for (preset of periodPresets; track preset) {
+                    <button
+                      type="button"
+                      (click)="applyFeePeriodPreset(preset)"
+                      class="px-2.5 py-1 rounded-full text-xs border transition-colors"
+                      [class.bg-[#002D62]]="feeDonorPeriod() === preset"
+                      [class.text-white]="feeDonorPeriod() === preset"
+                      [class.border-[#002D62]]="feeDonorPeriod() === preset"
+                      [class.bg-gray-50]="feeDonorPeriod() !== preset"
+                      [class.text-gray-600]="feeDonorPeriod() !== preset"
+                      [class.border-gray-200]="feeDonorPeriod() !== preset">
+                      {{ preset }}
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <!-- メッセージ（任意） -->
+              <div>
+                <label for="fee-donor-message" class="block text-sm font-bold text-gray-700 mb-1.5">
+                  現役選手・OB会へのメッセージ（任意）
+                </label>
+                <textarea
+                  id="fee-donor-message"
+                  rows="2"
+                  maxlength="120"
+                  [ngModel]="feeDonorMessage()"
+                  (ngModelChange)="feeDonorMessage.set($event)"
+                  placeholder="例：甲子園出場を目指して頑張ってください！"
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none text-sm resize-none"></textarea>
+              </div>
+
+              <!-- 決済・デモボタン -->
+              <div class="pt-2 space-y-3">
+                <button
+                  type="button"
+                  (click)="startMembershipCheckout()"
+                  [disabled]="isFeeProcessing()"
+                  class="w-full py-4 px-6 rounded-xl bg-[#002D62] hover:bg-blue-950 text-white font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                  @if (isFeeProcessing()) {
+                    <span class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span>決済画面へ移動中...</span>
+                  } @else {
+                    <span>¥{{ membershipFeeAmount.toLocaleString() }} 年会費を納入する（Stripe決済）</span>
+                  }
+                </button>
+
+                <button
+                  type="button"
+                  (click)="triggerMembershipDemo()"
+                  class="w-full py-3 px-6 rounded-xl border-2 border-[#002D62] text-[#002D62] hover:bg-[#002D62] hover:text-white font-bold text-sm transition-colors flex items-center justify-center gap-2">
+                  <span>🎬 演出をデモ体験する（課金なし・即時反映）</span>
+                </button>
+
+                <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-lg p-3 border border-[#002D62]/15 text-center">
+                  <p class="text-[11px] sm:text-xs text-gray-600 mb-1">ご利用可能なクレジットカード（Stripe決済）</p>
+                  <p class="text-xs text-gray-800 font-semibold">VISA / Mastercard / American Express / JCB / Discover / Diners Club</p>
+                  <div class="flex items-center justify-center gap-2 mt-2">
+                    <img src="/assets/images/jcb-logo.png" alt="JCB" class="h-5 w-auto" loading="lazy" />
+                    <span class="text-xs text-gray-600">JCBカードもご利用いただけます</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- リアルタイム仕上がりプレビュー -->
+            <div class="lg:col-span-5 bg-gradient-to-br from-[#002D62]/5 via-white to-[#B31B1B]/5 rounded-2xl p-5 sm:p-6 border border-[#002D62]/15 shadow-sm">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold tracking-wider text-[#002D62] uppercase">LIVE PREVIEW</span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#002D62] text-white">
+                  ミニチュアユニフォーム
+                </span>
+              </div>
+
+              <p class="text-xs sm:text-sm text-gray-600 mb-4 leading-relaxed">
+                納入完了後、このように<strong class="text-[#002D62]">お名前と卒期</strong>がユニフォームに表示されます。
+              </p>
+
+              <div class="rounded-2xl bg-white border border-gray-200/80 shadow-inner py-5 px-4 flex items-center justify-center">
+                <app-mini-uniform
+                  [name]="feePreviewName()"
+                  [period]="feePreviewPeriod()"
+                  size="md"
+                  [interactive]="true">
+                </app-mini-uniform>
+              </div>
+
+              <div class="mt-4 text-xs text-gray-500 space-y-1 leading-relaxed">
+                <p>• 納入金額：<strong class="text-gray-800">年間 ¥{{ membershipFeeAmount.toLocaleString() }}</strong></p>
+                <p>• 決済完了後、自動で感謝ムービーが再生され、支援者ユニフォーム一覧へ掲載されます。</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 銀行振込によるお支払い -->
@@ -120,29 +363,6 @@
             </div>
           </div>
         </div>
-
-        <!-- クレジットカード決済 -->
-        <div class="mt-10 bg-white rounded-lg p-3 sm:p-6 md:p-8 border border-gray-200 overflow-hidden">
-          <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-[#002D62] mb-3 sm:mb-6 text-center break-words">クレジットカードでのお支払い</h3>
-          <p class="text-xs sm:text-sm md:text-base text-gray-700 mb-4 text-center break-words px-1 sm:px-0">
-            以下のボタンより、Stripeを利用したクレジットカード決済で会費をお納めいただけます。
-          </p>
-          <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-lg p-4 mb-4 sm:mb-6 border border-[#002D62]/20">
-            <p class="text-xs sm:text-sm text-gray-700 text-center mb-2">ご利用可能なクレジットカード</p>
-            <p class="text-xs sm:text-sm text-gray-800 text-center font-semibold">VISA / Mastercard / American Express / JCB / Discover / Diners Club</p>
-          </div>
-          <div class="text-center overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
-            <stripe-buy-button
-              [attr.buy-button-id]="stripeBuyButtonId"
-              [attr.publishable-key]="stripePublishableKey"
-              class="inline-block max-w-full">
-            </stripe-buy-button>
-            <div class="flex items-center justify-center gap-2 mt-3">
-              <img src="/assets/images/jcb-logo.png" alt="JCB" class="h-6 w-auto" loading="lazy" />
-              <span class="text-xs text-gray-600">JCBカードもご利用いただけます</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div class="mt-10">
@@ -159,7 +379,7 @@
       <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-xl p-4 sm:p-6 md:p-8 border border-[#002D62]/10 shadow-sm mb-8">
         <!-- 総会バナー画像 -->
         <div class="mb-6 rounded-xl overflow-hidden shadow-md border border-[#002D62]/15 bg-white">
-          <img 
+          <img
             ngSrc="/assets/images/general-meeting-banner-2027.jpg"
             width="1600"
             height="800"
@@ -242,7 +462,7 @@
             </div>
             <h4 class="text-xl md:text-2xl font-bold text-green-700 mb-2">ありがとうございました！</h4>
             <p class="text-gray-700 mb-4">出欠のご回答を承りました。ご参加をお待ちしております。</p>
-            <button 
+            <button
               (click)="resetForm()"
               class="inline-block bg-[#002D62] text-white py-2 px-6 rounded-lg hover:bg-blue-950 transition-colors duration-300">
               別の回答を送信する
@@ -253,35 +473,32 @@
         <!-- 出欠フォーム -->
         @if (!isSubmitted()) {
           <form (ngSubmit)="onSubmitParticipation()" class="space-y-4 md:space-y-6">
-            <!-- エラーメッセージ -->
             @if (submitError()) {
               <div class="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
                 {{submitError()}}
               </div>
             }
 
-            <!-- 氏名 -->
             <div>
               <label for="name" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
                 氏名 <span class="text-red-500">*</span>
               </label>
-              <input 
-                type="text" 
-                id="name" 
+              <input
+                type="text"
+                id="name"
                 name="name"
                 [(ngModel)]="participationForm.name"
                 required
                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors">
             </div>
 
-            <!-- 卒期 -->
             <div>
               <label for="period" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
                 卒期 <span class="text-red-500">*</span>
               </label>
-              <input 
-                type="text" 
-                id="period" 
+              <input
+                type="text"
+                id="period"
                 name="period"
                 [(ngModel)]="participationForm.period"
                 placeholder="例：10期"
@@ -289,53 +506,50 @@
                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors">
             </div>
 
-            <!-- メールアドレス -->
             <div>
               <label for="email" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
                 メールアドレス <span class="text-red-500">*</span>
               </label>
-              <input 
-                type="email" 
-                id="email" 
+              <input
+                type="email"
+                id="email"
                 name="email"
                 [(ngModel)]="participationForm.email"
                 required
                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors">
             </div>
 
-            <!-- 電話番号 -->
             <div>
               <label for="phone" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
                 電話番号
               </label>
-              <input 
-                type="tel" 
-                id="phone" 
+              <input
+                type="tel"
+                id="phone"
                 name="phone"
                 [(ngModel)]="participationForm.phone"
                 placeholder="例：090-1234-5678"
                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors">
             </div>
 
-            <!-- 出欠 -->
             <div>
               <label class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
                 出欠 <span class="text-red-500">*</span>
               </label>
               <div class="flex gap-4">
                 <label class="flex items-center">
-                  <input 
-                    type="radio" 
-                    name="attendance" 
+                  <input
+                    type="radio"
+                    name="attendance"
                     value="出席"
                     [(ngModel)]="participationForm.attendance"
                     class="mr-2 text-[#002D62] focus:ring-[#002D62]">
                   <span class="text-sm md:text-base">出席</span>
                 </label>
                 <label class="flex items-center">
-                  <input 
-                    type="radio" 
-                    name="attendance" 
+                  <input
+                    type="radio"
+                    name="attendance"
                     value="欠席"
                     [(ngModel)]="participationForm.attendance"
                     class="mr-2 text-[#002D62] focus:ring-[#002D62]">
@@ -344,22 +558,20 @@
               </div>
             </div>
 
-            <!-- 備考 -->
             <div>
               <label for="remarks" class="block text-sm md:text-base font-semibold text-gray-700 mb-2">
                 備考・ご連絡事項
               </label>
-              <textarea 
-                id="remarks" 
+              <textarea
+                id="remarks"
                 name="remarks"
                 [(ngModel)]="participationForm.remarks"
                 rows="4"
                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none transition-colors resize-none"></textarea>
             </div>
 
-            <!-- 送信ボタン -->
             <div class="pt-4">
-              <button 
+              <button
                 type="submit"
                 [disabled]="isSubmitting()"
                 class="w-full md:w-auto bg-[#002D62] text-white py-3 px-8 md:px-12 rounded-lg hover:bg-blue-950 transition-colors duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-base md:text-lg">
@@ -386,3 +598,130 @@
     </div>
   </div>
 </section>
+
+<!-- ========================================================= -->
+<!-- 全画面ムービー＆ネーム入りユニフォーム演出モーダル          -->
+<!-- ========================================================= -->
+@if (celebrationUniform(); as active) {
+  <div class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fade-in">
+    <div class="relative w-full max-w-4xl rounded-3xl overflow-hidden bg-slate-950 border border-white/15 shadow-2xl">
+      <!-- 背景ムービーレイヤー -->
+      <div class="relative h-[470px] sm:h-[540px] w-full overflow-hidden flex items-center justify-center">
+        @if (!videoMissing()) {
+          <video
+            [src]="membershipVideoPath"
+            (error)="onVideoError()"
+            autoplay
+            loop
+            playsinline
+            [muted]="isVideoMuted()"
+            class="absolute inset-0 w-full h-full object-cover opacity-75">
+          </video>
+        } @else {
+          <!-- 実ムービー未配置時のリッチフォールバック（スタジアム・スポットライト演出） -->
+          <div class="absolute inset-0 bg-gradient-to-br from-[#02122b] via-[#002D62] to-[#2b0910]"></div>
+          <div class="stadium-spotlight-left absolute -top-10 -left-10 w-[55%] h-[130%] bg-gradient-to-b from-amber-200/25 via-sky-200/10 to-transparent blur-2xl"></div>
+          <div class="stadium-spotlight-right absolute -top-10 -right-10 w-[55%] h-[130%] bg-gradient-to-b from-white/25 via-blue-200/10 to-transparent blur-2xl"></div>
+        }
+
+        <!-- 暗幕グラデーション -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/60"></div>
+
+        <!-- 祝福の紙吹雪パーティクル -->
+        @for (idx of confettiIndexes; track idx) {
+          <div
+            class="celebration-confetti w-2 h-3 rounded-sm"
+            [style.left.%]="6 + idx * 8"
+            [style.animation-delay.s]="(idx % 5) * 0.55"
+            [ngClass]="{
+              'bg-amber-300': idx % 3 === 0,
+              'bg-white': idx % 3 === 1,
+              'bg-[#ef4444]': idx % 3 === 2
+            }">
+          </div>
+        }
+
+        <!-- 上部コントロール -->
+        <div class="absolute top-4 left-4 right-4 z-20 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 rounded-full bg-[#B31B1B] text-white text-xs font-bold shadow">
+              会費のご納入ありがとうございます！
+            </span>
+            @if (videoMissing()) {
+              <span class="hidden sm:inline-block px-2.5 py-1 rounded-full bg-white/15 text-white/80 text-[11px]">
+                実ムービー枠: src/assets/videos/{{ membershipVideoFileName }}
+              </span>
+            }
+          </div>
+          <div class="flex items-center gap-2">
+            @if (!videoMissing()) {
+              <button
+                type="button"
+                (click)="toggleMute()"
+                class="px-3 py-1.5 rounded-full bg-black/50 hover:bg-black/80 text-white text-xs font-semibold border border-white/20">
+                {{ isVideoMuted() ? '🔇 音声ON' : '🔊 ミュート' }}
+              </button>
+            }
+            <button
+              type="button"
+              (click)="closeCelebration(false)"
+              aria-label="閉じる"
+              class="w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center border border-white/20">
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- 中央ヒーロー：ネーム入りミニチュアユニフォーム -->
+        <div class="relative z-10 flex flex-col items-center text-center px-6">
+          <div class="animate-uniform-pop">
+            <app-mini-uniform
+              [name]="active.name"
+              [period]="active.period"
+              size="lg"
+              [interactive]="true">
+            </app-mini-uniform>
+          </div>
+
+          <div class="mt-4 max-w-lg">
+            <p class="text-xs sm:text-sm font-bold tracking-widest text-amber-300 uppercase">
+              {{ active.year }}年 OB会費 支援者ユニフォーム
+            </p>
+            <h4 class="text-xl sm:text-2xl font-extrabold text-white mt-1">
+              {{ active.period }}　{{ active.name }}
+            </h4>
+            @if (active.message) {
+              <p class="mt-2 text-xs sm:text-sm text-blue-100 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/15">
+                「{{ active.message }}」
+              </p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- 下部フッターアクション -->
+      <div class="bg-slate-950/95 px-5 py-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="text-xs text-slate-300 text-center sm:text-left">
+          @if (active.isDemo) {
+            <span class="inline-block px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold mr-1.5">デモ体験</span>
+          }
+          <span>お名前・卒期入りのユニフォームが一覧に表示されました。</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            (click)="closeCelebration(true)"
+            class="px-5 py-2.5 rounded-xl bg-white text-[#002D62] hover:bg-blue-50 font-bold text-xs sm:text-sm shadow transition-colors">
+            ユニフォーム一覧で見る →
+          </button>
+          <button
+            type="button"
+            (click)="closeCelebration(false)"
+            class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm transition-colors">
+            閉じる
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

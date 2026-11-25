@@ -15,6 +15,10 @@ dist-ssr
 # Angular cache
 .angular/cache/
 
+# Cloudflare Wrangler
+.wrangler/
+.dev.vars
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -140,7 +140,7 @@
       "destination": "/alumni-voice/nozaki-junsei.html"
     },
     {
-      "source": "/((?!.*\\..*).*)",
+      "source": "/((?!api/|.*\\..*).*)",
       "destination": "/index.html"
     }
   ]

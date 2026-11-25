@@ -37,6 +37,19 @@ var FORMS = {
       return [['お名前', d.name], ['メールアドレス', d.email], ['電話番号', d.phone || '未入力'],
               ['件名', d.subject || '未入力'], ['お問い合わせ内容', d.message]];
     }
+  },
+  membership_fee: {
+    sheetName: '年会費納入',
+    header: ['送信日時', 'セッションID', 'お名前', '卒期', '対象年度', '金額', 'メッセージ'],
+    required: ['name', 'period'],
+    skipEmailValidation: true,
+    row: function (d) { return [d.sessionId, d.name, d.period, d.year || String(new Date().getFullYear()), d.amount || '5000', d.message]; },
+    mailSubject: function (d) { return '【OB会年会費納入】' + d.period + ' ' + d.name + '様より年会費のご納入がありました（' + (d.amount || 5000) + '円）'; },
+    mailBody: function (d) {
+      return [['お名前', d.name], ['卒期', d.period], ['対象年度', (d.year || String(new Date().getFullYear())) + '年'],
+              ['金額', (d.amount || '5000') + '円'], ['メッセージ', d.message || 'なし'],
+              ['StripeセッションID', d.sessionId || '未設定']];
+    }
   }
 };
 
@@ -110,38 +123,63 @@ function doPost(e) {
     var cfg = FORMS[type];
 
     var d = {};
-    ['name', 'period', 'email', 'phone', 'attendance', 'remarks', 'event', 'subject', 'message'].forEach(function (k) {
+    ['name', 'period', 'email', 'phone', 'attendance', 'remarks', 'event', 'subject', 'message', 'category', 'amount', 'quantity', 'sessionId', 'year'].forEach(function (k) {
       d[k] = sanitizeInput(raw[k], (k === 'message' || k === 'remarks') ? 5000 : 300);
     });
 
     for (var i = 0; i < cfg.required.length; i++) {
       if (!d[cfg.required[i]]) return jsonResponse({ success: false, error: '必須項目が不足しています' });
     }
-    if (!validateEmail(d.email)) return jsonResponse({ success: false, error: 'メールアドレスの形式が正しくありません' });
+    if (!cfg.skipEmailValidation && !validateEmail(d.email)) {
+      return jsonResponse({ success: false, error: 'メールアドレスの形式が正しくありません' });
+    }
     if (type === 'attendance' && d.attendance !== '出席' && d.attendance !== '欠席') {
       return jsonResponse({ success: false, error: '出欠の値が正しくありません' });
     }
 
     var now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+    var isDuplicate = false;
 
     var lock = LockService.getScriptLock();
     lock.waitLock(10000);
     try {
-      getSheet(cfg).appendRow([now].concat(cfg.row(d).map(sanitizeForSheet)));
+      var sheet = getSheet(cfg);
+      if (type === 'membership_fee' && d.sessionId) {
+        var lastRow = sheet.getLastRow();
+        if (lastRow > 1) {
+          var existingIds = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
+          for (var r = 0; r < existingIds.length; r++) {
+            if (String(existingIds[r][0]) === d.sessionId) {
+              isDuplicate = true;
+              break;
+            }
+          }
+        }
+      }
+      if (!isDuplicate) {
+        sheet.appendRow([now].concat(cfg.row(d).map(sanitizeForSheet)));
+      }
     } finally {
       lock.releaseLock();
+    }
+
+    if (isDuplicate) {
+      return jsonResponse({ success: true, duplicate: true, message: '既に記録済みです。' });
     }
 
     var lines = cfg.mailBody(d).map(function (kv) { return '【' + kv[0] + '】\n' + kv[1]; });
     var body = '以下の内容で送信がありました。\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
       lines.join('\n\n') + '\n\n【送信日時】\n' + now + '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
     try {
-      MailApp.sendEmail({
+      var mailOpts = {
         to: PropertiesService.getScriptProperties().getProperty('NOTIFICATION_EMAIL') || DEFAULT_NOTIFICATION_EMAIL,
-        replyTo: d.email,
         subject: cfg.mailSubject(d),
         body: body
-      });
+      };
+      if (d.email && validateEmail(d.email)) {
+        mailOpts.replyTo = d.email;
+      }
+      MailApp.sendEmail(mailOpts);
     } catch (mailError) {
       Logger.log('メール送信エラー: ' + mailError);
     }
@@ -153,8 +191,36 @@ function doPost(e) {
   }
 }
 
-function doGet() {
-  return ContentService.createTextOutput('OB会フォーム（出欠・お問い合わせ） - Google Apps Script is running!')
+function doGet(e) {
+  try {
+    var type = e && e.parameter && e.parameter.type;
+    if (type === 'membership_fee') {
+      var mfSheet = getSheet(FORMS.membership_fee);
+      var mfLastRow = mfSheet.getLastRow();
+      var records = [];
+      if (mfLastRow > 1) {
+        var mfValues = mfSheet.getRange(2, 1, mfLastRow - 1, 7).getValues();
+        for (var j = mfValues.length - 1; j >= 0; j--) {
+          var mfRow = mfValues[j];
+          if (!mfRow[2]) continue;
+          records.push({
+            createdAt: mfRow[0] instanceof Date ? mfRow[0].toISOString() : String(mfRow[0]),
+            sessionId: String(mfRow[1] || ''),
+            name: String(mfRow[2]),
+            period: String(mfRow[3] || 'OB'),
+            year: Number(mfRow[4]) || new Date().getFullYear(),
+            amount: Number(mfRow[5]) || 5000,
+            message: String(mfRow[6] || '')
+          });
+        }
+      }
+      return jsonResponse({ success: true, records: records });
+    }
+  } catch (err) {
+    Logger.log('doGet ERROR: ' + err);
+    return jsonResponse({ success: false, error: 'データ取得に失敗しました' });
+  }
+  return ContentService.createTextOutput('OB会フォーム（出欠・お問い合わせ・年会費納入） - Google Apps Script is running!')
     .setMimeType(ContentService.MimeType.TEXT);
 }
 
