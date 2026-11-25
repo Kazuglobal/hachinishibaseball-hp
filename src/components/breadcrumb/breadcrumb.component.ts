@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -17,6 +17,7 @@ export interface BreadcrumbItem {
 })
 export class BreadcrumbComponent implements OnInit {
   breadcrumbs = signal<BreadcrumbItem[]>([]);
+  isHome = computed(() => this.breadcrumbs().length <= 1);
 
   private routeLabels: { [key: string]: string } = {
     '': 'ホーム',
@@ -24,6 +25,7 @@ export class BreadcrumbComponent implements OnInit {
     'alumni-activities': 'OB活躍情報',
     'match-results': '試合結果',
     'support': 'ご支援のお願い',
+    'cheer': '現役応援 投げ銭',
     'contact': 'お問い合わせ',
     'activities': '活動報告一覧',
     'activity': '活動報告詳細',
