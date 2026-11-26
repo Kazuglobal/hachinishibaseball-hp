@@ -61,9 +61,20 @@ export class HomeComponent implements OnInit {
   otherServiceVisible = signal(false);
   blogVisible = signal(false);
 
+  readonly messageBgImages = [
+    { src: '/assets/images/message-bg-1.jpg', width: 768, height: 1024, alt: '八戸西高等学校野球部 帽子' },
+    { src: '/assets/images/message-bg-2.jpg', width: 768, height: 1024, alt: '八戸西高等学校野球部 室内練習場' },
+    { src: '/assets/images/message-bg-3.jpg', width: 1024, height: 768, alt: '八戸西高等学校野球部 夜のグラウンド' },
+    { src: '/assets/images/message-bg-4.jpg', width: 768, height: 1024, alt: '八戸西高等学校野球部 練習球' },
+    { src: '/assets/images/message-bg-5.jpg', width: 768, height: 1024, alt: '八戸西高等学校野球部 バット' },
+    { src: '/assets/images/message-bg-6.jpg', width: 768, height: 1024, alt: '八戸西高等学校野球部 練習用具' },
+    { src: '/assets/images/message-bg-7.jpg', width: 768, height: 1024, alt: '八戸西高等学校野球部 ピッチングマシン' },
+    { src: '/assets/images/message-bg-8.jpg', width: 768, height: 1024, alt: '八戸西高等学校野球部 防球ネット' },
+  ];
+
   // Parallax effect for Brand Story
-  parallaxImage1Transform = computed(() => `translateY(${this.scrollService.scrollY() * 0.1}px)`);
-  parallaxImage2Transform = computed(() => `translateY(${this.scrollService.scrollY() * 0.05}px)`);
+  parallaxImage1Transform = computed(() => `translateY(${Math.min(this.scrollService.scrollY() * 0.03, 30)}px)`);
+  parallaxImage2Transform = computed(() => `translateY(${Math.min(this.scrollService.scrollY() * 0.015, 15)}px)`);
   
   // Rotating background text for "Building a House"
   bgTextTransform = computed(() => `translateX(-50%) translateY(-50%) rotate(${this.scrollService.scrollY() * 0.02}deg)`);
