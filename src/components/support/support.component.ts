@@ -125,7 +125,7 @@ export class SupportComponent implements OnInit {
     { period: '18期', names: ['松館 隆一 様'] },
     { period: '20期', names: ['澤井 優聖 様'] },
     { period: '21期', names: ['中村 渉 様'] },
-    { period: '25期', names: ['佐藤 泰正 様'] },
+    { period: '25期', names: ['小川 貴史 様', '佐藤 泰正 様'] },
     { period: '30期', names: ['讃岐 洋平 様'] },
     { period: '31期', names: ['日当 裕一 様'] },
     { period: '33期', names: ['上野 衆 様'] },
@@ -160,9 +160,17 @@ export class SupportComponent implements OnInit {
   readonly uniformDonors2025: UniformDonorItem[] = this.flattenDonors(this.donors2025, 2025);
   readonly uniformDonors2024: UniformDonorItem[] = this.flattenDonors(this.donors, 2024);
 
+  // 2025年支援者一覧へ移行済みのオンライン納入セッションID（2026年枠との重複表示防止）
+  private readonly migratedOnlineSessionIds = new Set<string>([
+    'cs_live_agL5ZmsPJTYg7Kc8XYxHN0JVXCzdgjAWfUbZpZ6yTG9cZEuSBU5hhmvufo', // 25期 小川 貴史 様（2025年へ移動）
+  ]);
+
   // オンライン納入者（自動反映分）をユニフォームアイテムに変換
   readonly onlineUniformDonors = computed<UniformDonorItem[]>(() =>
-    this.membershipService.allOnlineRecords().map((rec) => this.recordToUniformItem(rec))
+    this.membershipService
+      .allOnlineRecords()
+      .filter((rec) => !this.migratedOnlineSessionIds.has(rec.sessionId || rec.id))
+      .map((rec) => this.recordToUniformItem(rec))
   );
 
   // 年会費クレジットカード納入フォーム状態（投げ銭制度と同様のフロー）
