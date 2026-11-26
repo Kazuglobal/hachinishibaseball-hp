@@ -53,18 +53,15 @@
   @if (showSupportPopup()) {
     <div class="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in" 
          (click)="closeSupportPopup()"
-         (touchstart)="closeSupportPopup()"
-         (touchend)="$event.preventDefault()"
          style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; overflow-y: auto; -webkit-overflow-scrolling: touch;">
       <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-4 sm:p-6 md:p-8 relative animate-slide-in-right my-auto" 
            (click)="$event.stopPropagation()"
-           (touchstart)="$event.stopPropagation()"
-           (touchend)="$event.stopPropagation()"
            style="max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; z-index: 10000;">
         <!-- 閉じるボタン -->
         <button 
+          type="button"
           (click)="closeSupportPopup()"
-          (touchstart)="$event.stopPropagation()"
+          aria-label="閉じる"
           class="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors duration-200 p-2 -m-2 touch-manipulation">
           <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -90,13 +87,12 @@
               routerLink="/support" 
               [fragment]="'credit'"
               (click)="closeSupportPopup()"
-              (touchstart)="$event.stopPropagation()"
               class="flex-1 bg-[#002D62] text-white py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg hover:bg-blue-950 active:bg-blue-900 transition-colors duration-300 font-semibold text-center text-sm sm:text-base touch-manipulation">
               会費納入について
             </a>
             <button 
+              type="button"
               (click)="closeSupportPopup()"
-              (touchstart)="$event.stopPropagation()"
               class="flex-1 bg-gray-200 text-gray-700 py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg hover:bg-gray-300 active:bg-gray-400 transition-colors duration-300 font-semibold text-sm sm:text-base touch-manipulation">
               後で見る
             </button>

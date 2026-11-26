@@ -38,19 +38,24 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
     // ベース画像とGIFを並行してプリロード
     this.preloadImages();
     
-    // フォールバック: 一定時間後にポップアップを表示（GIFが読み込まれない場合の対策）
     if (this.isBrowser) {
-      this.fallbackTimeout = window.setTimeout(() => {
-        if (!this.showSupportPopup() && !this.showGif()) {
-          const popupClosed = typeof localStorage !== 'undefined' ? localStorage.getItem('support-popup-closed') : null;
-          const today = new Date().toDateString();
-          if (popupClosed !== today) {
-            this.showSupportPopup.set(true);
-            this.enableBodyScroll(false);
-            this.cdr.markForCheck();
-          }
+      // 過去のlocalStorageロックが残っている場合は解除してポップアップを確実に復元
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('support-popup-closed');
         }
-      }, 5000); // 5秒後にフォールバック
+      } catch (e) {
+        // ignore
+      }
+
+      // フォールバック: 一定時間後にポップアップを表示（GIFが読み込まれない・遅延した場合の対策）
+      this.fallbackTimeout = window.setTimeout(() => {
+        if (!this.showSupportPopup()) {
+          this.showGif.set(false);
+          this.cdr.markForCheck();
+          this.triggerSupportPopup();
+        }
+      }, 4000); // 4秒後にフォールバックで確実に表示
     }
   }
 
@@ -69,8 +74,10 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
       // プリロード完了後、少し遅延してからGIFを表示（スムーズなフェードイン）
       setTimeout(() => {
         this.gifLoaded.set(true);
-    this.showGif.set(true);
+        this.showGif.set(true);
         this.cdr.markForCheck();
+        // GIF表示開始に合わせてタイマーを起動
+        this.startGifTimer();
       }, 100); // 100ms遅延でスムーズな表示
     };
     gifImg.onerror = () => {
@@ -78,32 +85,28 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
       this.gifError.set(true);
       this.showGif.set(false);
       this.cdr.markForCheck();
+      this.onGifError('preload error');
     };
     gifImg.src = '/assets/images/hero-loading.gif';
   }
 
   ngAfterViewInit() {
-    // GIFが読み込まれたら、一定時間後に静止画に切り替え
-    // GIFアニメーションは通常ループするので、一定時間（例：3秒）後に切り替え
-    if (this.gifLoaded()) {
+    // GIFが既に読み込まれていてタイマー未起動なら開始
+    if (this.gifLoaded() && !this.gifTimeout) {
       this.startGifTimer();
     }
   }
 
   onGifLoaded() {
     // GIFが読み込まれたら表示を開始（HTMLのimg要素からの読み込み完了時）
-    if (!this.gifLoaded()) {
     this.gifLoaded.set(true);
-      // プリロードが完了していない場合は、ここで表示を開始
-      if (!this.showGif()) {
-        setTimeout(() => {
-    this.showGif.set(true);
-          this.cdr.markForCheck();
-        }, 50);
-      }
-    this.cdr.markForCheck();
-    // 一定時間後に静止画に切り替え（GIFアニメーションの長さに応じて調整）
-    this.startGifTimer();
+    if (!this.showGif()) {
+      this.showGif.set(true);
+      this.cdr.markForCheck();
+    }
+    // タイマーが未起動であれば確実に起動
+    if (!this.gifTimeout) {
+      this.startGifTimer();
     }
   }
 
@@ -113,32 +116,42 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
       clearTimeout(this.gifTimeout);
     }
     // GIFアニメーションを3秒間表示した後、静止画にスムーズに切り替え
-    // 必要に応じて時間を調整してください
     this.gifTimeout = window.setTimeout(() => {
       this.showGif.set(false);
       this.cdr.markForCheck();
       // アニメーション終了後、少し遅延してからポップアップを表示
       this.popupTimeout = window.setTimeout(() => {
-        if (!this.isBrowser) return;
-        // ローカルストレージをチェック（今日閉じた場合は再表示しない）
-        const popupClosed = typeof localStorage !== 'undefined' ? localStorage.getItem('support-popup-closed') : null;
-        const today = new Date().toDateString();
-        if (popupClosed !== today) {
-          this.showSupportPopup.set(true);
-          // bodyのスクロールを無効化（ポップアップ表示中）
-          this.enableBodyScroll(false);
-          this.cdr.markForCheck();
-        }
+        this.triggerSupportPopup();
       }, 500); // 500ms遅延でスムーズに表示
     }, 3000); // 3秒後に静止画に切り替え
   }
 
+  private triggerSupportPopup(): void {
+    if (!this.isBrowser) return;
+    // 同一タブセッション内で一度明示的に閉じたかのみを判定（リロードや別タブでは復元）
+    const isClosedInSession = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('support-popup-closed') === 'true';
+    if (!isClosedInSession && !this.showSupportPopup()) {
+      this.showSupportPopup.set(true);
+      // bodyのスクロールを無効化（ポップアップ表示中）
+      this.enableBodyScroll(false);
+      this.cdr.markForCheck();
+    }
+  }
+
   closeSupportPopup() {
     this.showSupportPopup.set(false);
-    // ローカルストレージに保存（今日は再表示しない）
-    if (this.isBrowser && typeof localStorage !== 'undefined') {
-      const today = new Date().toDateString();
-      localStorage.setItem('support-popup-closed', today);
+    // セッションストレージに保存（同一セッション内でのみ再表示を抑制）
+    if (this.isBrowser) {
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('support-popup-closed', 'true');
+        }
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('support-popup-closed');
+        }
+      } catch (e) {
+        // ignore
+      }
     }
     // bodyのスクロールを再有効化
     this.enableBodyScroll(true);
