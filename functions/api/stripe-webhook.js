@@ -107,11 +107,48 @@ export async function onRequestPost(context) {
             : new Date().toISOString()
         );
 
-        await fetch(gasUrl, {
+        const gasRes = await fetch(gasUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: formData.toString(),
         });
+
+        if (env.NOTIFIER_URL && env.NOTIFIER_API_KEY) {
+          const notifyPayload = {
+            sessionId: session.id,
+            name: meta.donorName || session.customer_details?.name || '匿名OB',
+            period: meta.period || 'OB',
+            year: String(meta.year || new Date().getFullYear()),
+            amount: session.amount_total || 5000,
+            message: meta.message || '',
+          };
+          await fetch(`${env.NOTIFIER_URL.replace(/\/$/, '')}/notify/payment`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Notify-Key': env.NOTIFIER_API_KEY,
+            },
+            body: JSON.stringify(notifyPayload),
+          }).catch(() => {});
+
+          if (!gasRes.ok) {
+            await fetch(`${env.NOTIFIER_URL.replace(/\/$/, '')}/webhook`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Notify-Key': env.NOTIFIER_API_KEY,
+              },
+              body: JSON.stringify({
+                source: 'Stripe Webhook',
+                event: 'gas.sync_failed',
+                severity: 'error',
+                title: 'Stripe決済後のGAS記録に失敗しました',
+                message: `GAS応答ステータス: HTTP ${gasRes.status}`,
+                details: notifyPayload,
+              }),
+            }).catch(() => {});
+          }
+        }
       }
     }
 

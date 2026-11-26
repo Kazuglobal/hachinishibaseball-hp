@@ -1,0 +1,28 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "hachinohenishi-notifier",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-24",
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "SITE_URL": "https://hachinohenishibaseball.com",
+    "FROM_EMAIL": "notify@hachinohenishibaseball.com",
+    "FROM_NAME": "八戸西高校野球部OB会 監視・通知システム",
+    "TO_EMAIL": "globalbunny77@gmail.com",
+    "SLOW_THRESHOLD_MS": "4000"
+  },
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "destination_address": "globalbunny77@gmail.com"
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "*/30 * * * *",
+      "0 23 * * *"
+    ]
+  }
+}

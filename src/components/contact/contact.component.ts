@@ -131,6 +131,13 @@ export class ContactComponent implements OnInit {
 
       this.isSubmitted.set(true);
       this.cdr.markForCheck();
+
+      // Cloudflare Email Sending による管理者宛の即時内部通知（失敗してもフォーム完了に影響させない）
+      fetch('/api/notify-contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).catch(() => {});
       
       // フォームをリセット
       this.contactForm = {
