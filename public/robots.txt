@@ -13,6 +13,7 @@ Allow: /alumni-activities
 Allow: /alumni-voice/
 Allow: /match-results
 Allow: /support
+Allow: /cheer
 Allow: /contact
 Allow: /game
 Allow: /privacy-policy

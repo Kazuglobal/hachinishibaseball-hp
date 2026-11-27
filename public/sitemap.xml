@@ -40,9 +40,17 @@
   <!-- Support -->
   <url>
     <loc>https://hachinohenishibaseball.com/support</loc>
-    <lastmod>2025-11-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-11-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Cheer Memorial Ball Donation -->
+  <url>
+    <loc>https://hachinohenishibaseball.com/cheer</loc>
+    <lastmod>2026-11-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
   </url>
 
   <!-- Contact -->

@@ -22,17 +22,55 @@ function sanitize(value, maxLen = 100) {
     .slice(0, maxLen);
 }
 
+const ALLOWED_HOSTS = new Set([
+  'hachinohenishibaseball.com',
+  'www.hachinohenishibaseball.com',
+  'localhost',
+  '127.0.0.1',
+]);
+
+function isAllowedHost(hostname) {
+  return (
+    ALLOWED_HOSTS.has(hostname) ||
+    hostname === 'hachinohenishibaseball.pages.dev' ||
+    hostname.endsWith('.hachinohenishibaseball.pages.dev')
+  );
+}
+
 function getBaseUrl(request) {
   const origin = request.headers.get('origin');
-  if (origin && /^https?:\/\/[^/\s]+$/.test(origin)) {
-    return origin;
+  if (origin) {
+    try {
+      const parsed = new URL(origin);
+      if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && isAllowedHost(parsed.hostname)) {
+        return `${parsed.protocol}//${parsed.host}`;
+      }
+    } catch {
+      // ignore invalid origin
+    }
   }
-  const url = new URL(request.url);
-  return `${url.protocol}//${url.host}`;
+  const reqUrl = new URL(request.url);
+  if (isAllowedHost(reqUrl.hostname)) {
+    return `${reqUrl.protocol}//${reqUrl.host}`;
+  }
+  return 'https://hachinohenishibaseball.com';
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+
+  const originHeader = request.headers.get('origin');
+  if (originHeader) {
+    try {
+      const originUrl = new URL(originHeader);
+      if (!isAllowedHost(originUrl.hostname)) {
+        return json({ error: '許可されていない送信元からのリクエストです。' }, 403);
+      }
+    } catch {
+      return json({ error: '不正な送信元ヘッダーです。' }, 403);
+    }
+  }
+
   const secretKey = env.STRIPE_SECRET_KEY;
 
   if (!secretKey) {

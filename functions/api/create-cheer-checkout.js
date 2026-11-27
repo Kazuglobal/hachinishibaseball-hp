@@ -17,13 +17,38 @@ function sanitize(value, maxLen = 100) {
     .slice(0, maxLen);
 }
 
+const ALLOWED_HOSTS = new Set([
+  'hachinohenishibaseball.com',
+  'www.hachinohenishibaseball.com',
+  'localhost',
+  '127.0.0.1',
+]);
+
+function isAllowedHost(hostname) {
+  return (
+    ALLOWED_HOSTS.has(hostname) ||
+    hostname === 'hachinohenishibaseball.pages.dev' ||
+    hostname.endsWith('.hachinohenishibaseball.pages.dev')
+  );
+}
+
 function getBaseUrl(request) {
   const origin = request.headers.get('origin');
-  if (origin && /^https?:\/\/[^/\s]+$/.test(origin)) {
-    return origin;
+  if (origin) {
+    try {
+      const parsed = new URL(origin);
+      if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && isAllowedHost(parsed.hostname)) {
+        return `${parsed.protocol}//${parsed.host}`;
+      }
+    } catch {
+      // ignore invalid origin
+    }
   }
-  const url = new URL(request.url);
-  return `${url.protocol}//${url.host}`;
+  const reqUrl = new URL(request.url);
+  if (isAllowedHost(reqUrl.hostname)) {
+    return `${reqUrl.protocol}//${reqUrl.host}`;
+  }
+  return 'https://hachinohenishibaseball.com';
 }
 
 function resolveStripeSecretKey(request, env) {
@@ -37,20 +62,37 @@ function resolveStripeSecretKey(request, env) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+
+  // CSRF / クロスオリジン不正リクエスト防御
+  const originHeader = request.headers.get('origin');
+  if (originHeader) {
+    try {
+      const originUrl = new URL(originHeader);
+      if (!isAllowedHost(originUrl.hostname)) {
+        return json({ error: '許可されていない送信元からのリクエストです。' }, 403);
+      }
+    } catch {
+      return json({ error: '不正な送信元ヘッダーです。' }, 403);
+    }
+  }
+
   const secretKey = resolveStripeSecretKey(request, env);
 
   if (!secretKey) {
     return json(
       {
-        error:
-          '決済APIが未設定です（Cloudflare Pages の環境変数 STRIPE_SECRET_KEY が設定されていません）。',
+        error: '現在オンライン決済の準備中です。しばらくしてからお試しください。',
       },
       503
     );
   }
 
   try {
-    const body = await request.json().catch(() => ({}));
+    const rawText = await request.text();
+    if (rawText.length > 4096) {
+      return json({ error: 'リクエストサイズが大きすぎます。' }, 413);
+    }
+    const body = rawText ? JSON.parse(rawText) : {};
     const donorName = sanitize(body.name, 40);
     const period = sanitize(body.period, 20);
     const message = sanitize(body.message, 200);
@@ -103,20 +145,14 @@ export async function onRequestPost(context) {
 
     const session = await stripeRes.json();
     if (!stripeRes.ok) {
-      return json(
-        { error: session?.error?.message || '決済セッションの作成に失敗しました。' },
-        502
-      );
+      return json({ error: '決済セッションの作成に失敗しました。しばらくしてからお試しください。' }, 502);
     }
 
     return json({
       sessionId: session.id,
       url: session.url,
     });
-  } catch (err) {
-    return json(
-      { error: err instanceof Error ? err.message : 'サーバーエラーが発生しました。' },
-      500
-    );
+  } catch {
+    return json({ error: 'サーバーエラーが発生しました。しばらくしてからお試しください。' }, 500);
   }
 }

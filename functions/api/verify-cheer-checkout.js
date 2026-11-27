@@ -73,10 +73,7 @@ export async function onRequestGet(context) {
 
     const session = await stripeRes.json();
     if (!stripeRes.ok) {
-      return json(
-        { error: session?.error?.message || '決済情報の取得に失敗しました。' },
-        502
-      );
+      return json({ error: '決済情報の確認に失敗しました。' }, 502);
     }
 
     if (session.payment_status !== 'paid') {
