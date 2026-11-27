@@ -73,12 +73,17 @@
           @if (!videoMissing()) {
             <video
               [src]="ballConfig.videoPath"
+              poster="/assets/images/hachinishi-ball-render.png"
+              preload="auto"
+              (loadedmetadata)="ensureMutedAutoplay($event)"
+              (canplay)="ensureMutedAutoplay($event)"
+              (click)="ensureMutedAutoplay($event)"
               (error)="onVideoError()"
               autoplay
-              muted
+              [muted]="true"
               loop
               playsinline
-              class="w-full max-w-[320px] aspect-video rounded object-cover bg-black border border-white/15">
+              class="w-full max-w-[320px] aspect-video rounded object-cover bg-black border border-white/15 cursor-pointer">
             </video>
             <p class="text-[11px] text-white/70 mt-3 tracking-wide">青森県立八戸西高等学校 記念ボール（3Dモデル）</p>
           } @else {
@@ -419,6 +424,9 @@
         @if (activeCelebrationVideo() === 'practice' && !practiceVideoMissing()) {
           <video
             [src]="practiceVideoPath"
+            preload="auto"
+            (loadedmetadata)="isVideoMuted() && ensureMutedAutoplay($event)"
+            (canplay)="isVideoMuted() && ensureMutedAutoplay($event)"
             (error)="onPracticeVideoError()"
             autoplay
             loop
@@ -430,6 +438,10 @@
         } @else if (!videoMissing()) {
           <video
             [src]="ballConfig.videoPath"
+            poster="/assets/images/hachinishi-ball-render.png"
+            preload="auto"
+            (loadedmetadata)="isVideoMuted() && ensureMutedAutoplay($event)"
+            (canplay)="isVideoMuted() && ensureMutedAutoplay($event)"
             (error)="onVideoError()"
             autoplay
             loop

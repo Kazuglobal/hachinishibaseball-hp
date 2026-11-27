@@ -146,6 +146,17 @@ export class CheerTippingComponent implements OnInit {
     this.videoMissing.set(true);
   }
 
+  ensureMutedAutoplay(event: Event): void {
+    const video = event.target as HTMLVideoElement | null;
+    if (!video) return;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    if (video.paused) {
+      video.play().catch(() => {});
+    }
+  }
+
   onPracticeVideoError(): void {
     this.practiceVideoMissing.set(true);
   }
