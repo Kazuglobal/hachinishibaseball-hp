@@ -21,6 +21,10 @@
               <a routerLink="/game" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">
                 {{ item }}
               </a>
+            } @else if (item === '記念ボール寄付') {
+              <a routerLink="/cheer" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300 font-semibold">
+                {{ item }}
+              </a>
             } @else if (item === 'ご支援のお願い') {
               <a [routerLink]="['/support']" [fragment]="'credit'" class="pb-1 border-b-2 border-transparent hover:border-white transition-colors duration-300">{{ item }}</a>
             } @else if (item === 'お問い合わせ') {

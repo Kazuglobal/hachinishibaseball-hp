@@ -1,0 +1,78 @@
+/* 記念ボールが勢いよく流れるアニメーション */
+@keyframes pitchBallStream {
+  0% {
+    transform: translate(-140px, 14px) scale(0.45) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(100vw + 140px), -28px) scale(1.1) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.flying-ball-stream {
+  position: absolute;
+  left: 0;
+  animation: pitchBallStream 2.1s cubic-bezier(0.22, 0.85, 0.36, 1) infinite;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* ヒーロー記念ボール登場アニメーション */
+@keyframes heroPopIn {
+  0% {
+    transform: scale(0.35) rotate(-18deg);
+    opacity: 0;
+  }
+  65% {
+    transform: scale(1.06) rotate(3deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-hero-pop {
+  animation: heroPopIn 0.8s cubic-bezier(0.2, 0.9, 0.25, 1.15) forwards;
+}
+
+/* 3Dターンテーブル風のゆっくりとした浮遊＆光沢アニメーション */
+@keyframes ballFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}
+
+.animate-ball-float {
+  animation: ballFloat 3.6s ease-in-out infinite;
+}
+
+/* 新規追加アイテムのハイライト */
+@keyframes newItemGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(179, 27, 27, 0.45), 0 10px 25px -5px rgba(0, 45, 98, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(179, 27, 27, 0.12), 0 14px 30px -5px rgba(0, 45, 98, 0.25);
+  }
+}
+
+.new-donation-highlight {
+  animation: newItemGlow 2.2s ease-in-out infinite;
+}
+
+/* 記念ボールの立体シャドウ */
+.baseball-drop-shadow {
+  filter: drop-shadow(0 12px 20px rgba(0, 45, 98, 0.32));
+}

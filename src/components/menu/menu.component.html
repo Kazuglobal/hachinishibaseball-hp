@@ -43,6 +43,10 @@
                 <a routerLink="/game" (click)="menuService.close()" class="text-xl md:text-2xl font-serif-jp pb-2 border-b-2 border-transparent hover:border-white transition-colors duration-300 block w-full">
                   {{ item }}
                 </a>
+              } @else if (item === '記念ボール寄付') {
+                <a routerLink="/cheer" (click)="menuService.close()" class="text-xl md:text-2xl font-serif-jp pb-2 border-b-2 border-transparent hover:border-white transition-colors duration-300 block w-full">
+                  {{ item }}
+                </a>
               } @else if (item === 'ご支援のお願い') {
                 <a [routerLink]="['/support']" [fragment]="'credit'" (click)="menuService.close()" class="text-xl md:text-2xl font-serif-jp pb-2 border-b-2 border-transparent hover:border-white transition-colors duration-300 block w-full">
                   {{ item }}

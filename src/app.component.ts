@@ -35,6 +35,7 @@ export class AppComponent implements OnInit {
     '試合結果',
     'OB活躍情報',
     'ゲーム',
+    '記念ボール寄付',
     'ご支援のお願い',
     'お問い合わせ'
   ];

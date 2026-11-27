@@ -149,6 +149,35 @@ export async function onRequestPost(context) {
             }).catch(() => {});
           }
         }
+      } else if (
+        session &&
+        session.payment_status === 'paid' &&
+        (session.metadata?.paymentType === 'cheer_tip' ||
+          session.metadata?.category === 'batting')
+      ) {
+        const meta = session.metadata;
+        const gasUrl = env.GAS_WEB_APP_URL || DEFAULT_GAS_WEB_APP_URL;
+        const formData = new URLSearchParams();
+        formData.append('formType', 'cheer_tip');
+        formData.append('sessionId', session.id);
+        formData.append('name', meta.donorName || session.customer_details?.name || '匿名OB');
+        formData.append('period', meta.period || 'OB');
+        formData.append('category', 'batting');
+        formData.append('amount', String(session.amount_total || 500));
+        formData.append('quantity', String(meta.quantity || 1));
+        formData.append('message', meta.message || '');
+        formData.append(
+          'timestamp',
+          session.created
+            ? new Date(session.created * 1000).toISOString()
+            : new Date().toISOString()
+        );
+
+        await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData.toString(),
+        }).catch(() => {});
       }
     }
 

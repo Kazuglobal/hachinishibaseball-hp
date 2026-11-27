@@ -1,0 +1,537 @@
+<section class="pt-0 pb-20 container mx-auto px-4 sm:px-8">
+  <div class="mt-12 md:mt-16">
+    <h1 class="sr-only">八戸西高等学校野球部OB会 現役応援 記念ボール寄付</h1>
+    <app-section-title mainTitle="現役応援 記念ボール寄付" subTitle="1球500円からの練習球支援"></app-section-title>
+
+    <!-- 決済確認中オーバーレイ -->
+    @if (isVerifying()) {
+      <div class="fixed inset-0 z-[90] bg-black/65 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg p-8 max-w-sm w-full text-center border border-gray-200 shadow-lg">
+          <div class="w-10 h-10 mx-auto mb-4 border-2 border-[#002D62] border-t-transparent rounded-full animate-spin"></div>
+          <p class="text-base font-bold text-[#002D62]">ご寄付を確認しています</p>
+          <p class="text-xs text-gray-500 mt-2">確認後、記念ボールと応援映像を表示します</p>
+        </div>
+      </div>
+    }
+
+    <!-- 年会費（5,000円）優先のご案内 -->
+    <div class="mt-8 max-w-5xl mx-auto bg-white border-l-4 border-[#002D62] border-y border-r border-gray-200 rounded-r-lg p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <p class="text-xs font-bold tracking-wider text-[#002D62] mb-1">まずお願いしているご支援（年会費 5,000円）</p>
+        <p class="text-sm text-gray-700 leading-relaxed">
+          OB会の運営および現役支援の基盤となる<strong>年会費（年間 5,000円）</strong>のご納入を第一の目的としてお願いしております。
+          年会費がまだの方は先に会費納入ページよりお手続きください。会費納入済みの方や少額から応援したい方は、下の記念ボール寄付（1球500円〜）をご利用いただけます。
+        </p>
+      </div>
+      <a
+        [routerLink]="['/support']"
+        fragment="credit"
+        class="shrink-0 inline-flex items-center justify-center px-5 py-3 rounded bg-[#002D62] hover:bg-[#001f44] text-white font-bold text-sm transition-colors">
+        年会費（5,000円）の納入へ
+      </a>
+    </div>
+
+    <!-- ヒーローセクション（フラット＆エディトリアル構成） -->
+    <div class="mt-6 max-w-5xl mx-auto bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+      <div class="grid grid-cols-1 lg:grid-cols-12">
+        <!-- 左：説明・集計 -->
+        <div class="lg:col-span-7 p-6 sm:p-8 md:p-10 flex flex-col justify-between">
+          <div>
+            <p class="text-xs font-semibold tracking-widest text-[#B31B1B] uppercase mb-2">
+              MEMORIAL BALL SUPPORT — 1球 500円
+            </p>
+            <h2 class="font-serif-jp text-2xl sm:text-3xl font-bold text-[#002D62] leading-snug mb-4">
+              練習球の寄付で、<br />八戸西高等学校 記念ボールを進呈
+            </h2>
+            <p class="text-sm sm:text-[15px] text-gray-700 leading-8">
+              現役部員の打撃練習・硬式球を1球500円からご支援いただけます。
+              ご寄付いただいた方には、部員の応援映像とともに、お名前・回期・シリアル番号入りの「青森県立八戸西高等学校 記念ボール」を進呈（画像保存可）し、下部の記念ボール一覧へ掲載いたします。
+            </p>
+          </div>
+
+          <!-- 集計（シンプルな区切り線レイアウト） -->
+          <div class="mt-8 pt-6 border-t border-gray-200 grid grid-cols-2 gap-6 max-w-sm">
+            <div>
+              <p class="text-xs text-gray-500 mb-1">応援球数</p>
+              <p class="flex items-baseline gap-1.5">
+                <span class="font-oswald text-3xl font-bold text-[#002D62]">{{ cheerService.stats().totalBalls }}</span>
+                <span class="text-xs text-gray-600">球</span>
+              </p>
+            </div>
+            <div class="border-l border-gray-200 pl-6">
+              <p class="text-xs text-gray-500 mb-1">ご支援者数</p>
+              <p class="flex items-baseline gap-1.5">
+                <span class="font-oswald text-3xl font-bold text-[#002D62]">{{ cheerService.stats().totalSupporters }}</span>
+                <span class="text-xs text-gray-600">名</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右：記念ボール3D映像 / 表裏プレビュー -->
+        <div class="lg:col-span-5 bg-[#002D62] p-6 sm:p-8 flex flex-col items-center justify-center min-h-[280px]">
+          @if (!videoMissing()) {
+            <video
+              [src]="ballConfig.videoPath"
+              (error)="onVideoError()"
+              autoplay
+              muted
+              loop
+              playsinline
+              class="w-full max-w-[320px] aspect-video rounded object-cover bg-black border border-white/15">
+            </video>
+            <p class="text-[11px] text-white/70 mt-3 tracking-wide">青森県立八戸西高等学校 記念ボール（3Dモデル）</p>
+          } @else {
+            <div class="flex flex-col items-center">
+              <img
+                [src]="ballSide() === 'logo' ? '/assets/images/hachinishi-ball-logo.png' : '/assets/images/hachinishi-ball-team.png'"
+                alt="青森県立八戸西高等学校 記念ボール"
+                class="w-48 h-48 sm:w-52 sm:h-52 object-contain cursor-pointer"
+                (click)="toggleBallSide()" />
+              <button
+                type="button"
+                (click)="toggleBallSide()"
+                class="mt-4 px-4 py-1.5 rounded border border-white/40 text-xs font-medium text-white hover:bg-white/10 transition-colors">
+                {{ ballSide() === 'logo' ? '裏面（円陣写真）を見る' : '表面（校名ロゴ）を見る' }}
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- 通知バナー -->
+    @if (statusNotice()) {
+      <div class="mt-6 max-w-5xl mx-auto bg-amber-50 border border-amber-300 text-amber-900 rounded-lg px-5 py-4 text-sm flex items-center justify-between gap-3">
+        <span>{{ statusNotice() }}</span>
+        <button type="button" (click)="statusNotice.set(null)" class="text-xs font-semibold underline shrink-0">閉じる</button>
+      </div>
+    }
+
+    <!-- 入力フォーム & 記念ボール仕上がりプレビュー -->
+    <div class="mt-10 max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <!-- 入力フォーム -->
+      <div class="lg:col-span-7 bg-white rounded-lg p-6 sm:p-8 border border-gray-200 shadow-sm">
+        <h3 class="font-serif-jp text-lg sm:text-xl font-bold text-[#002D62] pb-3 mb-6 border-b border-gray-200">
+          ご支援内容の入力
+        </h3>
+
+        @if (formError()) {
+          <div class="mb-5 bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded text-sm leading-relaxed">
+            {{ formError() }}
+          </div>
+        }
+
+        <div class="space-y-5">
+          <!-- お名前 -->
+          <div>
+            <label for="cheer-name" class="block text-sm font-semibold text-gray-800 mb-1.5">
+              記念ボールに記載するお名前 <span class="text-[#B31B1B]">*</span>
+            </label>
+            <input
+              id="cheer-name"
+              type="text"
+              maxlength="24"
+              [ngModel]="donorName()"
+              (ngModelChange)="donorName.set($event)"
+              placeholder="例：山田 太郎（ニックネーム可）"
+              class="w-full px-3.5 py-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-[#002D62] focus:border-[#002D62] outline-none text-sm sm:text-base bg-white" />
+          </div>
+
+          <!-- 回期 -->
+          <div>
+            <label for="cheer-period" class="block text-sm font-semibold text-gray-800 mb-1.5">
+              回期・立場 <span class="text-[#B31B1B]">*</span>
+            </label>
+            <input
+              id="cheer-period"
+              type="text"
+              maxlength="16"
+              [ngModel]="donorPeriod()"
+              (ngModelChange)="donorPeriod.set($event)"
+              placeholder="例：32期 / OB保護者 / 一般支援者"
+              class="w-full px-3.5 py-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-[#002D62] focus:border-[#002D62] outline-none text-sm sm:text-base bg-white" />
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              @for (preset of periodPresets; track preset) {
+                <button
+                  type="button"
+                  (click)="applyPeriodPreset(preset)"
+                  class="px-2.5 py-1 rounded text-xs border transition-colors"
+                  [class.bg-[#002D62]]="donorPeriod() === preset"
+                  [class.text-white]="donorPeriod() === preset"
+                  [class.border-[#002D62]]="donorPeriod() === preset"
+                  [class.bg-white]="donorPeriod() !== preset"
+                  [class.text-gray-700]="donorPeriod() !== preset"
+                  [class.border-gray-300]="donorPeriod() !== preset">
+                  {{ preset }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- 応援球数選択（500円単位・最大3球） -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-800 mb-1.5">
+              応援する球数（1球 500円）
+            </label>
+            <div class="grid grid-cols-3 gap-2.5">
+              @for (qty of quantityOptions; track qty) {
+                <button
+                  type="button"
+                  (click)="quantity.set(qty)"
+                  class="py-2.5 px-1 rounded border text-center transition-colors"
+                  [class.border-[#002D62]]="quantity() === qty"
+                  [class.bg-[#002D62]]="quantity() === qty"
+                  [class.text-white]="quantity() === qty"
+                  [class.border-gray-300]="quantity() !== qty"
+                  [class.bg-white]="quantity() !== qty"
+                  [class.text-gray-800]="quantity() !== qty">
+                  <div class="text-xs font-bold">{{ qty }}球</div>
+                  <div class="text-[11px] opacity-85">¥{{ (qty * 500).toLocaleString() }}</div>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- 応援メッセージ（任意） -->
+          <div>
+            <label for="cheer-message" class="block text-sm font-semibold text-gray-800 mb-1.5">
+              現役選手への応援メッセージ（任意）
+            </label>
+            <textarea
+              id="cheer-message"
+              rows="2"
+              maxlength="120"
+              [ngModel]="donorMessage()"
+              (ngModelChange)="donorMessage.set($event)"
+              placeholder="例：夏に向けて全力で振り抜け。応援しています。"
+              class="w-full px-3.5 py-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-[#002D62] focus:border-[#002D62] outline-none text-sm resize-none bg-white"></textarea>
+          </div>
+
+          <!-- 決済・デモボタン -->
+          <div class="pt-2 space-y-3">
+            <button
+              type="button"
+              (click)="startCheckout()"
+              [disabled]="isProcessing()"
+              class="w-full py-3.5 px-6 rounded bg-[#002D62] hover:bg-[#001f44] text-white font-bold text-base transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+              @if (isProcessing()) {
+                <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span>決済画面へ移動中...</span>
+              } @else {
+                <span>¥{{ totalAmount().toLocaleString() }} 応援して記念ボールを受け取る</span>
+              }
+            </button>
+
+            @if (!isProduction) {
+              <button
+                type="button"
+                (click)="triggerDemoDonation()"
+                class="w-full py-3 px-6 rounded border border-[#002D62] text-[#002D62] hover:bg-[#002D62]/5 font-semibold text-sm transition-colors">
+                演出と記念ボール保存をデモ体験する（課金なし）
+              </button>
+            }
+
+            <p class="text-center pt-1 text-xs text-gray-500">
+              VISA / Mastercard / JCB / AMEX 対応
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 仕上がりプレビュー（フラット＆上品なフレーム） -->
+      <div class="lg:col-span-5 bg-white rounded-lg p-6 sm:p-8 border border-gray-200 shadow-sm">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-gray-200">
+          <span class="text-xs font-bold tracking-widest text-gray-500 uppercase">PREVIEW</span>
+          <span class="text-xs font-semibold text-[#002D62]">進呈される記念ボール</span>
+        </div>
+
+        <p class="text-xs sm:text-sm text-gray-600 leading-relaxed mb-5">
+          ご寄付完了後、お名前と回期を記載した記念ボール画像（表裏両面入り）を保存いただけます。
+        </p>
+
+        <div class="rounded bg-[#002D62] p-6 flex flex-col items-center text-white">
+          <div class="flex items-center justify-center -space-x-5">
+            <img
+              src="/assets/images/hachinishi-ball-logo.png"
+              alt="八戸西記念ボール（校名ロゴ面）"
+              class="w-32 h-32 sm:w-36 sm:h-36 object-contain z-10" />
+            <img
+              src="/assets/images/hachinishi-ball-team.png"
+              alt="八戸西記念ボール（円陣写真面）"
+              class="w-24 h-24 sm:w-28 sm:h-28 object-contain" />
+          </div>
+
+          <div class="mt-5 w-full border-t border-white/20 pt-4 text-center">
+            <p class="text-xs tracking-wider text-white/75">{{ previewPeriod() }}</p>
+            <p class="font-serif-jp text-lg font-bold text-white mt-0.5">{{ previewName() }} 様</p>
+            <p class="text-xs text-white/80 mt-1">
+              応援球数：{{ quantity() }}球（¥{{ totalAmount().toLocaleString() }}）
+            </p>
+          </div>
+        </div>
+
+        <ul class="mt-4 text-xs text-gray-600 space-y-1.5 leading-relaxed">
+          <li>・表裏両面（校名ロゴ面・円陣写真面）入りの記念ボール画像を保存できます。</li>
+          <li>・ご寄付後、下部の記念ボール一覧にも自動で掲載されます。</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- みんなの記念ボール一覧 -->
+    <div id="cheer-wall" class="mt-16 max-w-6xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 mb-6 border-b border-gray-300">
+        <div>
+          <p class="text-xs font-semibold tracking-widest text-[#B31B1B] uppercase mb-1">MEMORIAL BALL LIST</p>
+          <h3 class="font-serif-jp text-2xl font-bold text-[#002D62]">みんなの記念ボール一覧</h3>
+          <p class="text-xs sm:text-sm text-gray-600 mt-1">
+            ご寄付いただいた方のお名前・回期入り記念ボールを掲載しています。各カードから応援映像の再生・画像保存が可能です。
+          </p>
+        </div>
+
+        @if (cheerService.hasUserDemoDonations()) {
+          <button
+            type="button"
+            (click)="clearDemoItems()"
+            class="self-start md:self-auto text-xs font-medium text-gray-500 hover:text-[#B31B1B] underline">
+            デモ履歴をリセット
+          </button>
+        }
+      </div>
+
+      <!-- ボールグリッド -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        @for (item of donations(); track item.id) {
+          <div
+            (click)="openDetail(item)"
+            class="bg-white rounded-lg p-5 border border-gray-200 hover:border-[#002D62] shadow-sm transition-colors cursor-pointer flex flex-col justify-between"
+            [class.border-[#B31B1B]]="newlyAddedId() === item.id"
+            [class.border-2]="newlyAddedId() === item.id">
+
+            <!-- ヘッダー -->
+            <div class="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-gray-100 text-[11px]">
+              <span class="font-oswald tracking-wider font-semibold text-[#002D62]">
+                {{ getSerialNumber(item) }}
+              </span>
+              <div class="flex items-center gap-2">
+                @if (newlyAddedId() === item.id) {
+                  <span class="px-1.5 py-0.5 bg-[#B31B1B] text-white text-[10px] font-bold">NEW</span>
+                }
+                @if (item.isDemo) {
+                  <span class="text-gray-400">サンプル</span>
+                }
+                <span class="text-gray-400">{{ formatDate(item.createdAt) }}</span>
+              </div>
+            </div>
+
+            <!-- 記念ボール＋氏名 -->
+            <div class="py-2 flex flex-col items-center justify-center">
+              <div class="flex items-center justify-center">
+                <img
+                  src="/assets/images/hachinishi-ball-logo.png"
+                  alt="青森県立八戸西高等学校 記念ボール"
+                  class="w-28 h-28 object-contain" />
+                <img
+                  src="/assets/images/hachinishi-ball-team.png"
+                  alt="八戸西野球部 円陣面"
+                  class="w-16 h-16 object-contain -ml-4 mt-10" />
+              </div>
+
+              <div class="mt-3 text-center">
+                <p class="text-xs font-semibold text-[#002D62]">{{ item.period }}</p>
+                <p class="font-serif-jp text-base font-bold text-gray-900 mt-0.5">{{ item.name }} 様</p>
+                <p class="text-xs text-gray-600 mt-0.5">{{ item.quantity }}球（¥{{ item.amount.toLocaleString() }}）</p>
+              </div>
+            </div>
+
+            <!-- メッセージ＆操作 -->
+            <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+              <p class="text-xs text-gray-600 line-clamp-1 flex-1">
+                {{ item.message || '現役選手を応援しています。' }}
+              </p>
+              <button
+                type="button"
+                (click)="$event.stopPropagation(); openCelebration(item)"
+                class="shrink-0 px-3 py-1 rounded border border-[#002D62] text-[#002D62] hover:bg-[#002D62] hover:text-white text-xs font-semibold transition-colors">
+                映像・保存
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- 戻る・年会費ページへのリンク -->
+      <div class="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <app-back-button></app-back-button>
+        <a
+          [routerLink]="['/support']"
+          class="text-sm font-semibold text-[#002D62] hover:text-[#B31B1B] underline">
+          年会費（5,000円）・銀行振込のご案内はこちら
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- 入金完了：現役部員ムービーメイン＆記念ボール進呈モーダル   -->
+<!-- ========================================================= -->
+@if (celebrationDonation(); as active) {
+  <div class="fixed inset-0 z-[100] bg-black/85 flex items-center justify-center p-2 sm:p-5 animate-fade-in">
+    <div class="relative w-full max-w-3xl max-h-[94vh] rounded-lg overflow-hidden bg-[#111111] border border-white/15 shadow-2xl flex flex-col">
+
+      <!-- 上部ヘッダーバー -->
+      <div class="px-4 py-3 bg-[#002D62] flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-3 flex-wrap">
+          <span class="text-white text-xs sm:text-sm font-bold tracking-wide">
+            ご寄付ありがとうございました
+          </span>
+          @if (!practiceVideoMissing() && !videoMissing()) {
+            <button
+              type="button"
+              (click)="activeCelebrationVideo.set(activeCelebrationVideo() === 'practice' ? 'ball3d' : 'practice')"
+              class="px-2.5 py-1 rounded border border-white/35 text-white text-xs hover:bg-white/10 transition-colors">
+              {{ activeCelebrationVideo() === 'practice' ? '3D記念ボール映像を見る' : '部員の映像に戻る' }}
+            </button>
+          }
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          @if (!practiceVideoMissing() || !videoMissing()) {
+            <button
+              type="button"
+              (click)="toggleMute()"
+              class="px-2.5 py-1 rounded border border-white/35 text-white text-xs hover:bg-white/10 transition-colors">
+              {{ isVideoMuted() ? '音声をオンにする' : 'ミュート' }}
+            </button>
+          }
+          <button
+            type="button"
+            (click)="closeCelebration(false)"
+            aria-label="閉じる"
+            class="px-2.5 py-1 rounded text-white/80 hover:text-white text-sm font-bold">
+            閉じる
+          </button>
+        </div>
+      </div>
+
+      <!-- メイン映像エリア（部員の映像を遮らずクリアに大きく表示） -->
+      <div class="relative flex-1 min-h-[340px] h-[56vh] sm:h-[60vh] bg-black flex items-center justify-center overflow-hidden">
+        @if (activeCelebrationVideo() === 'practice' && !practiceVideoMissing()) {
+          <video
+            [src]="practiceVideoPath"
+            (error)="onPracticeVideoError()"
+            autoplay
+            loop
+            playsinline
+            controls
+            [muted]="isVideoMuted()"
+            class="w-full h-full object-contain">
+          </video>
+        } @else if (!videoMissing()) {
+          <video
+            [src]="ballConfig.videoPath"
+            (error)="onVideoError()"
+            autoplay
+            loop
+            playsinline
+            controls
+            [muted]="isVideoMuted()"
+            class="w-full h-full object-contain">
+          </video>
+        } @else {
+          <div class="w-full h-full bg-[#002D62] flex items-center justify-center">
+            <img
+              src="/assets/images/hachinishi-ball-logo.png"
+              alt="青森県立八戸西高等学校 記念ボール"
+              class="w-48 h-48 object-contain" />
+          </div>
+        }
+      </div>
+
+      <!-- 下部：記念ボール進呈＆保存バー -->
+      <div class="px-4 py-4 sm:px-6 bg-white border-t border-gray-200 shrink-0">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5 min-w-0">
+            <div class="flex items-center -space-x-4 shrink-0">
+              <img
+                src="/assets/images/hachinishi-ball-logo.png"
+                alt="記念ボール表面"
+                class="w-14 h-14 object-contain z-10" />
+              <img
+                src="/assets/images/hachinishi-ball-team.png"
+                alt="記念ボール裏面"
+                class="w-12 h-12 object-contain" />
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-semibold text-gray-500">
+                No. {{ getSerialNumber(active) }} ／ {{ active.quantity }}球（¥{{ active.amount.toLocaleString() }}）
+              </p>
+              <h4 class="font-serif-jp text-sm sm:text-base font-bold text-[#002D62] mt-0.5 truncate">
+                {{ active.period }} {{ active.name }} 様 記念ボール
+              </h4>
+              @if (active.message) {
+                <p class="text-xs text-gray-600 truncate mt-0.5">「{{ active.message }}」</p>
+              }
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              (click)="downloadMemorialBall(active)"
+              [disabled]="isDownloading()"
+              class="flex-1 sm:flex-none px-4 py-2.5 rounded bg-[#002D62] hover:bg-[#001f44] text-white font-bold text-xs sm:text-sm transition-colors whitespace-nowrap">
+              {{ isDownloading() ? '生成中...' : '記念ボール画像を保存' }}
+            </button>
+            <button
+              type="button"
+              (click)="closeCelebration(true)"
+              class="px-3.5 py-2.5 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold text-xs sm:text-sm transition-colors whitespace-nowrap">
+              一覧を見る
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- 詳細モーダル -->
+@if (selectedDetail(); as detail) {
+  <div (click)="closeDetail()" class="fixed inset-0 z-[95] bg-black/60 flex items-center justify-center p-4">
+    <div (click)="$event.stopPropagation()" class="bg-white rounded-lg max-w-md w-full p-6 border border-gray-200 shadow-xl">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-gray-200">
+        <span class="font-oswald text-xs font-bold tracking-wider text-[#002D62]">
+          {{ getSerialNumber(detail) }}
+        </span>
+        <button type="button" (click)="closeDetail()" class="text-gray-500 hover:text-gray-800 text-xs font-semibold">閉じる</button>
+      </div>
+      <div class="flex items-center justify-center -space-x-4 my-3">
+        <img src="/assets/images/hachinishi-ball-logo.png" alt="記念ボール表面" class="w-28 h-28 object-contain z-10" />
+        <img src="/assets/images/hachinishi-ball-team.png" alt="記念ボール裏面" class="w-24 h-24 object-contain" />
+      </div>
+      <h4 class="font-serif-jp text-xl font-bold text-[#002D62] text-center">{{ detail.period }} {{ detail.name }} 様</h4>
+      <p class="text-xs text-gray-500 mt-1 text-center">
+        ご寄付：{{ detail.quantity }}球（¥{{ detail.amount.toLocaleString() }}） ／ {{ formatDate(detail.createdAt) }}
+      </p>
+      <div class="mt-4 p-4 rounded bg-[#F8F8F7] border border-gray-200 text-sm text-gray-700 leading-relaxed">
+        {{ detail.message || '現役選手への応援ありがとうございます。' }}
+      </div>
+      <div class="mt-5 flex flex-wrap justify-end gap-2">
+        <button
+          type="button"
+          (click)="downloadMemorialBall(detail)"
+          class="px-4 py-2 rounded bg-[#002D62] hover:bg-[#001f44] text-white text-xs sm:text-sm font-bold">
+          記念ボール画像を保存
+        </button>
+        <button
+          type="button"
+          (click)="closeDetail(); openCelebration(detail)"
+          class="px-4 py-2 rounded border border-[#002D62] text-[#002D62] hover:bg-[#002D62]/5 text-xs sm:text-sm font-semibold">
+          応援映像を見る
+        </button>
+      </div>
+    </div>
+  </div>
+}

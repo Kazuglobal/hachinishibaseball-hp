@@ -363,6 +363,22 @@
             </div>
           </div>
         </div>
+
+        <!-- 少額応援（1球500円〜3球まで）の補助案内 -->
+        <div class="mt-10 bg-white rounded-lg p-5 sm:p-6 border border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <p class="text-xs font-semibold tracking-wider text-[#002D62] mb-1">年会費納入済みの方・少額からの応援</p>
+            <h3 class="font-serif-jp text-base sm:text-lg font-bold text-gray-900">現役応援 記念ボール寄付（1球 500円・最大3球）</h3>
+            <p class="text-xs sm:text-sm text-gray-600 mt-1">
+              年会費（5,000円）に加えて、あるいは少額から気軽に現役選手の練習球を応援したい方はこちらをご利用ください。
+            </p>
+          </div>
+          <a
+            [routerLink]="['/cheer']"
+            class="shrink-0 inline-flex items-center justify-center px-5 py-2.5 rounded border border-[#002D62] text-[#002D62] hover:bg-[#002D62] hover:text-white font-semibold text-sm transition-colors">
+            記念ボール寄付ページへ
+          </a>
+        </div>
       </div>
 
       <div class="mt-10">

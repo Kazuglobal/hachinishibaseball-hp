@@ -25,6 +25,7 @@ const STATIC_ROUTES = [
   '/about',
   '/match-results',
   '/support',
+  '/cheer',
   '/contact',
   '/activities',
   '/alumni-activities',
