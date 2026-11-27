@@ -50,6 +50,19 @@ var FORMS = {
               ['金額', (d.amount || '5000') + '円'], ['メッセージ', d.message || 'なし'],
               ['StripeセッションID', d.sessionId || '未設定']];
     }
+  },
+  cheer_tip: {
+    sheetName: '現役応援投げ銭',
+    header: ['送信日時', 'セッションID', 'お名前', '回期', '種目', '金額', '口数', '応援メッセージ'],
+    required: ['name', 'period'],
+    skipEmailValidation: true,
+    row: function (d) { return [d.sessionId, d.name, d.period, d.category || 'batting', d.amount || '500', d.quantity || '1', d.message]; },
+    mailSubject: function (d) { return '【記念ボール寄付】' + d.period + ' ' + d.name + '様よりご寄付がありました（' + (d.amount || 500) + '円）'; },
+    mailBody: function (d) {
+      return [['お名前', d.name], ['回期', d.period], ['応援内容', '八戸西記念ボール寄付'],
+              ['金額', (d.amount || '500') + '円（' + (d.quantity || '1') + '球）'],
+              ['応援メッセージ', d.message || 'なし'], ['StripeセッションID', d.sessionId || '未設定']];
+    }
   }
 };
 
@@ -144,7 +157,7 @@ function doPost(e) {
     lock.waitLock(10000);
     try {
       var sheet = getSheet(cfg);
-      if (type === 'membership_fee' && d.sessionId) {
+      if ((type === 'membership_fee' || type === 'cheer_tip') && d.sessionId) {
         var lastRow = sheet.getLastRow();
         if (lastRow > 1) {
           var existingIds = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
@@ -216,11 +229,34 @@ function doGet(e) {
       }
       return jsonResponse({ success: true, records: records });
     }
+    if (type === 'cheer_tips') {
+      var ctSheet = getSheet(FORMS.cheer_tip);
+      var ctLastRow = ctSheet.getLastRow();
+      var donations = [];
+      if (ctLastRow > 1) {
+        var ctValues = ctSheet.getRange(2, 1, ctLastRow - 1, 8).getValues();
+        for (var k = ctValues.length - 1; k >= 0; k--) {
+          var ctRow = ctValues[k];
+          if (!ctRow[2]) continue;
+          donations.push({
+            createdAt: ctRow[0] instanceof Date ? ctRow[0].toISOString() : String(ctRow[0]),
+            sessionId: String(ctRow[1] || ''),
+            name: String(ctRow[2]),
+            period: String(ctRow[3] || 'OB'),
+            category: String(ctRow[4] || 'batting'),
+            amount: Number(ctRow[5]) || 500,
+            quantity: Number(ctRow[6]) || 1,
+            message: String(ctRow[7] || '')
+          });
+        }
+      }
+      return jsonResponse({ success: true, donations: donations });
+    }
   } catch (err) {
     Logger.log('doGet ERROR: ' + err);
     return jsonResponse({ success: false, error: 'データ取得に失敗しました' });
   }
-  return ContentService.createTextOutput('OB会フォーム（出欠・お問い合わせ・年会費納入） - Google Apps Script is running!')
+  return ContentService.createTextOutput('OB会フォーム（出欠・お問い合わせ・年会費納入・記念ボール寄付） - Google Apps Script is running!')
     .setMimeType(ContentService.MimeType.TEXT);
 }
 
