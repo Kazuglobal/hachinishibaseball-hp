@@ -156,13 +156,19 @@ export class SupportComponent implements OnInit {
     }
   ];
 
+  // 2026年の支援者一覧
+  donors2026: Donor[] = [
+    { period: '25期', names: ['小川 貴史 様'] }
+  ];
+
   // ミニチュアユニフォーム用にフラット化した一覧
+  readonly uniformDonors2026: UniformDonorItem[] = this.flattenDonors(this.donors2026, 2026);
   readonly uniformDonors2025: UniformDonorItem[] = this.flattenDonors(this.donors2025, 2025);
   readonly uniformDonors2024: UniformDonorItem[] = this.flattenDonors(this.donors, 2024);
 
-  // 2025年支援者一覧へ移行済みのオンライン納入セッションID（2026年枠との重複表示防止）
+  // 支援者一覧へ移行済みのオンライン納入セッションID（重複表示防止）
   private readonly migratedOnlineSessionIds = new Set<string>([
-    'cs_live_agL5ZmsPJTYg7Kc8XYxHN0JVXCzdgjAWfUbZpZ6yTG9cZEuSBU5hhmvufo', // 25期 小川 貴史 様（2025年へ移動）
+    'cs_live_agL5ZmsPJTYg7Kc8XYxHN0JVXCzdgjAWfUbZpZ6yTG9cZEuSBU5hhmvufo', // 25期 小川 貴史 様（2026年支援者一覧へ掲載）
   ]);
 
   // オンライン納入者（自動反映分）をユニフォームアイテムに変換

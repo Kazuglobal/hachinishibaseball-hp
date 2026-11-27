@@ -52,7 +52,7 @@ var FORMS = {
     }
   },
   cheer_tip: {
-    sheetName: '現役応援投げ銭',
+    sheetName: '寄付',
     header: ['送信日時', 'セッションID', 'お名前', '回期', '種目', '金額', '口数', '応援メッセージ'],
     required: ['name', 'period'],
     skipEmailValidation: true,
