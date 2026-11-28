@@ -134,20 +134,139 @@
         }
       </div>
     } @else {
-      <!-- 公開中の協賛企業が無い場合の募集案内枠 -->
-      <div class="bg-white border border-gray-200 rounded-lg p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5">
-        <div>
-          <p class="text-xs font-semibold tracking-wider text-[#002D62] mb-1">協賛企業・団体様 募集中</p>
-          <p class="text-sm text-gray-700 leading-relaxed">
-            八戸西高等学校野球部の活動を応援してくださる企業・店舗・団体様の協賛広告枠（年額 10,000円・30,000円・50,000円）を募集しております。
-          </p>
+      <!-- 公開中の協賛企業が無い場合：実際の掲載イメージ（サンプル見本）＋募集案内 -->
+      <div class="space-y-8">
+        <div class="bg-white border border-gray-200 rounded-lg p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <p class="text-xs font-semibold tracking-wider text-[#002D62] mb-1">協賛企業・団体様 募集中（下記は掲載見本です）</p>
+            <p class="text-xs sm:text-sm text-gray-700 leading-relaxed">
+              八戸西高等学校野球部を応援してくださる企業・店舗・団体様の協賛枠（年額 10,000円・30,000円・50,000円）を募集しております。実際の協賛企業が掲載されると、以下の見本は自動で切り替わります。
+            </p>
+          </div>
+          @if (showRecruitCta()) {
+            <a
+              routerLink="/sponsors"
+              class="shrink-0 inline-flex items-center justify-center px-5 py-2.5 rounded bg-[#002D62] hover:bg-[#001f44] text-white font-bold text-xs sm:text-sm transition-colors">
+              協賛枠の詳細・お申込みへ
+            </a>
+          }
         </div>
-        @if (showRecruitCta()) {
-          <a
-            routerLink="/sponsors"
-            class="shrink-0 inline-flex items-center justify-center px-5 py-2.5 rounded bg-[#002D62] hover:bg-[#001f44] text-white font-bold text-xs sm:text-sm transition-colors">
-            協賛枠の詳細・お申込みへ
-          </a>
+
+        <!-- ゴールド協賛 掲載見本（大型ワイドバナー＋光沢シマー演出） -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-[11px] font-semibold tracking-widest text-gray-500 uppercase">GOLD PARTNERS（年額 50,000円・掲載見本）</p>
+            <span class="text-[11px] text-gray-500">光沢シマー演出・最上位優先掲出</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <a
+              routerLink="/sponsors"
+              class="sponsor-gold-card block bg-white border-2 border-[#002D62] rounded-lg p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div class="h-16 sm:h-20 w-full sm:w-44 rounded bg-[#002D62] text-white flex flex-col items-center justify-center shrink-0 px-3">
+                  <span class="font-oswald text-sm tracking-widest">SAMPLE CORP.</span>
+                  <span class="text-[10px] text-white/75 mt-0.5">ロゴバナー枠 (720×200)</span>
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-bold tracking-widest text-[#B31B1B] uppercase">GOLD PARTNER</span>
+                    <span class="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-semibold rounded">掲載見本</span>
+                  </div>
+                  <h3 class="font-serif-jp text-lg font-bold text-[#002D62] mt-1">株式会社 八戸サンプル商事</h3>
+                  <p class="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">
+                    地域の未来を担う八戸西高校野球部の挑戦を全力で応援しています。
+                  </p>
+                </div>
+              </div>
+            </a>
+
+            <a
+              routerLink="/sponsors"
+              class="sponsor-gold-card block bg-white border-2 border-[#002D62] rounded-lg p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div class="h-16 sm:h-20 w-full sm:w-44 rounded bg-[#F8F8F7] border border-dashed border-[#002D62]/40 text-[#002D62] flex flex-col items-center justify-center shrink-0 px-3">
+                  <span class="text-xs font-bold">あなたの企業ロゴ</span>
+                  <span class="text-[10px] text-gray-500 mt-0.5">ゴールド枠 募集中</span>
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-bold tracking-widest text-[#B31B1B] uppercase">GOLD PARTNER</span>
+                    <span class="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-semibold rounded">掲載見本</span>
+                  </div>
+                  <h3 class="font-serif-jp text-lg font-bold text-[#002D62] mt-1">協賛企業様 掲載イメージ</h3>
+                  <p class="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">
+                    トップページ最上位および主要ページへ大型ワイドバナーで掲出されます。
+                  </p>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- シルバー協賛 掲載見本（標準ロゴバナー＋ホバーズーム演出） -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-[11px] font-semibold tracking-widest text-gray-500 uppercase">SILVER PARTNERS（年額 30,000円・掲載見本）</p>
+            <span class="text-[11px] text-gray-500">ホバー時ズーム・枠線強調</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <a
+              routerLink="/sponsors"
+              class="sponsor-silver-card block bg-white border border-gray-300 hover:border-[#002D62] rounded-lg p-4 shadow-sm">
+              <div class="h-14 rounded bg-[#002D62]/5 border border-gray-200 flex items-center justify-center text-xs font-bold text-[#002D62] mb-3">
+                ロゴバナー見本（400×120）
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="font-serif-jp text-base font-bold text-[#002D62]">サンプル建設工業 株式会社</h3>
+                <span class="text-[10px] text-gray-400 shrink-0">見本</span>
+              </div>
+              <p class="text-xs text-gray-600 mt-1">地域密着の施工で八戸の街づくりを支えます。</p>
+            </a>
+
+            <a
+              routerLink="/sponsors"
+              class="sponsor-silver-card block bg-white border border-gray-300 hover:border-[#002D62] rounded-lg p-4 shadow-sm">
+              <div class="h-14 rounded bg-[#002D62]/5 border border-gray-200 flex items-center justify-center text-xs font-bold text-[#002D62] mb-3">
+                ロゴバナー見本（400×120）
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="font-serif-jp text-base font-bold text-[#002D62]">みちのくスポーツ用品店</h3>
+                <span class="text-[10px] text-gray-400 shrink-0">見本</span>
+              </div>
+              <p class="text-xs text-gray-600 mt-1">野球用具のメンテナンス・グラブ修理も承ります。</p>
+            </a>
+
+            <a
+              routerLink="/sponsors"
+              class="sponsor-silver-card block bg-white border border-dashed border-gray-300 hover:border-[#002D62] rounded-lg p-4 shadow-sm">
+              <div class="h-14 rounded bg-[#F8F8F7] flex items-center justify-center text-xs font-semibold text-gray-500 mb-3">
+                シルバー協賛枠 募集中
+              </div>
+              <h3 class="font-serif-jp text-base font-bold text-gray-700">こちらに掲載されます</h3>
+              <p class="text-xs text-gray-500 mt-1">ロゴ画像と一言キャッチコピーを1年間掲出。</p>
+            </a>
+          </div>
+        </div>
+
+        <!-- ブロンズ協賛 掲載見本（テキストリンク枠） -->
+        @if (variant() === 'full') {
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-[11px] font-semibold tracking-widest text-gray-500 uppercase">BRONZE PARTNERS（年額 10,000円・掲載見本）</p>
+              <span class="text-[11px] text-gray-500">テキストリンク・ホバー下線</span>
+            </div>
+            <div class="flex flex-wrap gap-2.5">
+              <a routerLink="/sponsors" class="px-4 py-2 bg-white border border-gray-300 hover:border-[#002D62] rounded text-xs sm:text-sm font-semibold text-gray-800 hover:text-[#002D62] hover:underline underline-offset-4 transition-colors">
+                サンプル食堂（見本）
+              </a>
+              <a routerLink="/sponsors" class="px-4 py-2 bg-white border border-gray-300 hover:border-[#002D62] rounded text-xs sm:text-sm font-semibold text-gray-800 hover:text-[#002D62] hover:underline underline-offset-4 transition-colors">
+                八戸サンプル歯科クリニック（見本）
+              </a>
+              <a routerLink="/sponsors" class="px-4 py-2 bg-white border border-gray-300 hover:border-[#002D62] rounded text-xs sm:text-sm font-semibold text-gray-800 hover:text-[#002D62] hover:underline underline-offset-4 transition-colors">
+                サンプル不動産 株式会社（見本）
+              </a>
+            </div>
+          </div>
         }
       </div>
     }
