@@ -64,7 +64,7 @@ export async function onRequestGet(context) {
 
   try {
     const stripeRes = await fetch(
-      `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`,
+      `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}?expand[]=payment_intent.latest_charge`,
       {
         method: 'GET',
         headers: { Authorization: `Bearer ${secretKey}` },
@@ -79,6 +79,12 @@ export async function onRequestGet(context) {
     if (session.payment_status !== 'paid') {
       return json({ success: false, error: 'お支払いが完了していません。' }, 402);
     }
+
+    const rawReceiptUrl = session?.payment_intent?.latest_charge?.receipt_url;
+    const receiptUrl =
+      typeof rawReceiptUrl === 'string' && rawReceiptUrl.startsWith('https://pay.stripe.com/')
+        ? rawReceiptUrl
+        : '';
 
     const meta = session.metadata || {};
     const validTiers = ['bronze', 'silver', 'gold'];
@@ -109,6 +115,7 @@ export async function onRequestGet(context) {
         tier: record.tier,
         companyName: record.companyName,
         amount: record.amount,
+        receiptUrl,
       },
     });
   } catch {

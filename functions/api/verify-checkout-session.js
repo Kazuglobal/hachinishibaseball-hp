@@ -52,7 +52,7 @@ export async function onRequestGet(context) {
 
   try {
     const stripeRes = await fetch(
-      `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`,
+      `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}?expand[]=payment_intent.latest_charge`,
       {
         method: 'GET',
         headers: {
@@ -73,6 +73,12 @@ export async function onRequestGet(context) {
       return json({ success: false, error: 'お支払いが完了していません。' }, 402);
     }
 
+    const rawReceiptUrl = session?.payment_intent?.latest_charge?.receipt_url;
+    const receiptUrl =
+      typeof rawReceiptUrl === 'string' && rawReceiptUrl.startsWith('https://pay.stripe.com/')
+        ? rawReceiptUrl
+        : '';
+
     const meta = session.metadata || {};
     const parsedYear = parseInt(meta.year, 10);
     const year = Number.isInteger(parsedYear) ? parsedYear : new Date().getFullYear();
@@ -87,6 +93,7 @@ export async function onRequestGet(context) {
       quantity: 1,
       amount: typeof session.amount_total === 'number' ? session.amount_total : 5000,
       message: meta.message || '',
+      receiptUrl,
       createdAt: session.created
         ? new Date(session.created * 1000).toISOString()
         : new Date().toISOString(),

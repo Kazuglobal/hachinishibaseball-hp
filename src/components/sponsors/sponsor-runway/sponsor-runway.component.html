@@ -1,0 +1,232 @@
+<section class="rw-shell" aria-label="協賛広告の掲載見本ギャラリー">
+  <div class="rw-frame" [class.is-zoom-open]="isZoomOpen()">
+    <!-- 左：余白を活かした静かな3Dリングステージ -->
+    <div
+      #stageEl
+      class="rw-stage"
+      [class.is-dragging]="isDragging()"
+      [class.has-custom-cursor]="cursorVisible() && !isZoomOpen() && !isMobileViewport()"
+      (pointerdown)="onStagePointerDown($event)"
+      (pointermove)="onStagePointerMove($event)"
+      (pointerup)="onStagePointerUp($event)"
+      (pointercancel)="onStagePointerUp($event)"
+      (pointerenter)="onStagePointerEnter()"
+      (pointerleave)="onStagePointerLeave()">
+
+      <!-- さりげない左上ラベル -->
+      <div class="rw-stage-meta">
+        <span class="rw-stage-meta__num">{{ currentLook().indexLabel }} / 06</span>
+        <span class="rw-stage-meta__note">掲載イメージ見本（架空企業）</span>
+      </div>
+
+      @if (!isZoomOpen()) {
+        <div class="rw-ring" role="region" aria-roledescription="carousel" aria-label="協賛広告サンプル">
+          @for (item of renderedLooks(); track item.look.id) {
+            <button
+              type="button"
+              class="rw-body"
+              [class.is-front]="item.isFront"
+              [class.rw-body--gold]="item.look.featuredTier === 'gold'"
+              [class.rw-body--silver]="item.look.featuredTier === 'silver'"
+              [class.rw-body--bronze]="item.look.featuredTier === 'bronze'"
+              [style.transform]="item.transform"
+              [style.opacity]="item.opacity"
+              [style.filter]="item.filter"
+              [style.zIndex]="item.zIndex"
+              [attr.aria-label]="item.look.indexLabel + ' ' + item.look.companyName"
+              (click)="onLookClick(item, $event)">
+              <div class="rw-poster">
+                <img
+                  [src]="item.look.image"
+                  [alt]="item.look.imageAlt"
+                  class="rw-poster__img"
+                  draggable="false" />
+              </div>
+            </button>
+          }
+        </div>
+
+        <!-- 右下：静かな拡大ボタン -->
+        <button
+          type="button"
+          class="rw-view-trigger"
+          (click)="openZoom($event)"
+          aria-label="この広告を拡大して見る">
+          <span>拡大して見る</span>
+          <span aria-hidden="true">+</span>
+        </button>
+
+        @if (cursorVisible() && !isMobileViewport()) {
+          <div
+            class="rw-cursor"
+            [class.is-view]="cursorMode() === 'view'"
+            [style.transform]="'translate3d(' + cursorX() + 'px,' + cursorY() + 'px,0)'"
+            aria-hidden="true">
+            <span>{{ cursorMode() === 'view' ? '見る' : '回す' }}</span>
+          </div>
+        }
+      } @else {
+        <!-- 拡大プレビュー -->
+        <div class="rw-zoom" role="dialog" aria-modal="false" [attr.aria-label]="currentLook().companyName">
+          <div class="rw-zoom__header">
+            <div>
+              <span class="rw-zoom__eyebrow">{{ currentLook().indexLabel }} / 06</span>
+              <h3 class="rw-zoom__title">{{ currentLook().companyName }}</h3>
+            </div>
+            <button
+              type="button"
+              class="rw-zoom__close"
+              (click)="closeZoom()"
+              aria-label="ギャラリーに戻る">
+              <span>一覧へ戻る</span>
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+
+          <div class="rw-zoom__canvas">
+            <div class="rw-zoom__figure">
+              <img
+                [src]="currentLook().image"
+                [alt]="currentLook().imageAlt"
+                class="rw-zoom__img"
+                draggable="false" />
+
+              @for (pin of currentLook().pins; track pin.number) {
+                <button
+                  type="button"
+                  class="rw-pin"
+                  [class.is-active]="activePinNumber() === pin.number"
+                  [style.left.%]="pin.x"
+                  [style.top.%]="pin.y"
+                  [attr.aria-label]="'ポイント ' + pin.number + ': ' + pin.label"
+                  (click)="selectPin(pin)">
+                  <span>{{ pin.number }}</span>
+                  <span class="rw-pin__tooltip">{{ pin.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- 下部：ミニマルなタイムライン＆操作 -->
+      <div class="rw-controls">
+        <div class="rw-ticks" role="tablist" aria-label="見本切替">
+          @for (look of looks; track look.id; let i = $index) {
+            <button
+              type="button"
+              role="tab"
+              class="rw-tick"
+              [class.is-active]="activeIndex() === i"
+              [attr.aria-selected]="activeIndex() === i"
+              [attr.aria-label]="look.indexLabel + ' ' + look.companyName"
+              (click)="goToIndex(i)">
+              <span class="rw-tick__num">{{ look.indexLabel }}</span>
+              <span class="rw-tick__track">
+                <span
+                  class="rw-tick__fill"
+                  [style.width.%]="activeIndex() === i ? (isPaused() || isZoomOpen() ? 100 : progressPercent()) : (activeIndex() > i ? 100 : 0)">
+                </span>
+              </span>
+            </button>
+          }
+        </div>
+
+        <div class="rw-nav-buttons">
+          <button type="button" class="rw-icon-btn" (click)="step(-1)" aria-label="前の見本へ">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4">
+              <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="rw-icon-btn"
+            (click)="togglePause()"
+            [attr.aria-label]="isPaused() ? '自動切替を再開' : '自動切替を一時停止'"
+            [attr.aria-pressed]="isPaused()">
+            @if (isPaused()) {
+              <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
+                <path d="M7 5h4v14H7zm6 0h4v14h-4z" />
+              </svg>
+            }
+          </button>
+          <button type="button" class="rw-icon-btn" (click)="step(1)" aria-label="次の見本へ">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4">
+              <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右：雑誌の解説ページのように余白をとったプラン案内パネル -->
+    <aside class="rw-panel" aria-label="選択中の協賛プラン詳細">
+      <div class="rw-panel__body">
+        <!-- プラン切替タブ（3プランを静かに比較） -->
+        <div class="rw-tier-tabs" role="tablist" aria-label="金額プラン切替">
+          @for (plan of plans; track plan.id) {
+            <button
+              type="button"
+              role="tab"
+              class="rw-tier-tab"
+              [class.is-active]="highlightedTier() === plan.id"
+              [attr.aria-selected]="highlightedTier() === plan.id"
+              (click)="selectTierInPanel(plan.id)">
+              <span class="rw-tier-tab__name">{{ plan.name.replace('協賛', '') }}</span>
+              <span class="rw-tier-tab__price">¥{{ (plan.price / 10000) }}万</span>
+            </button>
+          }
+        </div>
+
+        <!-- 選択中プランの静かなタイポグラフィ紹介 -->
+        <div class="rw-plan-focus">
+          <p class="rw-plan-focus__eyebrow">
+            {{ currentLook().companyName }} ／ {{ currentLook().industry }}
+          </p>
+          <div class="rw-plan-focus__head">
+            <h3 class="rw-plan-focus__title">{{ highlightedPlan().name }}</h3>
+            <p class="rw-plan-focus__price">
+              <span>¥{{ highlightedPlan().price.toLocaleString() }}</span>
+              <small>/ 年額</small>
+            </p>
+          </div>
+          <p class="rw-plan-focus__desc">{{ currentLook().description }}</p>
+
+          <!-- 掲載位置・形式の静かな仕様リスト -->
+          <dl class="rw-spec-list">
+            <div class="rw-spec-row">
+              <dt>掲載位置</dt>
+              <dd>{{ highlightedPlan().placementSummary }}</dd>
+            </div>
+            <div class="rw-spec-row">
+              <dt>掲載形式</dt>
+              <dd>{{ highlightedPlan().formatSummary }}</dd>
+            </div>
+            <div class="rw-spec-row">
+              <dt>入稿素材</dt>
+              <dd>{{ highlightedPlan().recommendedImageSize }}</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <!-- 下部アクション -->
+      <div class="rw-panel__footer">
+        <button
+          type="button"
+          class="rw-panel__cta"
+          (click)="applyHighlightedPlan()">
+          <span>{{ highlightedPlan().name }}の申込みへ進む</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="w-4 h-4">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <p class="rw-panel__footnote">年額一括・事務局にて内容確認後に掲載開始</p>
+      </div>
+    </aside>
+  </div>
+</section>

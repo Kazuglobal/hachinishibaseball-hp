@@ -1,3 +1,18 @@
+/* 日本語の不自然な文節途中改行を防ぎ、見出しバランスを整える */
+:host {
+  display: block;
+}
+
+.jp-phrase {
+  word-break: auto-phrase;
+  overflow-wrap: break-word;
+}
+
+.jp-heading {
+  word-break: auto-phrase;
+  text-wrap: balance;
+}
+
 /* ゴールド協賛プレビュー用の上品な光沢シマー */
 @keyframes previewGoldSheen {
   0% {

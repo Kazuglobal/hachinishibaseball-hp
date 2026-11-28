@@ -1,132 +1,153 @@
-<section class="pt-0 pb-20 container mx-auto px-4 sm:px-8">
+<section class="pt-0 pb-12 container mx-auto px-5 sm:px-8 max-w-5xl">
   <div class="mt-12 md:mt-16">
     <h1 class="sr-only">八戸西高等学校野球部OB会 協賛・広告掲載のご案内</h1>
     <app-section-title mainTitle="協賛・広告掲載" subTitle="OFFICIAL PARTNERS"></app-section-title>
 
     <!-- 決済確認中オーバーレイ -->
     @if (isVerifying()) {
-      <div class="fixed inset-0 z-[90] bg-black/65 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg p-8 max-w-sm w-full text-center border border-gray-200 shadow-lg">
-          <div class="w-10 h-10 mx-auto mb-4 border-2 border-[#002D62] border-t-transparent rounded-full animate-spin"></div>
+      <div class="fixed inset-0 z-[90] bg-black/60 flex items-center justify-center p-4">
+        <div class="bg-white rounded p-8 max-w-sm w-full text-center border border-[#E6E3DC]">
+          <div class="w-9 h-9 mx-auto mb-4 border-2 border-[#002D62] border-t-transparent rounded-full animate-spin"></div>
           <p class="text-base font-bold text-[#002D62]">お申込み内容を確認しています</p>
-          <p class="text-xs text-gray-500 mt-2">完了後、ロゴ画像の送付手順をご案内します</p>
+          <p class="text-xs text-[#646B73] mt-2">完了後、画像のご送付方法をご案内いたします</p>
         </div>
       </div>
     }
 
-    <!-- 申込完了バナー -->
+    <!-- 申込完了メッセージ -->
     @if (completedApplication(); as app) {
-      <div class="mt-8 max-w-5xl mx-auto bg-white border-2 border-[#002D62] rounded-lg p-6 sm:p-8 shadow-sm">
-        <p class="text-xs font-bold tracking-widest text-[#B31B1B] uppercase mb-2">APPLICATION RECEIVED</p>
+      <div class="mt-8 bg-white border border-[#002D62] rounded p-6 sm:p-8">
+        <p class="text-xs font-semibold tracking-wider text-[#9A7B3C] mb-2">お申込み完了</p>
         <h2 class="font-serif-jp text-xl sm:text-2xl font-bold text-[#002D62] mb-3">
           協賛のお申込み・お支払いを承りました
         </h2>
-        <p class="text-sm text-gray-700 leading-relaxed mb-4">
+        <p class="text-sm text-[#444B54] leading-8 mb-5">
           <strong>{{ app.companyName }} 様</strong>（{{ getPlanName(app.tier) }} ／ 年額 ¥{{ app.amount.toLocaleString() }}）のお申込みを受け付けました。
-          現在、事務局にて確認中（審査待ち）となっております。
+          現在、事務局にて確認を進めております。ご入力のメールアドレス宛に Stripe より領収書メールが自動送信されます。
         </p>
 
-        @if (app.tier !== 'bronze') {
-          <div class="bg-[#F8F8F7] border border-gray-200 rounded p-4 sm:p-5 text-sm text-gray-800 space-y-2">
-            <p class="font-bold text-[#002D62]">バナー・ロゴ画像のご送付について</p>
-            <p class="text-xs sm:text-sm leading-relaxed">
-              掲載に使用するロゴ・バナー画像（{{ app.tier === 'gold' ? '推奨 720×200px' : '推奨 400×120px' }}・PNG または JPG）を、企業名をご明記のうえ下記メールアドレスまでお送りください。事務局で確認後、速やかに掲載を開始いたします。
-            </p>
-            <p class="font-semibold">
-              送付先：<a href="mailto:hachinishibaseball@gmail.com" class="text-[#002D62] underline">hachinishibaseball@gmail.com</a>
-            </p>
+        @if (app.receiptUrl) {
+          <div class="mb-5">
+            <a
+              [href]="app.receiptUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 px-5 py-2.5 rounded bg-[#002D62] hover:bg-[#001f44] text-white text-xs sm:text-sm font-bold transition-colors">
+              Stripe 領収書を表示・印刷する（PDF保存可） →
+            </a>
           </div>
-        } @else {
-          <p class="text-xs sm:text-sm text-gray-600">
-            ブロンズ協賛はテキストリンク枠のため画像のご送付は不要です。事務局にてリンク先を確認後、掲載を開始いたします。
-          </p>
         }
+
+        <div class="bg-[#FAF9F6] border border-[#E6E3DC] rounded p-5 text-sm text-[#444B54] space-y-2">
+          <p class="font-bold text-[#002D62]">掲載用画像のご送付について</p>
+          <p class="text-xs sm:text-sm leading-relaxed">
+            掲載に使用するロゴ・広告画像（ブロンズ協賛はサムネイル画像・画像なし掲出も可）を、企業名をご明記のうえ下記メールアドレスまでお送りください。事務局にて確認後、速やかに掲載を開始いたします。
+          </p>
+          <p class="font-semibold pt-1">
+            送付先：<a href="mailto:hachinishibaseball@gmail.com" class="text-[#002D62] underline underline-offset-4">hachinishibaseball@gmail.com</a>
+          </p>
+        </div>
       </div>
     }
 
     <!-- キャンセル通知 -->
     @if (statusNotice()) {
-      <div class="mt-6 max-w-5xl mx-auto bg-amber-50 border border-amber-300 text-amber-900 rounded-lg px-5 py-4 text-sm flex items-center justify-between gap-3">
+      <div class="mt-6 bg-amber-50 border border-amber-300 text-amber-900 rounded px-5 py-4 text-sm flex items-center justify-between gap-3">
         <span>{{ statusNotice() }}</span>
         <button type="button" (click)="statusNotice.set(null)" class="text-xs font-semibold underline shrink-0">閉じる</button>
       </div>
     }
 
-    <!-- 概要カード -->
-    <div class="mt-8 max-w-5xl mx-auto bg-white border border-gray-200 rounded-lg p-6 sm:p-8 shadow-sm">
-      <p class="text-xs font-semibold tracking-widest text-[#B31B1B] uppercase mb-2">CORPORATE &amp; ALUMNI SPONSORS</p>
-      <h2 class="font-serif-jp text-2xl sm:text-3xl font-bold text-[#002D62] leading-snug mb-3">
-        八戸西高等学校野球部を応援する協賛企業・団体様を募集しています
+    <!-- 導入リード文（スマホでも文節が美しく揃う階段設計） -->
+    <div class="mt-9 sm:mt-10 max-w-3xl">
+      <h2 class="jp-heading font-serif-jp text-[21px] sm:text-3xl font-bold text-[#002D62] leading-[1.6] sm:leading-relaxed">
+        八戸西高校野球部の挑戦を、<br />地域の皆さまとともに支えていただけませんか。
       </h2>
-      <p class="text-sm sm:text-[15px] text-gray-700 leading-8">
-        いただいた協賛金は、現役部員の練習用具整備・遠征費補助・グラウンド維持など、日々の活動支援に大切に活用いたします。
-        お申込み・年額決済の完了後、事務局にて内容確認およびバナー画像受領（メール送付）を経て、1年間サイト各ページへ掲載いたします。
+      <p class="jp-phrase mt-4 text-[13.5px] sm:text-[15px] text-[#444B54] leading-[1.9]">
+        いただいた協賛金は、現役部員の練習用具の整備、遠征費の補助、グラウンドの維持管理など、日々の活動に大切に充てさせていただきます。
+        お申込みと年額決済の完了後、事務局にて内容確認のうえ、1年間サイト該当エリアへ掲載いたします。
       </p>
     </div>
+  </div>
+</section>
 
-    <!-- プラン比較（3段階：年額 1万 / 3万 / 5万円） -->
-    <div class="mt-10 max-w-5xl mx-auto">
-      <h3 class="font-serif-jp text-lg sm:text-xl font-bold text-[#002D62] pb-3 mb-6 border-b border-gray-300">
-        1. 協賛プランを選ぶ（年額一括・1年間掲載）
-      </h3>
+<!-- 3D 掲載見本ギャラリー -->
+<div class="mb-16">
+  <app-sponsor-runway
+    [selectedTier]="selectedTier()"
+    (selectPlan)="onRunwaySelectPlan($event)">
+  </app-sponsor-runway>
+</div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<!-- 金額別の実際のサイト掲載イメージ（先に見せることで納得感を作る） -->
+<app-sponsor-banner-strip variant="full" [showRecruitCta]="false"></app-sponsor-banner-strip>
+
+<!-- プラン選択・お申込みフォーム -->
+<section id="sponsor-application-form" class="py-16 sm:py-20 bg-white border-t border-[#E6E3DC] scroll-mt-24">
+  <div class="container mx-auto px-5 sm:px-8 max-w-5xl">
+    <!-- Step 1: プラン選択 -->
+    <div>
+      <p class="text-[11px] font-semibold tracking-[0.14em] text-[#646B73]">STEP 1</p>
+      <div class="mt-1 pb-4 border-b border-[#E6E3DC] flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+        <h3 class="jp-heading font-serif-jp text-xl sm:text-2xl font-bold text-[#002D62]">
+          協賛プランを選ぶ
+        </h3>
+        <p class="text-xs text-[#646B73]">年額一括・1年間掲載</p>
+      </div>
+
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
         @for (plan of plans; track plan.id) {
           <button
             type="button"
             (click)="selectTier(plan.id)"
-            class="text-left bg-white rounded-lg p-6 border-2 transition-colors flex flex-col justify-between shadow-sm"
+            class="text-left rounded p-6 border transition-colors flex flex-col justify-between"
             [class.border-[#002D62]]="selectedTier() === plan.id"
-            [class.bg-[#002D62]/[0.02]]="selectedTier() === plan.id"
-            [class.border-gray-200]="selectedTier() !== plan.id">
+            [class.bg-[#FAF9F6]]="selectedTier() === plan.id"
+            [class.border-[#E6E3DC]]="selectedTier() !== plan.id"
+            [class.bg-white]="selectedTier() !== plan.id">
             <div>
-              <div class="flex items-center justify-between gap-2 mb-2">
-                <span class="font-oswald text-[11px] tracking-widest text-gray-500 uppercase">{{ plan.englishName }}</span>
+              <div class="flex items-center justify-between gap-2">
+                <h4 class="font-serif-jp text-lg font-bold text-[#002D62]">{{ plan.name }}</h4>
                 @if (selectedTier() === plan.id) {
-                  <span class="px-2 py-0.5 bg-[#002D62] text-white text-[10px] font-bold rounded">選択中</span>
+                  <span class="text-[11px] font-bold text-[#002D62]">選択中</span>
                 }
               </div>
-              <h4 class="font-serif-jp text-xl font-bold text-[#002D62]">{{ plan.name }}</h4>
-              <div class="mt-3 pb-4 border-b border-gray-200 flex items-baseline gap-1">
-                <span class="font-oswald text-3xl font-bold text-gray-900">¥{{ plan.price.toLocaleString() }}</span>
-                <span class="text-xs text-gray-500">/ 年額</span>
+
+              <div class="mt-3 pb-4 border-b border-[#E6E3DC] flex items-baseline gap-1.5">
+                <span class="font-oswald text-3xl font-bold text-[#1E242B]">¥{{ plan.price.toLocaleString() }}</span>
+                <span class="text-xs text-[#646B73]">/ 年額</span>
               </div>
 
-              <dl class="mt-4 space-y-2.5 text-xs text-gray-700">
+              <dl class="mt-4 space-y-3 text-xs text-[#444B54] leading-relaxed">
                 <div>
-                  <dt class="font-bold text-gray-900">掲載形式</dt>
+                  <dt class="font-semibold text-[#646B73]">掲載位置</dt>
+                  <dd class="mt-0.5 text-[#1E242B]">{{ plan.placementSummary }}</dd>
+                </div>
+                <div>
+                  <dt class="font-semibold text-[#646B73]">掲載内容</dt>
                   <dd class="mt-0.5">{{ plan.formatSummary }}</dd>
-                </div>
-                <div>
-                  <dt class="font-bold text-gray-900">表示演出</dt>
-                  <dd class="mt-0.5">{{ plan.motionSummary }}</dd>
-                </div>
-                <div>
-                  <dt class="font-bold text-gray-900">掲載箇所</dt>
-                  <dd class="mt-0.5">{{ plan.placementSummary }}</dd>
-                </div>
-                <div>
-                  <dt class="font-bold text-gray-900">画像仕様</dt>
-                  <dd class="mt-0.5">{{ plan.recommendedImageSize }}</dd>
                 </div>
               </dl>
             </div>
 
-            <div class="mt-5 pt-3 border-t border-gray-100 text-xs font-semibold text-[#002D62]">
-              {{ selectedTier() === plan.id ? 'このプランを選択中' : 'このプランを選ぶ' }}
+            <div class="mt-6 pt-3 border-t border-[#E6E3DC] text-xs font-semibold text-[#002D62]">
+              {{ selectedTier() === plan.id ? 'このプランを選択しています' : 'このプランを選ぶ →' }}
             </div>
           </button>
         }
       </div>
     </div>
 
-    <!-- 申込フォーム & 掲載プレビュー -->
-    <div class="mt-10 max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-      <!-- フォーム -->
-      <div class="lg:col-span-7 bg-white rounded-lg p-6 sm:p-8 border border-gray-200 shadow-sm">
-        <h3 class="font-serif-jp text-lg sm:text-xl font-bold text-[#002D62] pb-3 mb-6 border-b border-gray-200">
-          2. 協賛情報・ご担当者様情報の入力
-        </h3>
+    <!-- Step 2: 申込フォーム & プレビュー -->
+    <div class="mt-14 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+      <div class="lg:col-span-7">
+        <p class="text-[11px] font-semibold tracking-[0.14em] text-[#646B73]">STEP 2</p>
+        <div class="mt-1 pb-4 mb-7 border-b border-[#E6E3DC] flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+          <h3 class="jp-heading font-serif-jp text-xl sm:text-2xl font-bold text-[#002D62]">
+            協賛情報のご入力
+          </h3>
+          <p class="text-xs text-[#646B73]">ご担当者様・掲載情報</p>
+        </div>
 
         @if (formError()) {
           <div class="mb-5 bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded text-sm">
@@ -134,9 +155,9 @@
           </div>
         }
 
-        <div class="space-y-4">
+        <div class="space-y-5">
           <div>
-            <label for="sp-company" class="block text-sm font-semibold text-gray-800 mb-1">
+            <label for="sp-company" class="block text-sm font-semibold text-[#1E242B] mb-1.5">
               企業・店舗・団体名 <span class="text-[#B31B1B]">*</span>
             </label>
             <input
@@ -145,13 +166,13 @@
               maxlength="60"
               [ngModel]="companyName()"
               (ngModelChange)="companyName.set($event)"
-              placeholder="例：株式会社〇〇商事"
-              class="w-full px-3.5 py-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-[#002D62] focus:border-[#002D62] outline-none text-sm" />
+              placeholder="例：株式会社 八戸みらい建設"
+              class="w-full px-4 py-3 border border-[#D4D0C8] rounded bg-white focus:border-[#002D62] focus:outline-none text-sm" />
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label for="sp-contact" class="block text-sm font-semibold text-gray-800 mb-1">
+              <label for="sp-contact" class="block text-sm font-semibold text-[#1E242B] mb-1.5">
                 ご担当者様氏名 <span class="text-[#B31B1B]">*</span>
               </label>
               <input
@@ -161,10 +182,10 @@
                 [ngModel]="contactName()"
                 (ngModelChange)="contactName.set($event)"
                 placeholder="例：八戸 太郎"
-                class="w-full px-3.5 py-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-[#002D62] focus:border-[#002D62] outline-none text-sm" />
+                class="w-full px-4 py-3 border border-[#D4D0C8] rounded bg-white focus:border-[#002D62] focus:outline-none text-sm" />
             </div>
             <div>
-              <label for="sp-phone" class="block text-sm font-semibold text-gray-800 mb-1">
+              <label for="sp-phone" class="block text-sm font-semibold text-[#1E242B] mb-1.5">
                 電話番号
               </label>
               <input
@@ -174,13 +195,13 @@
                 [ngModel]="phone()"
                 (ngModelChange)="phone.set($event)"
                 placeholder="例：0178-00-0000"
-                class="w-full px-3.5 py-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-[#002D62] focus:border-[#002D62] outline-none text-sm" />
+                class="w-full px-4 py-3 border border-[#D4D0C8] rounded bg-white focus:border-[#002D62] focus:outline-none text-sm" />
             </div>
           </div>
 
           <div>
-            <label for="sp-email" class="block text-sm font-semibold text-gray-800 mb-1">
-              メールアドレス（掲載確認・画像入稿連絡用） <span class="text-[#B31B1B]">*</span>
+            <label for="sp-email" class="block text-sm font-semibold text-[#1E242B] mb-1.5">
+              メールアドレス（確認・画像入稿のご連絡用） <span class="text-[#B31B1B]">*</span>
             </label>
             <input
               id="sp-email"
@@ -189,11 +210,11 @@
               [ngModel]="email()"
               (ngModelChange)="email.set($event)"
               placeholder="例：info@example.co.jp"
-              class="w-full px-3.5 py-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-[#002D62] focus:border-[#002D62] outline-none text-sm" />
+              class="w-full px-4 py-3 border border-[#D4D0C8] rounded bg-white focus:border-[#002D62] focus:outline-none text-sm" />
           </div>
 
           <div>
-            <label for="sp-url" class="block text-sm font-semibold text-gray-800 mb-1">
+            <label for="sp-url" class="block text-sm font-semibold text-[#1E242B] mb-1.5">
               リンク先URL（https:// から入力・任意）
             </label>
             <input
@@ -203,106 +224,125 @@
               [ngModel]="url()"
               (ngModelChange)="url.set($event)"
               placeholder="https://example.co.jp"
-              class="w-full px-3.5 py-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-[#002D62] focus:border-[#002D62] outline-none text-sm" />
+              class="w-full px-4 py-3 border border-[#D4D0C8] rounded bg-white focus:border-[#002D62] focus:outline-none text-sm" />
           </div>
 
           @if (selectedTier() !== 'bronze') {
             <div>
-              <label for="sp-catch" class="block text-sm font-semibold text-gray-800 mb-1">
-                一言キャッチコピー・紹介文（任意・最大60文字）
+              <label for="sp-catch" class="block text-sm font-semibold text-[#1E242B] mb-1.5">
+                {{ selectedTier() === 'gold' ? '企業・団体の紹介解説文（広告の横に掲載・最大140文字）' : '応援メッセージ・一言紹介（任意・最大50文字）' }}
               </label>
-              <input
-                id="sp-catch"
-                type="text"
-                maxlength="60"
-                [ngModel]="catchphrase()"
-                (ngModelChange)="catchphrase.set($event)"
-                placeholder="例：地域の未来を担う八戸西高校野球部を応援しています。"
-                class="w-full px-3.5 py-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-[#002D62] focus:border-[#002D62] outline-none text-sm" />
+              @if (selectedTier() === 'gold') {
+                <textarea
+                  id="sp-catch"
+                  rows="3"
+                  maxlength="140"
+                  [ngModel]="catchphrase()"
+                  (ngModelChange)="catchphrase.set($event)"
+                  placeholder="例：八戸市を中心に建設業を手がける地域密着企業です。八戸西高校野球部の挑戦を応援しています。"
+                  class="w-full px-4 py-3 border border-[#D4D0C8] rounded bg-white focus:border-[#002D62] focus:outline-none text-sm"></textarea>
+              } @else {
+                <input
+                  id="sp-catch"
+                  type="text"
+                  maxlength="50"
+                  [ngModel]="catchphrase()"
+                  (ngModelChange)="catchphrase.set($event)"
+                  placeholder="例：八戸西高校野球部を応援しています。"
+                  class="w-full px-4 py-3 border border-[#D4D0C8] rounded bg-white focus:border-[#002D62] focus:outline-none text-sm" />
+              }
             </div>
           }
 
-          <div class="bg-[#F8F8F7] border border-gray-200 rounded p-4 text-xs text-gray-600 leading-relaxed space-y-1">
-            <p class="font-semibold text-gray-800">掲載までの流れ（事務局審査制）</p>
-            <p>1. お申込み・年額決済（クレジットカード）完了</p>
-            <p>2. シルバー・ゴールド協賛はロゴ／バナー画像をメール（hachinishibaseball&#64;gmail.com）へ送付</p>
-            <p>3. 事務局にて内容確認後、1年間サイト各ページへ掲載開始</p>
+          <div class="jp-phrase bg-[#FAF9F6] border border-[#E6E3DC] rounded p-4 text-xs text-[#555D66] leading-7 space-y-1">
+            <p class="font-semibold text-[#1E242B]">掲載までの流れ</p>
+            <p>1. 下のボタンより年額決済（カード）を完了</p>
+            <p>2. 掲載画像を hachinishibaseball&#64;gmail.com へ送付</p>
+            <p>3. 事務局での確認後、1年間サイトへ掲載</p>
           </div>
 
           <button
             type="button"
             (click)="submitApplication()"
             [disabled]="isProcessing()"
-            class="w-full py-3.5 px-6 rounded bg-[#002D62] hover:bg-[#001f44] text-white font-bold text-base transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+            class="w-full py-4 px-5 rounded bg-[#002D62] hover:bg-[#001f44] text-white font-bold text-sm sm:text-base transition-colors disabled:opacity-50 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5">
             @if (isProcessing()) {
               <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               <span>決済画面へ移動中...</span>
             } @else {
-              <span>{{ selectedPlan().name }}（年額 ¥{{ selectedPlan().price.toLocaleString() }}）を申し込む</span>
+              <span class="whitespace-nowrap">{{ selectedPlan().name }}を申し込む</span>
+              <span class="whitespace-nowrap text-xs sm:text-sm font-normal text-white/85">（年額 ¥{{ selectedPlan().price.toLocaleString() }}）</span>
             }
           </button>
 
-          <p class="text-center text-xs text-gray-500">
-            VISA / Mastercard / JCB / AMEX 対応（年額一括払い）
+          <p class="text-center text-xs text-[#646B73]">
+            VISA / Mastercard / JCB / AMEX 対応（年額一括・Stripe自動領収書発行）
           </p>
         </div>
       </div>
 
-      <!-- 表示イメージプレビュー -->
-      <div class="lg:col-span-5 bg-white rounded-lg p-6 sm:p-8 border border-gray-200 shadow-sm">
-        <div class="flex items-center justify-between pb-3 mb-4 border-b border-gray-200">
-          <span class="text-xs font-bold tracking-widest text-gray-500 uppercase">DISPLAY PREVIEW</span>
-          <span class="text-xs font-semibold text-[#002D62]">{{ selectedPlan().name }}</span>
+      <!-- 右：選択中プランの入力確認プレビュー -->
+      <aside class="lg:col-span-5 lg:sticky lg:top-28 bg-[#FAF9F6] border border-[#E6E3DC] rounded p-6">
+        <div class="flex items-baseline justify-between pb-3 mb-5 border-b border-[#E6E3DC]">
+          <span class="text-xs font-semibold text-[#646B73]">入力内容の掲載イメージ</span>
+          <span class="text-xs font-bold text-[#002D62]">{{ selectedPlan().name }}</span>
         </div>
 
-        <p class="text-xs text-gray-600 mb-5 leading-relaxed">
-          選択中プランのサイト掲載イメージです。
-        </p>
-
-        <div class="p-5 rounded bg-[#F8F8F7] border border-gray-200">
-          @if (selectedTier() === 'gold') {
-            <div class="preview-gold-sheen bg-white border-2 border-[#002D62] rounded-lg p-5 shadow-sm">
-              <div class="h-14 rounded bg-[#002D62]/5 border border-dashed border-[#002D62]/30 flex items-center justify-center text-xs text-[#002D62] font-semibold mb-3">
-                ワイドバナー・ロゴエリア（推奨 720×200px）
+        @if (selectedTier() === 'gold') {
+          <div class="preview-gold-sheen bg-white border border-[#E6E3DC] rounded p-5">
+            <p class="text-[11px] text-[#9A7B3C] font-semibold mb-3">トップページ最上部掲載</p>
+            <div class="flex flex-col sm:flex-row gap-4 items-center">
+              <img
+                src="assets/images/sponsors/ad-gold-mirai.jpg"
+                alt="ゴールド広告イメージ"
+                class="w-24 aspect-[3/4] object-contain rounded-sm shrink-0" />
+              <div class="min-w-0">
+                <h4 class="font-serif-jp text-base font-bold text-[#002D62]">{{ previewCompany() }}</h4>
+                <p class="text-xs text-[#444B54] mt-1.5 leading-relaxed">{{ previewCatchphrase() }}</p>
               </div>
-              <span class="text-[10px] font-bold tracking-widest text-[#B31B1B] uppercase">GOLD PARTNER</span>
-              <h4 class="font-serif-jp text-lg font-bold text-[#002D62] mt-0.5">{{ previewCompany() }}</h4>
-              <p class="text-xs text-gray-600 mt-1 leading-relaxed">{{ previewCatchphrase() }}</p>
             </div>
-          } @else if (selectedTier() === 'silver') {
-            <div class="bg-white border border-gray-300 hover:border-[#002D62] rounded-lg p-4 shadow-sm transition-transform hover:-translate-y-0.5">
-              <div class="h-12 rounded bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center text-[11px] text-gray-500 font-semibold mb-3">
-                ロゴバナーエリア（推奨 400×120px）
-              </div>
-              <h4 class="font-serif-jp text-base font-bold text-[#002D62]">{{ previewCompany() }}</h4>
-              <p class="text-xs text-gray-600 mt-1">{{ previewCatchphrase() }}</p>
+          </div>
+        } @else if (selectedTier() === 'silver') {
+          <div class="bg-white border border-[#E6E3DC] rounded p-5">
+            <p class="text-[11px] text-[#646B73] font-semibold mb-3">トップページ中段（活動報告直下）</p>
+            <div class="flex justify-center mb-3">
+              <img
+                src="assets/images/sponsors/ad-silver-sports.jpg"
+                alt="シルバー広告イメージ"
+                class="w-28 aspect-[3/4] object-contain rounded-sm" />
             </div>
-          } @else {
-            <div class="flex flex-wrap gap-2">
-              <span class="px-4 py-2 bg-white border border-gray-300 hover:border-[#002D62] rounded text-sm font-semibold text-[#002D62] underline underline-offset-4">
+            <h4 class="font-serif-jp text-base font-bold text-[#002D62]">{{ previewCompany() }}</h4>
+            <p class="text-xs text-[#555D66] mt-1 leading-relaxed">{{ previewCatchphrase() }}</p>
+          </div>
+        } @else {
+          <div class="bg-white border border-[#E6E3DC] rounded p-4">
+            <p class="text-[11px] text-[#8C6239] font-semibold mb-3">サイト最下部（フッター直上）</p>
+            <div class="flex items-center gap-3.5">
+              <img
+                src="assets/images/sponsors/ad-bronze-kabushima.jpg"
+                alt="ブロンズサムネイルイメージ"
+                class="w-12 h-16 object-contain rounded-sm bg-[#FAF9F6] shrink-0" />
+              <span class="font-serif-jp text-sm font-bold text-[#002D62] underline underline-offset-4">
                 {{ previewCompany() }}
               </span>
             </div>
-          }
-        </div>
+          </div>
+        }
 
-        <ul class="mt-4 text-xs text-gray-600 space-y-1.5 leading-relaxed">
+        <ul class="jp-phrase mt-5 pt-4 border-t border-[#E6E3DC] text-xs text-[#555D66] space-y-2 leading-relaxed">
           @for (feat of selectedPlan().features; track feat) {
             <li>・{{ feat }}</li>
           }
         </ul>
-      </div>
+      </aside>
     </div>
 
     <!-- 戻るリンク -->
-    <div class="mt-12 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="mt-14 pt-8 border-t border-[#E6E3DC] flex flex-col sm:flex-row items-center justify-between gap-4">
       <app-back-button></app-back-button>
-      <a [routerLink]="['/support']" class="text-sm font-semibold text-[#002D62] hover:text-[#B31B1B] underline">
+      <a [routerLink]="['/support']" class="text-sm font-semibold text-[#002D62] hover:text-[#B31B1B] underline underline-offset-4">
         個人向け 年会費（5,000円）・ご支援のお願いはこちら
       </a>
     </div>
   </div>
 </section>
-
-<!-- 現在の協賛企業・団体一覧 -->
-<app-sponsor-banner-strip variant="full" [showRecruitCta]="false"></app-sponsor-banner-strip>

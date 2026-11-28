@@ -677,77 +677,54 @@
 <!-- ========================================================= -->
 @if (celebrationUniform(); as active) {
   <div class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fade-in">
-    <div class="relative w-full max-w-4xl rounded-3xl overflow-hidden bg-slate-950 border border-white/15 shadow-2xl">
-      <!-- 背景ムービーレイヤー -->
-      <div class="relative h-[470px] sm:h-[540px] w-full overflow-hidden flex items-center justify-center">
+    <div class="relative w-full max-w-3xl max-h-[92vh] rounded-2xl overflow-hidden bg-slate-950 border border-white/15 shadow-2xl flex flex-col">
+      <!-- 上部ヘッダー -->
+      <div class="px-4 py-3 sm:px-5 bg-slate-950 border-b border-white/10 flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="px-3 py-1 rounded-full bg-[#B31B1B] text-white text-xs font-bold shrink-0">
+            会費のご納入ありがとうございます
+          </span>
+          @if (active.isDemo) {
+            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[11px] font-bold shrink-0">デモ</span>
+          }
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          @if (!videoMissing()) {
+            <button
+              type="button"
+              (click)="toggleMute()"
+              class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20">
+              {{ isVideoMuted() ? '音声ON' : 'ミュート' }}
+            </button>
+          }
+          <button
+            type="button"
+            (click)="closeCelebration(false)"
+            aria-label="閉じる"
+            class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border border-white/20">
+            ×
+          </button>
+        </div>
+      </div>
+
+      <!-- 中央：納入者お礼動画プレーヤー（ボール寄付と同様に全体が見切れず鮮明再生） -->
+      <div class="relative flex-1 min-h-[300px] sm:min-h-[420px] max-h-[60vh] bg-black flex items-center justify-center overflow-hidden">
         @if (!videoMissing()) {
           <video
             [src]="membershipVideoPath"
+            preload="auto"
+            (loadedmetadata)="isVideoMuted() && ensureMutedAutoplay($event)"
+            (canplay)="isVideoMuted() && ensureMutedAutoplay($event)"
             (error)="onVideoError()"
             autoplay
             loop
             playsinline
+            controls
             [muted]="isVideoMuted()"
-            class="absolute inset-0 w-full h-full object-cover opacity-75">
+            class="w-full h-full object-contain">
           </video>
         } @else {
-          <!-- 実ムービー未配置時のリッチフォールバック（スタジアム・スポットライト演出） -->
-          <div class="absolute inset-0 bg-gradient-to-br from-[#02122b] via-[#002D62] to-[#2b0910]"></div>
-          <div class="stadium-spotlight-left absolute -top-10 -left-10 w-[55%] h-[130%] bg-gradient-to-b from-amber-200/25 via-sky-200/10 to-transparent blur-2xl"></div>
-          <div class="stadium-spotlight-right absolute -top-10 -right-10 w-[55%] h-[130%] bg-gradient-to-b from-white/25 via-blue-200/10 to-transparent blur-2xl"></div>
-        }
-
-        <!-- 暗幕グラデーション -->
-        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/60"></div>
-
-        <!-- 祝福の紙吹雪パーティクル -->
-        @for (idx of confettiIndexes; track idx) {
-          <div
-            class="celebration-confetti w-2 h-3 rounded-sm"
-            [style.left.%]="6 + idx * 8"
-            [style.animation-delay.s]="(idx % 5) * 0.55"
-            [ngClass]="{
-              'bg-amber-300': idx % 3 === 0,
-              'bg-white': idx % 3 === 1,
-              'bg-[#ef4444]': idx % 3 === 2
-            }">
-          </div>
-        }
-
-        <!-- 上部コントロール -->
-        <div class="absolute top-4 left-4 right-4 z-20 flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <span class="px-3 py-1 rounded-full bg-[#B31B1B] text-white text-xs font-bold shadow">
-              会費のご納入ありがとうございます！
-            </span>
-            @if (videoMissing()) {
-              <span class="hidden sm:inline-block px-2.5 py-1 rounded-full bg-white/15 text-white/80 text-[11px]">
-                実ムービー枠: src/assets/videos/{{ membershipVideoFileName }}
-              </span>
-            }
-          </div>
-          <div class="flex items-center gap-2">
-            @if (!videoMissing()) {
-              <button
-                type="button"
-                (click)="toggleMute()"
-                class="px-3 py-1.5 rounded-full bg-black/50 hover:bg-black/80 text-white text-xs font-semibold border border-white/20">
-                {{ isVideoMuted() ? '🔇 音声ON' : '🔊 ミュート' }}
-              </button>
-            }
-            <button
-              type="button"
-              (click)="closeCelebration(false)"
-              aria-label="閉じる"
-              class="w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center border border-white/20">
-              ✕
-            </button>
-          </div>
-        </div>
-
-        <!-- 中央ヒーロー：ネーム入りミニチュアユニフォーム -->
-        <div class="relative z-10 flex flex-col items-center text-center px-6">
-          <div class="animate-uniform-pop">
+          <div class="w-full h-full bg-[#002D62] flex items-center justify-center p-6">
             <app-mini-uniform
               [name]="active.name"
               [period]="active.period"
@@ -755,42 +732,53 @@
               [interactive]="true">
             </app-mini-uniform>
           </div>
+        }
+      </div>
 
-          <div class="mt-4 max-w-lg">
-            <p class="text-xs sm:text-sm font-bold tracking-widest text-amber-300 uppercase">
+      <!-- 下部：ネーム入りユニフォーム進呈＆領収書バー -->
+      <div class="bg-white px-4 py-4 sm:px-6 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
+        <div class="flex items-center gap-3.5 min-w-0">
+          <div class="shrink-0">
+            <app-mini-uniform
+              [name]="active.name"
+              [period]="active.period"
+              size="sm"
+              [interactive]="false">
+            </app-mini-uniform>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[11px] font-semibold text-gray-500">
               {{ active.year }}年 OB会費 支援者ユニフォーム
             </p>
-            <h4 class="text-xl sm:text-2xl font-extrabold text-white mt-1">
+            <h4 class="font-serif-jp text-sm sm:text-base font-bold text-[#002D62] mt-0.5 truncate">
               {{ active.period }}　{{ active.name }}
             </h4>
             @if (active.message) {
-              <p class="mt-2 text-xs sm:text-sm text-blue-100 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/15">
-                「{{ active.message }}」
-              </p>
+              <p class="text-xs text-gray-600 truncate mt-0.5">「{{ active.message }}」</p>
             }
           </div>
         </div>
-      </div>
 
-      <!-- 下部フッターアクション -->
-      <div class="bg-slate-950/95 px-5 py-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div class="text-xs text-slate-300 text-center sm:text-left">
-          @if (active.isDemo) {
-            <span class="inline-block px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold mr-1.5">デモ体験</span>
+        <div class="flex flex-wrap items-center justify-center gap-2 shrink-0">
+          @if (active.receiptUrl) {
+            <a
+              [href]="active.receiptUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-4 py-2.5 rounded-lg bg-[#9A7B3C] hover:bg-[#82662f] text-white font-bold text-xs sm:text-sm transition-colors">
+              領収書を表示・印刷
+            </a>
           }
-          <span>お名前・卒期入りのユニフォームが一覧に表示されました。</span>
-        </div>
-        <div class="flex items-center gap-2">
           <button
             type="button"
             (click)="closeCelebration(true)"
-            class="px-5 py-2.5 rounded-xl bg-white text-[#002D62] hover:bg-blue-50 font-bold text-xs sm:text-sm shadow transition-colors">
+            class="px-4 py-2.5 rounded-lg bg-[#002D62] hover:bg-[#001f44] text-white font-bold text-xs sm:text-sm transition-colors">
             ユニフォーム一覧で見る →
           </button>
           <button
             type="button"
             (click)="closeCelebration(false)"
-            class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm transition-colors">
+            class="px-3.5 py-2.5 rounded-lg border border-gray-300 hover:border-gray-400 text-gray-700 font-semibold text-xs sm:text-sm transition-colors">
             閉じる
           </button>
         </div>

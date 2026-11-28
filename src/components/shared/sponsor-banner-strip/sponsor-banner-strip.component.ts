@@ -14,7 +14,7 @@ import { SponsorService } from '../../../services/sponsor.service';
 export class SponsorBannerStripComponent implements OnInit {
   readonly sponsorService = inject(SponsorService);
 
-  variant = input<'full' | 'compact'>('full');
+  variant = input<'full' | 'compact' | 'gold' | 'silver' | 'bronze'>('full');
   showRecruitCta = input<boolean>(true);
 
   ngOnInit(): void {

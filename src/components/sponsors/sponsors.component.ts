@@ -14,6 +14,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
 import { BackButtonComponent } from '../shared/back-button/back-button.component';
 import { SponsorBannerStripComponent } from '../shared/sponsor-banner-strip/sponsor-banner-strip.component';
+import { SponsorRunwayComponent } from './sponsor-runway/sponsor-runway.component';
 import { SEOService } from '../../services/seo.service';
 import {
   SponsorService,
@@ -31,6 +32,7 @@ import {
     SectionTitleComponent,
     BackButtonComponent,
     SponsorBannerStripComponent,
+    SponsorRunwayComponent,
   ],
   templateUrl: './sponsors.component.html',
   styleUrls: ['./sponsors.component.css'],
@@ -64,6 +66,7 @@ export class SponsorsComponent implements OnInit {
     tier: SponsorTier;
     companyName: string;
     amount: number;
+    receiptUrl?: string;
   } | null>(null);
 
   readonly selectedPlan = computed(() =>
@@ -135,6 +138,16 @@ export class SponsorsComponent implements OnInit {
   selectTier(tier: SponsorTier): void {
     this.selectedTier.set(tier);
     this.formError.set(null);
+  }
+
+  onRunwaySelectPlan(tier: SponsorTier): void {
+    this.selectTier(tier);
+    if (this.isBrowser) {
+      const target = document.getElementById('sponsor-application-form');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
   }
 
   getPlanName(tier: SponsorTier): string {

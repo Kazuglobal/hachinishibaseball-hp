@@ -1,3 +1,13 @@
+/* 日本語の文節途中改行を防止 */
+p,
+h2,
+h3,
+h4,
+dd {
+  word-break: auto-phrase;
+  overflow-wrap: break-word;
+}
+
 /* ゴールド協賛バナー：上品な光沢シマー演出 */
 @keyframes goldSheenSweep {
   0% {
@@ -38,4 +48,48 @@
 
 .sponsor-silver-card:hover {
   transform: translateY(-2px) scale(1.015);
+}
+
+/* スマホ時：横スワイプ（スナップ付き・スクロールバー非表示） */
+@media (max-width: 767px) {
+  .sponsor-mobile-track {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 14px !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-left: -20px;
+    margin-right: -20px;
+    padding: 2px 20px 8px;
+    scroll-padding-left: 20px;
+  }
+
+  .sponsor-mobile-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sponsor-mobile-track > * {
+    margin-top: 0 !important;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  .sponsor-mobile-track--gold > * {
+    width: 88vw;
+    max-width: 350px;
+  }
+
+  .sponsor-mobile-track--silver > * {
+    width: 80vw;
+    max-width: 310px;
+  }
+
+  .sponsor-mobile-track--bronze > * {
+    width: 72vw;
+    max-width: 265px;
+  }
 }

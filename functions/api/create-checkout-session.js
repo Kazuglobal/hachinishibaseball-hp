@@ -115,6 +115,10 @@ export async function onRequestPost(context) {
     );
     params.append('line_items[0][quantity]', '1');
     params.append(
+      'payment_intent_data[description]',
+      `八戸西高校野球部OB会 年会費（${year}年・${period} ${donorName} 様）`
+    );
+    params.append(
       'success_url',
       `${baseUrl}/support?status=success&session_id={CHECKOUT_SESSION_ID}`
     );

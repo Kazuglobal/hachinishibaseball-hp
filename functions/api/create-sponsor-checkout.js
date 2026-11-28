@@ -132,7 +132,7 @@ export async function onRequestPost(context) {
     const contactName = sanitize(body.contactName, 40);
     const email = sanitize(body.email, 120);
     const phone = sanitize(body.phone, 30);
-    const catchphrase = sanitize(body.catchphrase, 60);
+    const catchphrase = sanitize(body.catchphrase, 140);
     const validUrl = validateHttpsUrl(body.url);
 
     if (!companyName) return json({ error: '企業・団体名を入力してください。' }, 400);
@@ -158,6 +158,11 @@ export async function onRequestPost(context) {
       `${plan.description}（${companyName} 様）`
     );
     params.append('line_items[0][quantity]', '1');
+    params.append('payment_intent_data[receipt_email]', email);
+    params.append(
+      'payment_intent_data[description]',
+      `八戸西高校野球部OB会 協賛金（${plan.name}・${companyName} 様）`
+    );
     params.append(
       'success_url',
       `${baseUrl}/sponsors?status=success&session_id={CHECKOUT_SESSION_ID}`

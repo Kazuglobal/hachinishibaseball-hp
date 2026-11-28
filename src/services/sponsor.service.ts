@@ -42,49 +42,49 @@ export const SPONSOR_PLANS: SponsorPlanConfig[] = [
   {
     id: 'bronze',
     name: 'ブロンズ協賛',
-    englishName: 'BRONZE PARTNER',
+    englishName: 'Bronze',
     price: 10000,
     periodLabel: '年額（1年間掲載）',
-    formatSummary: 'テキストリンク枠（企業・店舗名＋公式サイトリンク）',
-    motionSummary: 'ホバー時の下線・ネイビー強調',
-    placementSummary: 'トップページ協賛エリア・協賛企業一覧ページ',
-    recommendedImageSize: '画像不要（テキスト掲出）',
+    formatSummary: 'サムネイル画像＋社名・公式サイトリンク',
+    motionSummary: '落ち着いたホバー強調',
+    placementSummary: 'サイト最下部（フッター直上）・協賛一覧',
+    recommendedImageSize: 'ロゴ・店舗写真（画像なしも可）',
     features: [
-      '企業名・店舗名および公式サイトへのリンク掲出',
-      '掲載期間：掲載開始日から1年間',
-      'ロゴ・バナー画像の制作不要ですぐに掲載可能',
+      'サイト最下部と協賛一覧に1年間掲出',
+      'ロゴや店舗写真のサムネイル付きで社名・URLへリンク',
+      '画像のご用意がない場合もテキストのみで掲出可能',
     ],
   },
   {
     id: 'silver',
     name: 'シルバー協賛',
-    englishName: 'SILVER PARTNER',
+    englishName: 'Silver',
     price: 30000,
     periodLabel: '年額（1年間掲載）',
-    formatSummary: '標準ロゴバナー枠＋一言キャッチコピー',
-    motionSummary: 'ホバー時の枠線強調・緩やかなズーム演出',
-    placementSummary: 'トップページ協賛エリア・活動報告・ご支援ページ・協賛一覧',
-    recommendedImageSize: '推奨 400 × 120 px（PNG / JPG）',
+    formatSummary: '標準広告＋業種・応援文（50字まで）',
+    motionSummary: 'ホバー時の静かな浮き上がり演出',
+    placementSummary: 'トップ中段（活動報告直下）・主要ページ',
+    recommendedImageSize: '広告画像・ロゴ（PNG / JPG）',
     features: [
-      'ロゴまたはバナー画像（400×120px推奨）の掲出',
-      '一言キャッチコピー（最大40文字）および公式サイトリンク',
-      '複数ページ（トップ・活動報告・ご支援ページ等）に掲載',
+      'トップ中段と試合結果・活動報告ページに1年間掲出',
+      '見切れのない広告画像に業種と応援文（50字まで）を併記',
+      'OB・保護者・地域の方へ自然に届く定番プラン',
     ],
   },
   {
     id: 'gold',
     name: 'ゴールド協賛',
-    englishName: 'GOLD PARTNER',
+    englishName: 'Gold',
     price: 50000,
     periodLabel: '年額（1年間掲載）',
-    formatSummary: '大型ワイドバナー枠＋紹介文・優先掲出',
-    motionSummary: '上品な光沢シマー演出・ワイドスライド切替表示',
-    placementSummary: 'トップページ最上位協賛枠・試合結果・活動報告・ご支援ページ',
-    recommendedImageSize: '推奨 720 × 200 px（PNG / JPG）',
+    formatSummary: '大型広告＋横の企業紹介解説（140字まで）',
+    motionSummary: '上品な光沢シマー演出・トップ最上部',
+    placementSummary: 'トップ最上部・主要全ページ優先掲出',
+    recommendedImageSize: '大型広告ビジュアル（PNG / JPG）',
     features: [
-      '最上位エリアでの大型ワイドバナー（720×200px推奨）優先掲出',
-      '上品な光沢シマー演出および自動スライド表示に対応',
-      '主要全ページ（トップ・試合結果・活動報告・ご支援）に掲載',
+      'トップ最上部（ファーストビュー直下）に1年間優先掲出',
+      '広告の横に事業内容や応援の想いを伝える紹介解説付き',
+      '試合結果・活動報告・ご支援を含む主要全ページへ掲載',
     ],
   },
 ];
@@ -188,6 +188,7 @@ export class SponsorService {
       tier: SponsorTier;
       companyName: string;
       amount: number;
+      receiptUrl?: string;
     };
     error?: string;
   }> {

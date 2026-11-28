@@ -41,6 +41,7 @@ export interface UniformDonorItem {
   createdAt?: string;
   isDemo?: boolean;
   isOnline?: boolean;
+  receiptUrl?: string;
 }
 
 /** GAS側が success:false を返したことを示すエラー（メッセージは画面に表示してよい内容） */
@@ -270,6 +271,7 @@ export class SupportComponent implements OnInit {
       createdAt: rec.createdAt,
       isDemo: rec.isDemo,
       isOnline: true,
+      receiptUrl: rec.receiptUrl,
     };
   }
 
@@ -391,6 +393,19 @@ export class SupportComponent implements OnInit {
 
   toggleMute(): void {
     this.isVideoMuted.set(!this.isVideoMuted());
+  }
+
+  ensureMutedAutoplay(event: Event): void {
+    const video = event.target as HTMLVideoElement | null;
+    if (!video) return;
+    if (this.isVideoMuted()) {
+      video.muted = true;
+    }
+    if (video.paused) {
+      video.play().catch(() => {
+        // ブラウザの自動再生ポリシーでブロックされた場合はコントロールから再生可能
+      });
+    }
   }
 
   onVideoError(): void {

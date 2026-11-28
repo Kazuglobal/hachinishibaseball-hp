@@ -12,6 +12,7 @@ export interface MembershipFeeRecord {
   createdAt: string;
   isDemo?: boolean;
   sessionId?: string;
+  receiptUrl?: string;
 }
 
 export interface CreateMembershipCheckoutPayload {
@@ -181,6 +182,7 @@ export class MembershipFeeService {
           year: Number(d.year) || new Date().getFullYear(),
           amount: Number(d.amount) || MEMBERSHIP_FEE_AMOUNT,
           message: d.message ? String(d.message) : '',
+          receiptUrl: d.receiptUrl ? String(d.receiptUrl) : undefined,
           createdAt: String(d.createdAt || new Date().toISOString()),
           isDemo: false,
         };

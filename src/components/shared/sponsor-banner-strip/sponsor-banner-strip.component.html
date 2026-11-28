@@ -1,269 +1,349 @@
-<section class="w-full py-12 bg-[#F8F8F7] border-t border-gray-200">
-  <div class="container mx-auto px-4 sm:px-8 max-w-6xl">
-    <!-- ヘッダー -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-4 mb-8 border-b border-gray-300">
+<section
+  class="w-full border-t border-[#E6E3DC]"
+  [class.py-7]="variant() === 'gold'"
+  [class.bg-white]="variant() === 'gold'"
+  [class.py-8]="variant() !== 'gold'"
+  [class.sm:py-9]="variant() !== 'gold'"
+  [class.bg-[#FAF9F6]]="variant() !== 'gold'">
+  <div class="container mx-auto px-5 sm:px-8 max-w-5xl">
+    <!-- コンパクトなセクション見出し -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-3 mb-5 border-b border-[#E6E3DC]">
       <div>
-        <p class="text-[11px] font-oswald tracking-[0.2em] text-[#B31B1B] uppercase">OFFICIAL PARTNERS</p>
-        <h2 class="font-serif-jp text-xl sm:text-2xl font-bold text-[#002D62] mt-0.5">
-          協賛企業・団体
-        </h2>
+        @if (variant() === 'gold') {
+          <p class="text-[10px] tracking-[0.16em] text-[#9A7B3C] font-semibold">トップページ最上部掲載</p>
+          <h2 class="font-serif-jp text-lg sm:text-xl font-bold text-[#002D62] mt-0.5">ゴールド協賛パートナー</h2>
+        } @else if (variant() === 'silver') {
+          <p class="text-[10px] tracking-[0.16em] text-[#646B73] font-semibold">トップページ中段掲載</p>
+          <h2 class="font-serif-jp text-lg sm:text-xl font-bold text-[#002D62] mt-0.5">シルバー協賛パートナー</h2>
+        } @else if (variant() === 'bronze') {
+          <p class="text-[10px] tracking-[0.16em] text-[#8C6239] font-semibold">サイト最下部掲載</p>
+          <h2 class="font-serif-jp text-base sm:text-lg font-bold text-[#002D62] mt-0.5">ブロンズ協賛パートナー</h2>
+        } @else {
+          <p class="text-[10px] tracking-[0.16em] text-[#646B73] font-semibold">協賛企業・団体の掲載見本</p>
+          <h2 class="font-serif-jp text-xl sm:text-2xl font-bold text-[#002D62] mt-0.5">実際のサイトでの見え方</h2>
+        }
       </div>
       @if (showRecruitCta()) {
         <a
           routerLink="/sponsors"
-          class="text-xs sm:text-sm font-semibold text-[#002D62] hover:text-[#B31B1B] underline underline-offset-4">
+          class="text-xs font-semibold text-[#002D62] hover:text-[#B31B1B] underline underline-offset-4">
           協賛・広告掲載のご案内（年額 10,000円〜）
         </a>
       }
     </div>
 
     @if (sponsorService.sponsors().length > 0) {
-      <div class="space-y-8">
-        <!-- ゴールド協賛（大型ワイドバナー＋上品な光沢シマー） -->
-        @if (sponsorService.goldSponsors().length > 0) {
-          <div>
-            <p class="text-[11px] font-semibold tracking-widest text-gray-500 uppercase mb-3">GOLD PARTNERS</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              @for (sp of sponsorService.goldSponsors(); track sp.id) {
-                @if (sp.url) {
-                  <a
-                    [href]="sp.url"
-                    target="_blank"
-                    rel="sponsored noopener noreferrer"
-                    class="sponsor-gold-card block bg-white border-2 border-[#002D62] rounded-lg p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                      @if (sp.logoUrl) {
-                        <img
-                          [src]="sp.logoUrl"
-                          [alt]="sp.companyName"
-                          loading="lazy"
-                          class="h-16 sm:h-20 w-auto max-w-[240px] object-contain shrink-0" />
-                      }
-                      <div class="min-w-0">
-                        <span class="inline-block text-[10px] font-bold tracking-widest text-[#B31B1B] uppercase">GOLD PARTNER</span>
-                        <h3 class="font-serif-jp text-lg sm:text-xl font-bold text-[#002D62] mt-0.5">{{ sp.companyName }}</h3>
-                        @if (sp.catchphrase) {
-                          <p class="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">{{ sp.catchphrase }}</p>
-                        }
-                      </div>
+      <div class="space-y-6">
+        <!-- ゴールド協賛（トップ最上部・広告＋横に企業解説・2列コンパクト） -->
+        @if ((variant() === 'full' || variant() === 'compact' || variant() === 'gold') && sponsorService.goldSponsors().length > 0) {
+          <div class="sponsor-mobile-track sponsor-mobile-track--gold grid grid-cols-1 md:grid-cols-2 gap-4">
+            @for (sp of sponsorService.goldSponsors(); track sp.id) {
+              <article class="sponsor-gold-card bg-white border border-[#E6E3DC] rounded p-4">
+                <div class="flex items-start gap-4">
+                  @if (sp.logoUrl) {
+                    <img
+                      [src]="sp.logoUrl"
+                      [alt]="sp.companyName"
+                      loading="lazy"
+                      class="w-24 sm:w-28 aspect-[3/4] object-contain rounded-sm bg-[#FAF9F6] shrink-0" />
+                  } @else {
+                    <div class="w-24 sm:w-28 aspect-[3/4] rounded-sm bg-[#002D62] text-white flex items-center justify-center font-serif-jp text-xs font-bold px-2 text-center shrink-0">
+                      {{ sp.companyName }}
                     </div>
-                  </a>
-                } @else {
-                  <div class="sponsor-gold-card bg-white border-2 border-[#002D62] rounded-lg p-5 sm:p-6 shadow-sm">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                      @if (sp.logoUrl) {
-                        <img [src]="sp.logoUrl" [alt]="sp.companyName" loading="lazy" class="h-16 sm:h-20 w-auto max-w-[240px] object-contain shrink-0" />
-                      }
-                      <div class="min-w-0">
-                        <span class="inline-block text-[10px] font-bold tracking-widest text-[#B31B1B] uppercase">GOLD PARTNER</span>
-                        <h3 class="font-serif-jp text-lg sm:text-xl font-bold text-[#002D62] mt-0.5">{{ sp.companyName }}</h3>
-                        @if (sp.catchphrase) {
-                          <p class="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">{{ sp.catchphrase }}</p>
-                        }
-                      </div>
-                    </div>
+                  }
+                  <div class="min-w-0 space-y-1.5">
+                    <p class="text-[10px] font-semibold text-[#9A7B3C]">ゴールド協賛</p>
+                    <h3 class="font-serif-jp text-base sm:text-lg font-bold text-[#002D62] leading-snug">{{ sp.companyName }}</h3>
+                    @if (sp.catchphrase) {
+                      <p class="text-xs text-[#444B54] leading-relaxed">{{ sp.catchphrase }}</p>
+                    }
+                    @if (sp.url) {
+                      <a
+                        [href]="sp.url"
+                        target="_blank"
+                        rel="sponsored noopener noreferrer"
+                        class="inline-block pt-1 text-xs font-semibold text-[#002D62] hover:text-[#B31B1B] underline underline-offset-4">
+                        公式サイトを見る →
+                      </a>
+                    }
                   </div>
-                }
-              }
-            </div>
+                </div>
+              </article>
+            }
           </div>
         }
 
-        <!-- シルバー協賛（標準ロゴバナー＋ホバーズーム） -->
-        @if (sponsorService.silverSponsors().length > 0) {
-          <div>
-            <p class="text-[11px] font-semibold tracking-widest text-gray-500 uppercase mb-3">SILVER PARTNERS</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              @for (sp of sponsorService.silverSponsors(); track sp.id) {
-                @if (sp.url) {
-                  <a
-                    [href]="sp.url"
-                    target="_blank"
-                    rel="sponsored noopener noreferrer"
-                    class="sponsor-silver-card block bg-white border border-gray-300 hover:border-[#002D62] rounded-lg p-4 shadow-sm">
-                    @if (sp.logoUrl) {
-                      <div class="h-14 flex items-center mb-3">
-                        <img [src]="sp.logoUrl" [alt]="sp.companyName" loading="lazy" class="max-h-14 w-auto object-contain" />
-                      </div>
-                    }
-                    <h3 class="font-serif-jp text-base font-bold text-[#002D62]">{{ sp.companyName }}</h3>
+        <!-- シルバー協賛（トップ中段・横並びコンパクトカード） -->
+        @if ((variant() === 'full' || variant() === 'compact' || variant() === 'silver') && sponsorService.silverSponsors().length > 0) {
+          <div class="sponsor-mobile-track sponsor-mobile-track--silver grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            @for (sp of sponsorService.silverSponsors(); track sp.id) {
+              @if (sp.url) {
+                <a
+                  [href]="sp.url"
+                  target="_blank"
+                  rel="sponsored noopener noreferrer"
+                  class="sponsor-silver-card flex items-center gap-3.5 bg-white border border-[#E6E3DC] hover:border-[#002D62] rounded p-3.5 transition-colors">
+                  @if (sp.logoUrl) {
+                    <img [src]="sp.logoUrl" [alt]="sp.companyName" loading="lazy" class="w-16 aspect-[3/4] object-contain rounded-sm bg-[#FAF9F6] shrink-0" />
+                  }
+                  <div class="min-w-0">
+                    <h3 class="font-serif-jp text-sm font-bold text-[#002D62] truncate">{{ sp.companyName }}</h3>
                     @if (sp.catchphrase) {
-                      <p class="text-xs text-gray-600 mt-1 line-clamp-2">{{ sp.catchphrase }}</p>
-                    }
-                  </a>
-                } @else {
-                  <div class="sponsor-silver-card bg-white border border-gray-300 rounded-lg p-4 shadow-sm">
-                    @if (sp.logoUrl) {
-                      <div class="h-14 flex items-center mb-3">
-                        <img [src]="sp.logoUrl" [alt]="sp.companyName" loading="lazy" class="max-h-14 w-auto object-contain" />
-                      </div>
-                    }
-                    <h3 class="font-serif-jp text-base font-bold text-[#002D62]">{{ sp.companyName }}</h3>
-                    @if (sp.catchphrase) {
-                      <p class="text-xs text-gray-600 mt-1 line-clamp-2">{{ sp.catchphrase }}</p>
+                      <p class="text-[11px] text-[#555D66] mt-1 leading-relaxed line-clamp-2">{{ sp.catchphrase }}</p>
                     }
                   </div>
-                }
+                </a>
+              } @else {
+                <div class="sponsor-silver-card flex items-center gap-3.5 bg-white border border-[#E6E3DC] rounded p-3.5">
+                  @if (sp.logoUrl) {
+                    <img [src]="sp.logoUrl" [alt]="sp.companyName" loading="lazy" class="w-16 aspect-[3/4] object-contain rounded-sm bg-[#FAF9F6] shrink-0" />
+                  }
+                  <div class="min-w-0">
+                    <h3 class="font-serif-jp text-sm font-bold text-[#002D62] truncate">{{ sp.companyName }}</h3>
+                    @if (sp.catchphrase) {
+                      <p class="text-[11px] text-[#555D66] mt-1 leading-relaxed line-clamp-2">{{ sp.catchphrase }}</p>
+                    }
+                  </div>
+                </div>
               }
-            </div>
+            }
           </div>
         }
 
-        <!-- ブロンズ協賛（テキストリンク枠） -->
-        @if (variant() === 'full' && sponsorService.bronzeSponsors().length > 0) {
-          <div>
-            <p class="text-[11px] font-semibold tracking-widest text-gray-500 uppercase mb-3">BRONZE PARTNERS</p>
-            <div class="flex flex-wrap gap-2.5">
-              @for (sp of sponsorService.bronzeSponsors(); track sp.id) {
-                @if (sp.url) {
-                  <a
-                    [href]="sp.url"
-                    target="_blank"
-                    rel="sponsored noopener noreferrer"
-                    class="px-4 py-2 bg-white border border-gray-300 hover:border-[#002D62] rounded text-xs sm:text-sm font-semibold text-gray-800 hover:text-[#002D62] hover:underline underline-offset-4 transition-colors">
-                    {{ sp.companyName }}
-                  </a>
-                } @else {
-                  <span class="px-4 py-2 bg-white border border-gray-300 rounded text-xs sm:text-sm font-semibold text-gray-800">
+        <!-- ブロンズ協賛（サイト最下部・サムネイル付きスリム1行） -->
+        @if ((variant() === 'full' || variant() === 'bronze') && sponsorService.bronzeSponsors().length > 0) {
+          <div class="sponsor-mobile-track sponsor-mobile-track--bronze grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            @for (sp of sponsorService.bronzeSponsors(); track sp.id) {
+              @if (sp.url) {
+                <a
+                  [href]="sp.url"
+                  target="_blank"
+                  rel="sponsored noopener noreferrer"
+                  class="flex items-center gap-3 p-2.5 bg-white border border-[#E6E3DC] hover:border-[#002D62] rounded transition-colors group">
+                  @if (sp.logoUrl) {
+                    <img [src]="sp.logoUrl" [alt]="sp.companyName" loading="lazy" class="w-10 h-[52px] object-contain rounded-sm bg-[#FAF9F6] shrink-0" />
+                  }
+                  <span class="text-xs sm:text-sm font-semibold text-[#1E242B] group-hover:text-[#002D62] group-hover:underline underline-offset-4 truncate">
                     {{ sp.companyName }}
                   </span>
-                }
+                </a>
+              } @else {
+                <div class="flex items-center gap-3 p-2.5 bg-white border border-[#E6E3DC] rounded">
+                  @if (sp.logoUrl) {
+                    <img [src]="sp.logoUrl" [alt]="sp.companyName" loading="lazy" class="w-10 h-[52px] object-contain rounded-sm bg-[#FAF9F6] shrink-0" />
+                  }
+                  <span class="text-xs sm:text-sm font-semibold text-[#1E242B] truncate">{{ sp.companyName }}</span>
+                </div>
               }
-            </div>
+            }
           </div>
         }
       </div>
     } @else {
-      <!-- 公開中の協賛企業が無い場合：実際の掲載イメージ（サンプル見本）＋募集案内 -->
-      <div class="space-y-8">
-        <div class="bg-white border border-gray-200 rounded-lg p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <!-- 公開前：1画面に3段階すべてが見渡せるコンパクト掲載見本 -->
+      <div class="space-y-6">
+        <!-- ゴールド協賛 見本（トップ最上部・2列横並び・左に全体広告＋右に企業解説） -->
+        @if (variant() === 'full' || variant() === 'compact' || variant() === 'gold') {
           <div>
-            <p class="text-xs font-semibold tracking-wider text-[#002D62] mb-1">協賛企業・団体様 募集中（下記は掲載見本です）</p>
-            <p class="text-xs sm:text-sm text-gray-700 leading-relaxed">
-              八戸西高等学校野球部を応援してくださる企業・店舗・団体様の協賛枠（年額 10,000円・30,000円・50,000円）を募集しております。実際の協賛企業が掲載されると、以下の見本は自動で切り替わります。
-            </p>
-          </div>
-          @if (showRecruitCta()) {
-            <a
-              routerLink="/sponsors"
-              class="shrink-0 inline-flex items-center justify-center px-5 py-2.5 rounded bg-[#002D62] hover:bg-[#001f44] text-white font-bold text-xs sm:text-sm transition-colors">
-              協賛枠の詳細・お申込みへ
-            </a>
-          }
-        </div>
-
-        <!-- ゴールド協賛 掲載見本（大型ワイドバナー＋光沢シマー演出） -->
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-[11px] font-semibold tracking-widest text-gray-500 uppercase">GOLD PARTNERS（年額 50,000円・掲載見本）</p>
-            <span class="text-[11px] text-gray-500">光沢シマー演出・最上位優先掲出</span>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <a
-              routerLink="/sponsors"
-              class="sponsor-gold-card block bg-white border-2 border-[#002D62] rounded-lg p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div class="h-16 sm:h-20 w-full sm:w-44 rounded bg-[#002D62] text-white flex flex-col items-center justify-center shrink-0 px-3">
-                  <span class="font-oswald text-sm tracking-widest">SAMPLE CORP.</span>
-                  <span class="text-[10px] text-white/75 mt-0.5">ロゴバナー枠 (720×200)</span>
+            @if (variant() === 'full') {
+              <div class="pb-2 mb-3 border-b border-[#E6E3DC] flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                <div class="flex items-baseline gap-2.5">
+                  <h3 class="font-serif-jp text-base font-bold text-[#002D62]">ゴールド協賛</h3>
+                  <span class="font-oswald text-sm font-semibold text-[#1E242B]">¥50,000<small class="font-sans text-[10px] font-normal text-[#646B73]"> / 年</small></span>
                 </div>
-                <div class="min-w-0">
-                  <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-bold tracking-widest text-[#B31B1B] uppercase">GOLD PARTNER</span>
-                    <span class="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-semibold rounded">掲載見本</span>
+                <div class="flex items-center gap-3 text-[11px] text-[#646B73]">
+                  <span>トップ最上部・企業解説付き</span>
+                  <span class="md:hidden text-[#002D62] font-semibold">スワイプ →</span>
+                </div>
+              </div>
+            }
+
+            <div class="sponsor-mobile-track sponsor-mobile-track--gold grid grid-cols-1 md:grid-cols-2 gap-4">
+              <a
+                routerLink="/sponsors"
+                class="sponsor-gold-card group block bg-white border border-[#E6E3DC] hover:border-[#002D62]/40 rounded p-4 transition-colors">
+                <div class="flex items-start gap-4">
+                  <img
+                    src="assets/images/sponsors/ad-gold-mirai.jpg"
+                    alt="株式会社 八戸みらい建設 掲載見本"
+                    loading="lazy"
+                    class="w-24 sm:w-[106px] aspect-[3/4] object-contain rounded-sm shadow-sm shrink-0" />
+                  <div class="min-w-0 space-y-1.5">
+                    <p class="text-[10px] text-[#9A7B3C] font-semibold">総合建設・土木業（見本）</p>
+                    <h4 class="font-serif-jp text-[15px] sm:text-base font-bold text-[#002D62] leading-snug">
+                      株式会社 八戸みらい建設
+                    </h4>
+                    <p class="text-[11.5px] text-[#444B54] leading-[1.65]">
+                      八戸市を中心に公共インフラ・商業施設を手がける総合建設会社。OB社員も多数在籍し、現役球児の挑戦を地元から応援しています。
+                    </p>
+                    <span class="inline-block pt-0.5 text-[11px] font-semibold text-[#002D62] group-hover:text-[#B31B1B] underline underline-offset-4">
+                      企業サイトを見る →
+                    </span>
                   </div>
-                  <h3 class="font-serif-jp text-lg font-bold text-[#002D62] mt-1">株式会社 八戸サンプル商事</h3>
-                  <p class="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">
-                    地域の未来を担う八戸西高校野球部の挑戦を全力で応援しています。
-                  </p>
                 </div>
-              </div>
-            </a>
+              </a>
 
-            <a
-              routerLink="/sponsors"
-              class="sponsor-gold-card block bg-white border-2 border-[#002D62] rounded-lg p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div class="h-16 sm:h-20 w-full sm:w-44 rounded bg-[#F8F8F7] border border-dashed border-[#002D62]/40 text-[#002D62] flex flex-col items-center justify-center shrink-0 px-3">
-                  <span class="text-xs font-bold">あなたの企業ロゴ</span>
-                  <span class="text-[10px] text-gray-500 mt-0.5">ゴールド枠 募集中</span>
-                </div>
-                <div class="min-w-0">
-                  <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-bold tracking-widest text-[#B31B1B] uppercase">GOLD PARTNER</span>
-                    <span class="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-semibold rounded">掲載見本</span>
+              <a
+                routerLink="/sponsors"
+                class="sponsor-gold-card group block bg-white border border-[#E6E3DC] hover:border-[#002D62]/40 rounded p-4 transition-colors">
+                <div class="flex items-start gap-4">
+                  <img
+                    src="assets/images/sponsors/ad-gold-michinoku.jpg"
+                    alt="みちのく水産フーズ株式会社 掲載見本"
+                    loading="lazy"
+                    class="w-24 sm:w-[106px] aspect-[3/4] object-contain rounded-sm shadow-sm shrink-0" />
+                  <div class="min-w-0 space-y-1.5">
+                    <p class="text-[10px] text-[#9A7B3C] font-semibold">水産加工・食品（見本）</p>
+                    <h4 class="font-serif-jp text-[15px] sm:text-base font-bold text-[#002D62] leading-snug">
+                      みちのく水産フーズ株式会社
+                    </h4>
+                    <p class="text-[11.5px] text-[#444B54] leading-[1.65]">
+                      八戸港の新鮮な海産物を全国へ届ける水産加工メーカー。地域のスポーツ振興と青少年の健全育成を掲げ、野球部を応援しています。
+                    </p>
+                    <span class="inline-block pt-0.5 text-[11px] font-semibold text-[#002D62] group-hover:text-[#B31B1B] underline underline-offset-4">
+                      企業サイトを見る →
+                    </span>
                   </div>
-                  <h3 class="font-serif-jp text-lg font-bold text-[#002D62] mt-1">協賛企業様 掲載イメージ</h3>
-                  <p class="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">
-                    トップページ最上位および主要ページへ大型ワイドバナーで掲出されます。
-                  </p>
                 </div>
-              </div>
-            </a>
-          </div>
-        </div>
-
-        <!-- シルバー協賛 掲載見本（標準ロゴバナー＋ホバーズーム演出） -->
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-[11px] font-semibold tracking-widest text-gray-500 uppercase">SILVER PARTNERS（年額 30,000円・掲載見本）</p>
-            <span class="text-[11px] text-gray-500">ホバー時ズーム・枠線強調</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <a
-              routerLink="/sponsors"
-              class="sponsor-silver-card block bg-white border border-gray-300 hover:border-[#002D62] rounded-lg p-4 shadow-sm">
-              <div class="h-14 rounded bg-[#002D62]/5 border border-gray-200 flex items-center justify-center text-xs font-bold text-[#002D62] mb-3">
-                ロゴバナー見本（400×120）
-              </div>
-              <div class="flex items-center justify-between gap-2">
-                <h3 class="font-serif-jp text-base font-bold text-[#002D62]">サンプル建設工業 株式会社</h3>
-                <span class="text-[10px] text-gray-400 shrink-0">見本</span>
-              </div>
-              <p class="text-xs text-gray-600 mt-1">地域密着の施工で八戸の街づくりを支えます。</p>
-            </a>
-
-            <a
-              routerLink="/sponsors"
-              class="sponsor-silver-card block bg-white border border-gray-300 hover:border-[#002D62] rounded-lg p-4 shadow-sm">
-              <div class="h-14 rounded bg-[#002D62]/5 border border-gray-200 flex items-center justify-center text-xs font-bold text-[#002D62] mb-3">
-                ロゴバナー見本（400×120）
-              </div>
-              <div class="flex items-center justify-between gap-2">
-                <h3 class="font-serif-jp text-base font-bold text-[#002D62]">みちのくスポーツ用品店</h3>
-                <span class="text-[10px] text-gray-400 shrink-0">見本</span>
-              </div>
-              <p class="text-xs text-gray-600 mt-1">野球用具のメンテナンス・グラブ修理も承ります。</p>
-            </a>
-
-            <a
-              routerLink="/sponsors"
-              class="sponsor-silver-card block bg-white border border-dashed border-gray-300 hover:border-[#002D62] rounded-lg p-4 shadow-sm">
-              <div class="h-14 rounded bg-[#F8F8F7] flex items-center justify-center text-xs font-semibold text-gray-500 mb-3">
-                シルバー協賛枠 募集中
-              </div>
-              <h3 class="font-serif-jp text-base font-bold text-gray-700">こちらに掲載されます</h3>
-              <p class="text-xs text-gray-500 mt-1">ロゴ画像と一言キャッチコピーを1年間掲出。</p>
-            </a>
-          </div>
-        </div>
-
-        <!-- ブロンズ協賛 掲載見本（テキストリンク枠） -->
-        @if (variant() === 'full') {
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <p class="text-[11px] font-semibold tracking-widest text-gray-500 uppercase">BRONZE PARTNERS（年額 10,000円・掲載見本）</p>
-              <span class="text-[11px] text-gray-500">テキストリンク・ホバー下線</span>
+              </a>
             </div>
-            <div class="flex flex-wrap gap-2.5">
-              <a routerLink="/sponsors" class="px-4 py-2 bg-white border border-gray-300 hover:border-[#002D62] rounded text-xs sm:text-sm font-semibold text-gray-800 hover:text-[#002D62] hover:underline underline-offset-4 transition-colors">
-                サンプル食堂（見本）
+          </div>
+        }
+
+        <!-- シルバー協賛 見本（トップ中段・3列横並びコンパクト） -->
+        @if (variant() === 'full' || variant() === 'compact' || variant() === 'silver') {
+          <div>
+            @if (variant() === 'full') {
+              <div class="pb-2 mb-3 border-b border-[#E6E3DC] flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                <div class="flex items-baseline gap-2.5">
+                  <h3 class="font-serif-jp text-base font-bold text-[#002D62]">シルバー協賛</h3>
+                  <span class="font-oswald text-sm font-semibold text-[#1E242B]">¥30,000<small class="font-sans text-[10px] font-normal text-[#646B73]"> / 年</small></span>
+                </div>
+                <div class="flex items-center gap-3 text-[11px] text-[#646B73]">
+                  <span>トップ中段（活動報告直下）</span>
+                  <span class="md:hidden text-[#002D62] font-semibold">スワイプ →</span>
+                </div>
+              </div>
+            }
+
+            <div class="sponsor-mobile-track sponsor-mobile-track--silver grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              <a
+                routerLink="/sponsors"
+                class="sponsor-silver-card flex items-center gap-3.5 bg-white border border-[#E6E3DC] hover:border-[#002D62]/50 rounded p-3.5 transition-colors">
+                <img
+                  src="assets/images/sponsors/ad-silver-sports.jpg"
+                  alt="北東北スポーツギア 掲載見本"
+                  loading="lazy"
+                  class="w-[68px] aspect-[3/4] object-contain rounded-sm shrink-0" />
+                <div class="min-w-0">
+                  <p class="text-[10px] text-[#646B73]">野球専門店（見本）</p>
+                  <h4 class="font-serif-jp text-sm font-bold text-[#002D62] mt-0.5">北東北スポーツギア</h4>
+                  <p class="text-[11px] text-[#555D66] mt-1 leading-relaxed">
+                    八戸西高校野球部を応援しています。グラブ修理も承ります。
+                  </p>
+                </div>
               </a>
-              <a routerLink="/sponsors" class="px-4 py-2 bg-white border border-gray-300 hover:border-[#002D62] rounded text-xs sm:text-sm font-semibold text-gray-800 hover:text-[#002D62] hover:underline underline-offset-4 transition-colors">
-                八戸サンプル歯科クリニック（見本）
+
+              <a
+                routerLink="/sponsors"
+                class="sponsor-silver-card flex items-center gap-3.5 bg-white border border-[#E6E3DC] hover:border-[#002D62]/50 rounded p-3.5 transition-colors">
+                <img
+                  src="assets/images/sponsors/ad-silver-clinic.jpg"
+                  alt="八戸ウエスト整形外科 掲載見本"
+                  loading="lazy"
+                  class="w-[68px] aspect-[3/4] object-contain rounded-sm shrink-0" />
+                <div class="min-w-0">
+                  <p class="text-[10px] text-[#646B73]">スポーツ整形（見本）</p>
+                  <h4 class="font-serif-jp text-sm font-bold text-[#002D62] mt-0.5">八戸ウエスト整形外科</h4>
+                  <p class="text-[11px] text-[#555D66] mt-1 leading-relaxed">
+                    スポーツ障害の予防とリハビリで球児の挑戦を支えます。
+                  </p>
+                </div>
               </a>
-              <a routerLink="/sponsors" class="px-4 py-2 bg-white border border-gray-300 hover:border-[#002D62] rounded text-xs sm:text-sm font-semibold text-gray-800 hover:text-[#002D62] hover:underline underline-offset-4 transition-colors">
-                サンプル不動産 株式会社（見本）
+
+              <a
+                routerLink="/sponsors"
+                class="sponsor-silver-card flex items-center gap-3.5 bg-white border border-[#E6E3DC] hover:border-[#002D62]/50 rounded p-3.5 transition-colors">
+                <img
+                  src="assets/images/sponsors/ad-gold-sanriku.jpg"
+                  alt="三陸モビリティ株式会社 掲載見本"
+                  loading="lazy"
+                  class="w-[68px] aspect-[3/4] object-contain rounded-sm shrink-0" />
+                <div class="min-w-0">
+                  <p class="text-[10px] text-[#646B73]">自動車販売（見本）</p>
+                  <h4 class="font-serif-jp text-sm font-bold text-[#002D62] mt-0.5">三陸モビリティ株式会社</h4>
+                  <p class="text-[11px] text-[#555D66] mt-1 leading-relaxed">
+                    八戸の未来を走る若い力を地域の皆さまと応援しています。
+                  </p>
+                </div>
+              </a>
+            </div>
+          </div>
+        }
+
+        <!-- ブロンズ協賛 見本（サイト最下部・サムネイル付きスリム1行） -->
+        @if (variant() === 'full' || variant() === 'bronze') {
+          <div>
+            @if (variant() === 'full') {
+              <div class="pb-2 mb-3 border-b border-[#E6E3DC] flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                <div class="flex items-baseline gap-2.5">
+                  <h3 class="font-serif-jp text-base font-bold text-[#002D62]">ブロンズ協賛</h3>
+                  <span class="font-oswald text-sm font-semibold text-[#1E242B]">¥10,000<small class="font-sans text-[10px] font-normal text-[#646B73]"> / 年</small></span>
+                </div>
+                <div class="flex items-center gap-3 text-[11px] text-[#646B73]">
+                  <span>サイト最下部（フッター直上）</span>
+                  <span class="md:hidden text-[#002D62] font-semibold">スワイプ →</span>
+                </div>
+              </div>
+            }
+
+            <div class="sponsor-mobile-track sponsor-mobile-track--bronze grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <a
+                routerLink="/sponsors"
+                class="flex items-center gap-3 p-2.5 bg-white border border-[#E6E3DC] hover:border-[#002D62]/50 rounded transition-colors group">
+                <img
+                  src="assets/images/sponsors/ad-bronze-kabushima.jpg"
+                  alt="蕪島ベーカリー＆カフェ サムネイル見本"
+                  loading="lazy"
+                  class="w-10 h-[53px] object-contain rounded-sm bg-[#FAF9F6] shrink-0" />
+                <div class="min-w-0">
+                  <p class="text-[10px] text-[#8C6239]">地域飲食店（見本）</p>
+                  <p class="font-serif-jp text-xs sm:text-sm font-bold text-[#002D62] group-hover:underline underline-offset-4 truncate">
+                    蕪島ベーカリー＆カフェ
+                  </p>
+                </div>
+              </a>
+
+              <a
+                routerLink="/sponsors"
+                class="flex items-center gap-3 p-2.5 bg-white border border-[#E6E3DC] hover:border-[#002D62]/50 rounded transition-colors group">
+                <img
+                  src="assets/images/sponsors/ad-silver-clinic.jpg"
+                  alt="八戸サンプル歯科クリニック サムネイル見本"
+                  loading="lazy"
+                  class="w-10 h-[53px] object-contain rounded-sm bg-[#FAF9F6] shrink-0" />
+                <div class="min-w-0">
+                  <p class="text-[10px] text-[#8C6239]">歯科医院（見本）</p>
+                  <p class="font-serif-jp text-xs sm:text-sm font-bold text-[#002D62] group-hover:underline underline-offset-4 truncate">
+                    八戸サンプル歯科クリニック
+                  </p>
+                </div>
+              </a>
+
+              <a
+                routerLink="/sponsors"
+                class="flex items-center gap-3 p-2.5 bg-white border border-[#E6E3DC] hover:border-[#002D62]/50 rounded transition-colors group">
+                <img
+                  src="assets/images/sponsors/ad-gold-mirai.jpg"
+                  alt="みちのく不動産 株式会社 サムネイル見本"
+                  loading="lazy"
+                  class="w-10 h-[53px] object-contain rounded-sm bg-[#FAF9F6] shrink-0" />
+                <div class="min-w-0">
+                  <p class="text-[10px] text-[#8C6239]">不動産・建築（見本）</p>
+                  <p class="font-serif-jp text-xs sm:text-sm font-bold text-[#002D62] group-hover:underline underline-offset-4 truncate">
+                    みちのく不動産 株式会社
+                  </p>
+                </div>
               </a>
             </div>
           </div>
