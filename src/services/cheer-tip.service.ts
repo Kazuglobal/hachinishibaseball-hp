@@ -201,7 +201,7 @@ export class CheerTipService {
         return {
           notConfigured: true,
           error:
-            '現在決済APIが未設定のため決済画面へ接続できません。「演出をデモ体験」ボタンで記念ボール獲得と保存をお試しいただけます。',
+            '現在オンライン決済の準備中です。しばらくしてから再度お試しください。',
         };
       }
 
@@ -219,7 +219,7 @@ export class CheerTipService {
       return {
         notConfigured: true,
         error:
-          '決済APIに接続できませんでした。「演出をデモ体験」ボタンで記念ボール獲得と演出を確認できます。',
+          '決済APIに接続できませんでした。しばらくしてから再度お試しください。',
       };
     }
   }

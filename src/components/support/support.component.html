@@ -314,7 +314,7 @@
                   class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#002D62] focus:border-[#002D62] outline-none text-sm resize-none"></textarea>
               </div>
 
-              <!-- 決済・デモボタン -->
+              <!-- 決済ボタン -->
               <div class="pt-2 space-y-3">
                 <button
                   type="button"
@@ -327,13 +327,6 @@
                   } @else {
                     <span>¥{{ membershipFeeAmount.toLocaleString() }} 年会費を納入する（Stripe決済）</span>
                   }
-                </button>
-
-                <button
-                  type="button"
-                  (click)="triggerMembershipDemo()"
-                  class="w-full py-3 px-6 rounded-xl border-2 border-[#002D62] text-[#002D62] hover:bg-[#002D62] hover:text-white font-bold text-sm transition-colors flex items-center justify-center gap-2">
-                  <span>🎬 演出をデモ体験する（課金なし・即時反映）</span>
                 </button>
 
                 <div class="bg-gradient-to-br from-[#002D62]/5 to-white rounded-lg p-3 border border-[#002D62]/15 text-center">

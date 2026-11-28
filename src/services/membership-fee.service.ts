@@ -137,7 +137,7 @@ export class MembershipFeeService {
         return {
           notConfigured: true,
           error:
-            '現在ローカル環境またはStripe API未設定のため、決済画面へ接続できません。「演出をデモ体験する」ボタンからムービー再生とユニフォーム自動表示をお試しいただけます。',
+            '現在オンライン決済の準備中です。しばらくしてから再度お試しいただくか、銀行振込をご利用ください。',
         };
       }
 
@@ -155,7 +155,7 @@ export class MembershipFeeService {
       return {
         notConfigured: true,
         error:
-          'Stripe決済APIに接続できませんでした。ローカル環境では「演出をデモ体験する」ボタンから動作をご確認いただけます。',
+          'Stripe決済APIに接続できませんでした。しばらくしてから再度お試しください。',
       };
     }
   }

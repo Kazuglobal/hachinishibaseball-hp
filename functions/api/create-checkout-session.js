@@ -76,8 +76,7 @@ export async function onRequestPost(context) {
   if (!secretKey) {
     return json(
       {
-        error:
-          'Stripe決済が未設定です（Cloudflare Pages の環境変数 STRIPE_SECRET_KEY が設定されていません）。「演出をデモ体験」ボタンから動作確認を行えます。',
+        error: '現在オンライン決済の準備中です。しばらくしてからお試しください。',
       },
       503
     );
