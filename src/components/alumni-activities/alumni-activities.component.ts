@@ -180,59 +180,8 @@ export class AlumniActivitiesComponent implements OnInit, OnDestroy {
     { period: '49期', name: '松村 快浬', team: '八戸工業大学', position: '外野手', note: '1年' }
   ];
 
-  // OB情報カード（4人分）
-  alumniCards: AlumniCard[] = [
-    {
-      period: '21期',
-      name: '中村 渉',
-      team: '中村畳工店',
-      position: '代表',
-      achievement: 'nakamuratatamishop-info.vercel.app/',
-      image: '/assets/images/alumni-nakamura.jpg'
-    },
-    {
-      period: '25期',
-      name: '宝田 賀充',
-      team: '株式会社たから',
-      position: '代表',
-      achievement: 'takara229.base.shop/',
-      image: '/assets/images/alumni-takara.jpg'
-    },
-    {
-      period: '29期',
-      name: '児玉 淳一郎',
-      team: '株式会社サン・ベンディング',
-      position: '代表',
-      achievement: 'sunvending-hachinohe.jp/',
-      image: '/assets/images/alumni-kodama.jpg'
-    },
-    {
-      period: '33期',
-      name: '上野 衆',
-      team: '株式会社創電工業',
-      position: '代表',
-      achievement: 'soudenkougyou.com/',
-      image: '/assets/images/alumni-ueno.jpg',
-      links: [
-        { label: 'n-village.site/', url: 'https://n-village.site/' }
-      ]
-    },
-    {
-      period: '34期',
-      name: 'じゅんせい',
-      team: 'スレンダーパンダ',
-      position: 'お笑い芸人',
-      image: '/assets/images/junsei3.jpeg',
-      links: [
-        { label: 'X (Twitter)', url: 'https://x.com/sle_pan?s=21&t=PWMKFZuwX3xUq5PsiGYALQ' },
-        { label: 'Instagram', url: 'https://www.instagram.com/sle_pan/' },
-        { label: 'TikTok', url: 'https://vt.tiktok.com/ZSeGhyYGy/' },
-        { label: 'YouTube (スレパンちゃんねる)', url: 'https://youtube.com/channel/UCQ_5GFUSV1tlKAjilomRnaQ' },
-        { label: 'YouTube (まかないちゃん)', url: 'https://youtube.com/@makanai_chan?si=9ETgLbizSptFNV5V' },
-        { label: 'YouTube (ラジオ番組)', url: 'https://youtube.com/playlist?list=PLZiRHX1ip4HQe3UoEPtq8amX6zN4ORqUs&si=i4uFu1br6h5yW_UD' }
-      ]
-    }
-  ];
+  // OB会社情報カードは協賛広告枠（/sponsors）へ移行したため空配列
+  alumniCards: AlumniCard[] = [];
 
   private seoService = inject(SEOService);
 

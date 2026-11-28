@@ -4,6 +4,11 @@ import { Injectable, inject, signal } from '@angular/core';
  * AlumniVoiceインターフェース
  * ALUMNI VOICEの各記事のデータ構造を定義
  */
+export interface AlumniVoiceLink {
+  label: string;
+  url: string;
+}
+
 export interface AlumniVoice {
   id: string;
   image: string;
@@ -12,6 +17,7 @@ export interface AlumniVoice {
   generation: string;
   currentJob: string;
   content: string;
+  links?: AlumniVoiceLink[];
 }
 
 /**

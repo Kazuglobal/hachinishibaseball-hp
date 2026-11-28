@@ -60,6 +60,28 @@
           </div>
         </article>
 
+        <!-- 公式SNS・関連リンク -->
+        @if (alumniVoice()!.links && alumniVoice()!.links!.length > 0) {
+          <section class="mt-12 md:mt-16 pt-8 border-t border-gray-300" aria-label="公式リンク">
+            <p class="text-[11px] font-semibold tracking-[0.18em] text-[#B31B1B] uppercase mb-1">OFFICIAL LINKS</p>
+            <h2 class="font-serif-jp text-xl md:text-2xl font-bold text-[#002D62] mb-5">
+              公式SNS・チャンネル
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              @for (link of alumniVoice()!.links!; track link.url) {
+                <a
+                  [href]="link.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex items-center justify-between gap-3 px-4 py-3.5 bg-white border border-gray-300 hover:border-[#002D62] rounded-lg text-sm font-semibold text-[#002D62] hover:bg-[#002D62]/5 transition-colors">
+                  <span class="truncate">{{ link.label }}</span>
+                  <span class="shrink-0 text-xs text-gray-400">↗</span>
+                </a>
+              }
+            </div>
+          </section>
+        }
+
         <!-- ナビゲーションボタン -->
         <div class="mt-20 md:mt-24 pt-12 border-t border-gray-300">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-8">
