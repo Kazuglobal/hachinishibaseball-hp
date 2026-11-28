@@ -14,6 +14,7 @@ import { HomerunChallengeComponent } from './components/game-center/games/homeru
 import { StrikePitchingComponent } from './components/game-center/games/strike-pitching/strike-pitching.component';
 import { CatchFlyComponent } from './components/game-center/games/catch-fly/catch-fly.component';
 import { CheerTippingComponent } from './components/cheer-tipping/cheer-tipping.component';
+import { SponsorsComponent } from './components/sponsors/sponsors.component';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -21,6 +22,7 @@ export const routes: Routes = [
     { path: 'match-results', component: MatchResultsComponent },
     { path: 'support', component: SupportComponent },
     { path: 'cheer', component: CheerTippingComponent },
+    { path: 'sponsors', component: SponsorsComponent },
     { path: 'contact', component: ContactComponent },
     { path: 'activities', component: ActivitiesListComponent },
     { path: 'activity/:id', component: ActivityDetailComponent },

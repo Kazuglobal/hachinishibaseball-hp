@@ -63,6 +63,28 @@ var FORMS = {
               ['金額', (d.amount || '500') + '円（' + (d.quantity || '1') + '球）'],
               ['応援メッセージ', d.message || 'なし'], ['StripeセッションID', d.sessionId || '未設定']];
     }
+  },
+  sponsor_ad: {
+    sheetName: '協賛広告',
+    header: ['申込日時', 'セッションID', 'ステータス', 'プラン', '金額', '企業・団体名', '担当者名', 'メールアドレス', '電話番号', 'リンクURL', 'キャッチコピー', 'ロゴ画像URL', '掲載開始日', '掲載終了日'],
+    required: ['companyName', 'tier'],
+    skipEmailValidation: true,
+    row: function (d) {
+      var today = new Date();
+      var nextYear = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+      var fmt = function (dt) {
+        return dt.getFullYear() + '-' + ('0' + (dt.getMonth() + 1)).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2);
+      };
+      return [d.sessionId, '審査待ち', d.tier, d.amount || '10000', d.companyName, d.name, d.email, d.phone, d.url, d.catchphrase, '', fmt(today), fmt(nextYear)];
+    },
+    mailSubject: function (d) { return '【協賛広告申込】' + d.companyName + '様（' + d.tier + ' / ' + (d.amount || 10000) + '円）'; },
+    mailBody: function (d) {
+      return [['企業・団体名', d.companyName], ['プラン', d.tier], ['金額（年額）', (d.amount || '10000') + '円'],
+              ['担当者名', d.name || '未入力'], ['メールアドレス', d.email || '未入力'], ['電話番号', d.phone || '未入力'],
+              ['リンクURL', d.url || 'なし'], ['キャッチコピー', d.catchphrase || 'なし'],
+              ['対応手順', 'ロゴ画像メール受領後、スプレッドシート「協賛広告」のステータスを「公開中」に変更するとサイトへ自動掲載されます'],
+              ['StripeセッションID', d.sessionId || '未設定']];
+    }
   }
 };
 
@@ -136,7 +158,7 @@ function doPost(e) {
     var cfg = FORMS[type];
 
     var d = {};
-    ['name', 'period', 'email', 'phone', 'attendance', 'remarks', 'event', 'subject', 'message', 'category', 'amount', 'quantity', 'sessionId', 'year'].forEach(function (k) {
+    ['name', 'period', 'email', 'phone', 'attendance', 'remarks', 'event', 'subject', 'message', 'category', 'amount', 'quantity', 'sessionId', 'year', 'tier', 'companyName', 'url', 'catchphrase'].forEach(function (k) {
       d[k] = sanitizeInput(raw[k], (k === 'message' || k === 'remarks') ? 5000 : 300);
     });
 
@@ -157,7 +179,7 @@ function doPost(e) {
     lock.waitLock(10000);
     try {
       var sheet = getSheet(cfg);
-      if ((type === 'membership_fee' || type === 'cheer_tip') && d.sessionId) {
+      if ((type === 'membership_fee' || type === 'cheer_tip' || type === 'sponsor_ad') && d.sessionId) {
         var lastRow = sheet.getLastRow();
         if (lastRow > 1) {
           var existingIds = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
@@ -252,11 +274,40 @@ function doGet(e) {
       }
       return jsonResponse({ success: true, donations: donations });
     }
+    if (type === 'sponsors') {
+      var spSheet = getSheet(FORMS.sponsor_ad);
+      var spLastRow = spSheet.getLastRow();
+      var sponsors = [];
+      var todayStr = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd');
+      if (spLastRow > 1) {
+        var spValues = spSheet.getRange(2, 1, spLastRow - 1, 14).getValues();
+        for (var s = 0; s < spValues.length; s++) {
+          var row = spValues[s];
+          var status = String(row[2] || '').trim();
+          var companyName = String(row[5] || '').trim();
+          if (status !== '公開中' || !companyName) continue;
+          var endVal = row[13] instanceof Date ? Utilities.formatDate(row[13], 'Asia/Tokyo', 'yyyy-MM-dd') : String(row[13] || '').trim();
+          if (endVal && endVal < todayStr) continue;
+          // 個人情報（担当者名・メール・電話）は公開JSONへ一切含めない
+          sponsors.push({
+            id: String(row[1] || 'sp-' + s),
+            tier: String(row[3] || 'bronze').toLowerCase(),
+            companyName: companyName,
+            url: String(row[9] || '').trim(),
+            catchphrase: String(row[10] || '').trim(),
+            logoUrl: String(row[11] || '').trim(),
+            startDate: row[12] instanceof Date ? Utilities.formatDate(row[12], 'Asia/Tokyo', 'yyyy-MM-dd') : String(row[12] || ''),
+            endDate: endVal
+          });
+        }
+      }
+      return jsonResponse({ success: true, sponsors: sponsors });
+    }
   } catch (err) {
     Logger.log('doGet ERROR: ' + err);
     return jsonResponse({ success: false, error: 'データ取得に失敗しました' });
   }
-  return ContentService.createTextOutput('OB会フォーム（出欠・お問い合わせ・年会費納入・記念ボール寄付） - Google Apps Script is running!')
+  return ContentService.createTextOutput('OB会フォーム（出欠・お問い合わせ・年会費納入・寄付・協賛広告） - Google Apps Script is running!')
     .setMimeType(ContentService.MimeType.TEXT);
 }
 

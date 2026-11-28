@@ -178,6 +178,36 @@ export async function onRequestPost(context) {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: formData.toString(),
         }).catch(() => {});
+      } else if (
+        session &&
+        session.payment_status === 'paid' &&
+        session.metadata?.paymentType === 'sponsor_ad'
+      ) {
+        const meta = session.metadata;
+        const gasUrl = env.GAS_WEB_APP_URL || DEFAULT_GAS_WEB_APP_URL;
+        const formData = new URLSearchParams();
+        formData.append('formType', 'sponsor_ad');
+        formData.append('sessionId', session.id);
+        formData.append('tier', meta.tier || 'bronze');
+        formData.append('amount', String(session.amount_total || 10000));
+        formData.append('companyName', meta.companyName || '協賛企業様');
+        formData.append('name', meta.contactName || session.customer_details?.name || '');
+        formData.append('email', meta.email || session.customer_details?.email || '');
+        formData.append('phone', meta.phone || '');
+        formData.append('url', meta.url || '');
+        formData.append('catchphrase', meta.catchphrase || '');
+        formData.append(
+          'timestamp',
+          session.created
+            ? new Date(session.created * 1000).toISOString()
+            : new Date().toISOString()
+        );
+
+        await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData.toString(),
+        }).catch(() => {});
       }
     }
 

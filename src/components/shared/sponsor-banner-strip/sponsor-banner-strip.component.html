@@ -1,0 +1,155 @@
+<section class="w-full py-12 bg-[#F8F8F7] border-t border-gray-200">
+  <div class="container mx-auto px-4 sm:px-8 max-w-6xl">
+    <!-- ヘッダー -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-4 mb-8 border-b border-gray-300">
+      <div>
+        <p class="text-[11px] font-oswald tracking-[0.2em] text-[#B31B1B] uppercase">OFFICIAL PARTNERS</p>
+        <h2 class="font-serif-jp text-xl sm:text-2xl font-bold text-[#002D62] mt-0.5">
+          協賛企業・団体
+        </h2>
+      </div>
+      @if (showRecruitCta()) {
+        <a
+          routerLink="/sponsors"
+          class="text-xs sm:text-sm font-semibold text-[#002D62] hover:text-[#B31B1B] underline underline-offset-4">
+          協賛・広告掲載のご案内（年額 10,000円〜）
+        </a>
+      }
+    </div>
+
+    @if (sponsorService.sponsors().length > 0) {
+      <div class="space-y-8">
+        <!-- ゴールド協賛（大型ワイドバナー＋上品な光沢シマー） -->
+        @if (sponsorService.goldSponsors().length > 0) {
+          <div>
+            <p class="text-[11px] font-semibold tracking-widest text-gray-500 uppercase mb-3">GOLD PARTNERS</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              @for (sp of sponsorService.goldSponsors(); track sp.id) {
+                @if (sp.url) {
+                  <a
+                    [href]="sp.url"
+                    target="_blank"
+                    rel="sponsored noopener noreferrer"
+                    class="sponsor-gold-card block bg-white border-2 border-[#002D62] rounded-lg p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                      @if (sp.logoUrl) {
+                        <img
+                          [src]="sp.logoUrl"
+                          [alt]="sp.companyName"
+                          loading="lazy"
+                          class="h-16 sm:h-20 w-auto max-w-[240px] object-contain shrink-0" />
+                      }
+                      <div class="min-w-0">
+                        <span class="inline-block text-[10px] font-bold tracking-widest text-[#B31B1B] uppercase">GOLD PARTNER</span>
+                        <h3 class="font-serif-jp text-lg sm:text-xl font-bold text-[#002D62] mt-0.5">{{ sp.companyName }}</h3>
+                        @if (sp.catchphrase) {
+                          <p class="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">{{ sp.catchphrase }}</p>
+                        }
+                      </div>
+                    </div>
+                  </a>
+                } @else {
+                  <div class="sponsor-gold-card bg-white border-2 border-[#002D62] rounded-lg p-5 sm:p-6 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                      @if (sp.logoUrl) {
+                        <img [src]="sp.logoUrl" [alt]="sp.companyName" loading="lazy" class="h-16 sm:h-20 w-auto max-w-[240px] object-contain shrink-0" />
+                      }
+                      <div class="min-w-0">
+                        <span class="inline-block text-[10px] font-bold tracking-widest text-[#B31B1B] uppercase">GOLD PARTNER</span>
+                        <h3 class="font-serif-jp text-lg sm:text-xl font-bold text-[#002D62] mt-0.5">{{ sp.companyName }}</h3>
+                        @if (sp.catchphrase) {
+                          <p class="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">{{ sp.catchphrase }}</p>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+
+        <!-- シルバー協賛（標準ロゴバナー＋ホバーズーム） -->
+        @if (sponsorService.silverSponsors().length > 0) {
+          <div>
+            <p class="text-[11px] font-semibold tracking-widest text-gray-500 uppercase mb-3">SILVER PARTNERS</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              @for (sp of sponsorService.silverSponsors(); track sp.id) {
+                @if (sp.url) {
+                  <a
+                    [href]="sp.url"
+                    target="_blank"
+                    rel="sponsored noopener noreferrer"
+                    class="sponsor-silver-card block bg-white border border-gray-300 hover:border-[#002D62] rounded-lg p-4 shadow-sm">
+                    @if (sp.logoUrl) {
+                      <div class="h-14 flex items-center mb-3">
+                        <img [src]="sp.logoUrl" [alt]="sp.companyName" loading="lazy" class="max-h-14 w-auto object-contain" />
+                      </div>
+                    }
+                    <h3 class="font-serif-jp text-base font-bold text-[#002D62]">{{ sp.companyName }}</h3>
+                    @if (sp.catchphrase) {
+                      <p class="text-xs text-gray-600 mt-1 line-clamp-2">{{ sp.catchphrase }}</p>
+                    }
+                  </a>
+                } @else {
+                  <div class="sponsor-silver-card bg-white border border-gray-300 rounded-lg p-4 shadow-sm">
+                    @if (sp.logoUrl) {
+                      <div class="h-14 flex items-center mb-3">
+                        <img [src]="sp.logoUrl" [alt]="sp.companyName" loading="lazy" class="max-h-14 w-auto object-contain" />
+                      </div>
+                    }
+                    <h3 class="font-serif-jp text-base font-bold text-[#002D62]">{{ sp.companyName }}</h3>
+                    @if (sp.catchphrase) {
+                      <p class="text-xs text-gray-600 mt-1 line-clamp-2">{{ sp.catchphrase }}</p>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ブロンズ協賛（テキストリンク枠） -->
+        @if (variant() === 'full' && sponsorService.bronzeSponsors().length > 0) {
+          <div>
+            <p class="text-[11px] font-semibold tracking-widest text-gray-500 uppercase mb-3">BRONZE PARTNERS</p>
+            <div class="flex flex-wrap gap-2.5">
+              @for (sp of sponsorService.bronzeSponsors(); track sp.id) {
+                @if (sp.url) {
+                  <a
+                    [href]="sp.url"
+                    target="_blank"
+                    rel="sponsored noopener noreferrer"
+                    class="px-4 py-2 bg-white border border-gray-300 hover:border-[#002D62] rounded text-xs sm:text-sm font-semibold text-gray-800 hover:text-[#002D62] hover:underline underline-offset-4 transition-colors">
+                    {{ sp.companyName }}
+                  </a>
+                } @else {
+                  <span class="px-4 py-2 bg-white border border-gray-300 rounded text-xs sm:text-sm font-semibold text-gray-800">
+                    {{ sp.companyName }}
+                  </span>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- 公開中の協賛企業が無い場合の募集案内枠 -->
+      <div class="bg-white border border-gray-200 rounded-lg p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div>
+          <p class="text-xs font-semibold tracking-wider text-[#002D62] mb-1">協賛企業・団体様 募集中</p>
+          <p class="text-sm text-gray-700 leading-relaxed">
+            八戸西高等学校野球部の活動を応援してくださる企業・店舗・団体様の協賛広告枠（年額 10,000円・30,000円・50,000円）を募集しております。
+          </p>
+        </div>
+        @if (showRecruitCta()) {
+          <a
+            routerLink="/sponsors"
+            class="shrink-0 inline-flex items-center justify-center px-5 py-2.5 rounded bg-[#002D62] hover:bg-[#001f44] text-white font-bold text-xs sm:text-sm transition-colors">
+            協賛枠の詳細・お申込みへ
+          </a>
+        }
+      </div>
+    }
+  </div>
+</section>

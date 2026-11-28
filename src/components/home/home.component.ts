@@ -6,6 +6,7 @@ import { HeroComponent } from '../hero/hero.component';
 import { OwnersVoiceComponent } from '../owners-voice/owners-voice.component';
 import { WorksComponent } from '../works/works.component';
 import { SectionTitleComponent } from '../shared/section-title/section-title.component';
+import { SponsorBannerStripComponent } from '../shared/sponsor-banner-strip/sponsor-banner-strip.component';
 import { ObserveVisibilityDirective } from '../../directives/observe-visibility.directive';
 import { ScrollService } from '../../services/scroll.service';
 import { SEOService } from '../../services/seo.service';
@@ -21,6 +22,7 @@ import { SEOService } from '../../services/seo.service';
     OwnersVoiceComponent,
     WorksComponent,
     SectionTitleComponent,
+    SponsorBannerStripComponent,
     ObserveVisibilityDirective
   ],
   templateUrl: './home.component.html',
