@@ -218,8 +218,14 @@ export class SupportComponent implements OnInit {
   // GAS Web App URL（環境設定から取得。お問い合わせフォームと同一デプロイに統一）
   private readonly GAS_WEB_APP_URL = environment.gasWebAppUrl;
 
+  private readonly ownedMembershipStorageKey = 'hachinishi_owned_membership_ids_v1';
+  private ownedMembershipIds = signal<string[]>([]);
+
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
+    if (this.isBrowser) {
+      this.ownedMembershipIds.set(this.readOwnedMembershipIds());
+    }
   }
 
   ngOnInit() {
@@ -294,9 +300,10 @@ export class SupportComponent implements OnInit {
       this.clearQueryParams();
 
       if (result.record) {
+        this.markMembershipOwned(result.record.id, result.record.sessionId);
         const uniformItem = this.recordToUniformItem(result.record);
         this.newlyAddedUniformId.set(uniformItem.id);
-        this.openCelebration(uniformItem);
+        this.openCelebration(uniformItem, true);
       } else if (result.error) {
         this.feeFormError.set(result.error);
       }
@@ -375,7 +382,39 @@ export class SupportComponent implements OnInit {
     this.openCelebration(uniformItem);
   }
 
-  openCelebration(item: UniformDonorItem): void {
+  isOwnedUniform(item: UniformDonorItem): boolean {
+    const owned = this.ownedMembershipIds();
+    return owned.includes(item.id);
+  }
+
+  private readOwnedMembershipIds(): string[] {
+    try {
+      const raw = localStorage.getItem(this.ownedMembershipStorageKey);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.filter((v) => typeof v === 'string') : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private markMembershipOwned(id: string, sessionId?: string): void {
+    if (!this.isBrowser) return;
+    const next = new Set(this.ownedMembershipIds());
+    if (id) next.add(id);
+    if (sessionId) next.add(sessionId);
+    const list = Array.from(next);
+    this.ownedMembershipIds.set(list);
+    try {
+      localStorage.setItem(this.ownedMembershipStorageKey, JSON.stringify(list));
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  openCelebration(item: UniformDonorItem, forceVerified = false): void {
+    if (!forceVerified && !this.isOwnedUniform(item)) {
+      return;
+    }
     this.celebrationUniform.set(item);
   }
 

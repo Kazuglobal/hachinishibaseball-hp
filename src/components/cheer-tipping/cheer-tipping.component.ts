@@ -73,6 +73,10 @@ export class CheerTippingComponent implements OnInit {
   practiceVideoMissing = signal<boolean>(false);
   readonly practiceVideoPath = '/assets/videos/cheer-practice.mp4';
   activeCelebrationVideo = signal<'practice' | 'ball3d'>('practice');
+  savedBallPreviewUrl = signal<string | null>(null);
+
+  private readonly ownedCheerStorageKey = 'hachinishi_owned_cheer_ids_v1';
+  private ownedCheerIds = signal<string[]>([]);
 
   readonly totalAmount = computed(() => this.quantity() * 500);
   readonly donations = computed(() => this.cheerService.allDonations());
@@ -81,6 +85,9 @@ export class CheerTippingComponent implements OnInit {
 
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
+    if (this.isBrowser) {
+      this.ownedCheerIds.set(this.readOwnedCheerIds());
+    }
   }
 
   ngOnInit(): void {
@@ -118,8 +125,9 @@ export class CheerTippingComponent implements OnInit {
       this.clearQueryParams();
 
       if (result.donation) {
+        this.markDonationOwned(result.donation.id, result.donation.sessionId);
         this.newlyAddedId.set(result.donation.id);
-        this.openCelebration(result.donation);
+        this.openCelebration(result.donation, true);
       } else if (result.error) {
         this.formError.set(result.error);
       }
@@ -227,9 +235,45 @@ export class CheerTippingComponent implements OnInit {
     this.openCelebration(demoItem);
   }
 
-  openCelebration(donation: CheerDonation): void {
+  isOwnedDonation(donation: CheerDonation): boolean {
+    const owned = this.ownedCheerIds();
+    return owned.includes(donation.id) || (!!donation.sessionId && owned.includes(donation.sessionId));
+  }
+
+  private readOwnedCheerIds(): string[] {
+    try {
+      const raw = localStorage.getItem(this.ownedCheerStorageKey);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.filter((v) => typeof v === 'string') : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private markDonationOwned(id: string, sessionId?: string): void {
+    if (!this.isBrowser) return;
+    const next = new Set(this.ownedCheerIds());
+    if (id) next.add(id);
+    if (sessionId) next.add(sessionId);
+    const list = Array.from(next);
+    this.ownedCheerIds.set(list);
+    try {
+      localStorage.setItem(this.ownedCheerStorageKey, JSON.stringify(list));
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  openCelebration(donation: CheerDonation, forceVerified = false): void {
+    if (!forceVerified && !this.isOwnedDonation(donation)) {
+      return;
+    }
     this.activeCelebrationVideo.set(this.practiceVideoMissing() ? 'ball3d' : 'practice');
     this.celebrationDonation.set(donation);
+  }
+
+  closeSavedBallPreview(): void {
+    this.savedBallPreviewUrl.set(null);
   }
 
   closeCelebration(scrollToWall = false): void {
@@ -391,10 +435,46 @@ export class CheerTippingComponent implements OnInit {
         995
       );
 
-      const link = document.createElement('a');
       const safeName = donation.name.replace(/[^\p{L}\p{N}_-]/gu, '_') || 'supporter';
-      link.download = `hachinishi-memorial-ball-${safeName}.png`;
-      link.href = canvas.toDataURL('image/png');
+      const fileName = `hachinishi-memorial-ball-${safeName}.png`;
+      const dataUrl = canvas.toDataURL('image/png');
+
+      // スマホ（iOS / Android）では共有シート経由で「写真（カメラロール）」へ直接保存できるようにする
+      const isTouchDevice =
+        /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+        (navigator.maxTouchPoints > 1 && window.innerWidth < 1024);
+
+      if (isTouchDevice) {
+        const blob = await new Promise<Blob | null>((resolve) =>
+          canvas.toBlob((b) => resolve(b), 'image/png')
+        );
+        if (blob && typeof File !== 'undefined' && typeof navigator.share === 'function') {
+          const file = new File([blob], fileName, { type: 'image/png' });
+          if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                files: [file],
+                title: '八戸西高校野球部 記念ボール',
+              });
+              return;
+            } catch (err) {
+              // ユーザーが共有シートを閉じた場合は長押し保存プレビューも案内
+              if ((err as { name?: string })?.name === 'AbortError') {
+                this.savedBallPreviewUrl.set(dataUrl);
+                return;
+              }
+            }
+          }
+        }
+        // LINE内ブラウザなど共有API非対応スマホでも「長押しで写真に保存」できるようプレビュー表示
+        this.savedBallPreviewUrl.set(dataUrl);
+        return;
+      }
+
+      // PCは従来通り直接PNGダウンロード
+      const link = document.createElement('a');
+      link.download = fileName;
+      link.href = dataUrl;
       link.click();
     } finally {
       this.isDownloading.set(false);

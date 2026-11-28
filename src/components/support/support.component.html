@@ -70,7 +70,7 @@
                     オンライン会費納入者ユニフォーム（{{ onlineUniformDonors().length }}名）
                   </h3>
                   <p class="text-xs text-gray-600">
-                    会費納入が完了すると自動でユニフォームが掲載されます。タップすると感謝ムービーを再生できます。
+                    会費納入が完了すると自動でユニフォームが掲載されます（ご本人の決済完了時にお礼ムービーが再生されます）。
                   </p>
                 </div>
                 @if (membershipService.hasUserDemoPayments()) {
@@ -85,20 +85,34 @@
 
               <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                 @for (item of onlineUniformDonors(); track item.id) {
-                  <button
-                    type="button"
-                    (click)="openCelebration(item)"
-                    class="text-left focus:outline-none focus:ring-2 focus:ring-[#002D62] rounded-2xl">
-                    <app-mini-uniform
-                      [name]="item.name"
-                      [period]="item.period"
-                      size="sm"
-                      [badge]="newlyAddedUniformId() === item.id ? 'NEW' : (item.isDemo ? 'デモ' : item.year + '年')"
-                      [interactive]="true"
-                      [highlighted]="newlyAddedUniformId() === item.id"
-                      [showHint]="true">
-                    </app-mini-uniform>
-                  </button>
+                  @if (isOwnedUniform(item)) {
+                    <button
+                      type="button"
+                      (click)="openCelebration(item)"
+                      class="text-left focus:outline-none focus:ring-2 focus:ring-[#002D62] rounded-2xl">
+                      <app-mini-uniform
+                        [name]="item.name"
+                        [period]="item.period"
+                        size="sm"
+                        [badge]="newlyAddedUniformId() === item.id ? 'NEW' : item.year + '年'"
+                        [interactive]="true"
+                        [highlighted]="newlyAddedUniformId() === item.id"
+                        [showHint]="true">
+                      </app-mini-uniform>
+                    </button>
+                  } @else {
+                    <div class="rounded-2xl">
+                      <app-mini-uniform
+                        [name]="item.name"
+                        [period]="item.period"
+                        size="sm"
+                        [badge]="item.year + '年'"
+                        [interactive]="false"
+                        [highlighted]="false"
+                        [showHint]="false">
+                      </app-mini-uniform>
+                    </div>
+                  }
                 }
               </div>
             </div>
@@ -128,18 +142,15 @@
 
               <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                 @for (item of uniformDonors2026; track item.id) {
-                  <button
-                    type="button"
-                    (click)="openCelebration(item)"
-                    class="text-left focus:outline-none focus:ring-2 focus:ring-[#002D62] rounded-2xl">
+                  <div class="rounded-2xl">
                     <app-mini-uniform
                       [name]="item.name"
                       [period]="item.period"
                       size="sm"
                       badge="2026年"
-                      [interactive]="true">
+                      [interactive]="false">
                     </app-mini-uniform>
-                  </button>
+                  </div>
                 }
               </div>
             </div>
@@ -169,17 +180,14 @@
 
               <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                 @for (item of uniformDonors2025; track item.id) {
-                  <button
-                    type="button"
-                    (click)="openCelebration(item)"
-                    class="text-left focus:outline-none focus:ring-2 focus:ring-[#002D62] rounded-2xl">
+                  <div class="rounded-2xl">
                     <app-mini-uniform
                       [name]="item.name"
                       [period]="item.period"
                       size="sm"
-                      [interactive]="true">
+                      [interactive]="false">
                     </app-mini-uniform>
-                  </button>
+                  </div>
                 }
               </div>
             </div>
@@ -211,17 +219,14 @@
               </p>
               <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                 @for (item of uniformDonors2024; track item.id) {
-                  <button
-                    type="button"
-                    (click)="openCelebration(item)"
-                    class="text-left focus:outline-none focus:ring-2 focus:ring-[#002D62] rounded-2xl">
+                  <div class="rounded-2xl">
                     <app-mini-uniform
                       [name]="item.name"
                       [period]="item.period"
                       size="sm"
-                      [interactive]="true">
+                      [interactive]="false">
                     </app-mini-uniform>
-                  </button>
+                  </div>
                 }
               </div>
             }
